@@ -269,7 +269,7 @@ export const calc1RM = (weight: number, reps: number) =>
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=
 
 # Тільки на сервері
