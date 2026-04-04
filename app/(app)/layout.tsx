@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { SyncProvider } from "@/components/sync-provider";
 
 export default async function AppLayout({
   children,
@@ -15,5 +16,5 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return <SyncProvider>{children}</SyncProvider>;
 }
