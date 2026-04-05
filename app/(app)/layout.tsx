@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SyncProvider } from "@/components/sync-provider";
+import { BottomNav } from "@/components/bottom-nav";
 
 export default async function AppLayout({
   children,
@@ -16,5 +17,12 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  return <SyncProvider>{children}</SyncProvider>;
+  return (
+    <SyncProvider>
+      <div className="flex min-h-svh flex-col pb-16">
+        {children}
+      </div>
+      <BottomNav />
+    </SyncProvider>
+  );
 }
