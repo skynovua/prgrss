@@ -300,16 +300,21 @@ export function WorkoutLogger({ exercises, userId }: WorkoutLoggerProps) {
 
       {/* Завершити тренування */}
       {workoutExercises.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 border-t bg-background p-4">
-          <Button
-            className="w-full gap-2"
-            size="lg"
-            onClick={handleFinish}
-            disabled={saving || totalSets === 0}
-          >
-            <Square className="h-4 w-4" />
-            {saving ? "Зберігаю..." : "Завершити тренування"}
-          </Button>
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 p-4 backdrop-blur supports-backdrop-filter:bg-background/80"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
+        >
+          <div className="mx-auto max-w-lg">
+            <Button
+              className="w-full gap-2"
+              size="lg"
+              onClick={handleFinish}
+              disabled={saving || totalSets === 0}
+            >
+              <Square className="h-4 w-4" />
+              {saving ? "Зберігаю..." : "Завершити тренування"}
+            </Button>
+          </div>
         </div>
       )}
     </div>

@@ -19,7 +19,7 @@ export default async function AppLayout({
 
   return (
     <SyncProvider>
-      <div className="flex min-h-svh flex-col pb-16">
+      <div className="flex min-h-svh flex-col pb-[calc(5rem+env(safe-area-inset-bottom))]">
         {children}
       </div>
       <BottomNav />
