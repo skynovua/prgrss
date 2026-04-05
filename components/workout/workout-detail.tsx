@@ -53,6 +53,7 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
     setDeleting(true);
     try {
       await deleteWorkout(workout.id);
+      router.push("/dashboard");
     } catch (err) {
       toast.error("Не вдалося видалити тренування", {
         description: err instanceof Error ? err.message : "Спробуйте ще раз",

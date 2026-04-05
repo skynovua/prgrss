@@ -42,7 +42,7 @@ export default function RootLayout({
     <html lang="uk" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="dark flex min-h-full flex-col">
         {children}
-        <Toaster richColors position="top-center" />
+        <Toaster position="top-center" />
       </body>
     </html>
   );

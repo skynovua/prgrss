@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { withAuth } from "./protected";
 
 export async function deleteWorkout(workoutId: string) {
@@ -13,7 +12,6 @@ export async function deleteWorkout(workoutId: string) {
   });
 
   revalidatePath("/dashboard");
-  redirect("/dashboard");
 }
 
 export async function deleteSetFromWorkout(setId: string, workoutId: string) {

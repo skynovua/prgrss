@@ -4,17 +4,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { deleteWorkout } from "@/lib/actions/workout";
 import { toast } from "sonner";
 
 export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
       await deleteWorkout(workoutId);
+      router.push("/dashboard");
     } catch (err) {
       toast.error("Не вдалося видалити тренування", {
         description: err instanceof Error ? err.message : "Спробуйте ще раз",

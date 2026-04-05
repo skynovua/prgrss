@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ExercisePicker } from "@/components/workout/exercise-picker";
 import { SetRow } from "@/components/workout/set-row";
 import { RestTimer } from "@/components/workout/rest-timer";
-import { Timer, Plus, Square } from "lucide-react";
+import { Timer, Plus, Check } from "lucide-react";
 import {
   type Exercise,
   type WorkoutExercise,
@@ -400,7 +400,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
               onClick={handleFinish}
               disabled={saving || totalSets === 0}
             >
-              <Square className="h-4 w-4" />
+              <Check className="h-4 w-4" />
               {saving ? "Зберігаю..." : "Завершити тренування"}
             </Button>
           </div>
