@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dumbbell, Plus, TrendingUp, Calendar } from "lucide-react";
 import Link from "next/link";
+import { DeleteWorkoutButton } from "@/components/workout/delete-workout-button";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -93,29 +94,32 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">Останні тренування</h2>
           {recentWorkouts.map((workout) => (
-            <Link key={workout.id} href={`/workout/${workout.id}`}>
-              <Card className="transition-colors hover:bg-accent/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {workout.name ?? "Тренування"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span>
-                      {workout.started_at &&
-                        new Date(workout.started_at).toLocaleDateString("uk-UA", {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                    </span>
-                    <span>
-                      {(workout.sets as unknown[])?.length ?? 0} підходів
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+            <div key={workout.id} className="relative flex items-center gap-1">
+              <Link href={`/workout/${workout.id}`} className="flex-1">
+                <Card className="transition-colors hover:bg-accent/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      {workout.name ?? "Тренування"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex gap-4 text-xs text-muted-foreground">
+                      <span>
+                        {workout.started_at &&
+                          new Date(workout.started_at).toLocaleDateString("uk-UA", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                      </span>
+                      <span>
+                        {(workout.sets as unknown[])?.length ?? 0} підходів
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <DeleteWorkoutButton workoutId={workout.id} />
+            </div>
           ))}
         </div>
       )}
