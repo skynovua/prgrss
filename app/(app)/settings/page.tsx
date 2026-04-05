@@ -18,11 +18,11 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           <div>
-            <p className="text-sm text-muted-foreground">Email</p>
+            <p className="text-muted-foreground text-sm">Email</p>
             <p className="font-medium">{user?.email ?? "—"}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Ім&apos;я</p>
+            <p className="text-muted-foreground text-sm">Ім&apos;я</p>
             <p className="font-medium">{user?.user_metadata?.name ?? "Атлет"}</p>
           </div>
         </CardContent>

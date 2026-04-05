@@ -19,28 +19,19 @@ export default async function DashboardPage() {
     .limit(5);
 
   // Статистика за тиждень — один запит з join
-  const weekAgo = new Date(
-    Date.now() - 7 * 24 * 60 * 60 * 1000
-  ).toISOString();
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: weekWorkouts } = await supabase
     .from("workouts")
     .select("id, sets(weight, reps)")
     .gte("started_at", weekAgo);
 
-  const weekSets = (weekWorkouts ?? []).flatMap((w) =>
-    Array.isArray(w.sets) ? w.sets : []
-  );
-  const weekVolume = weekSets.reduce(
-    (acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0),
-    0
-  );
+  const weekSets = (weekWorkouts ?? []).flatMap((w) => (Array.isArray(w.sets) ? w.sets : []));
+  const weekVolume = weekSets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
       <div>
-        <h1 className="text-2xl font-bold">
-          Привіт, {user?.user_metadata?.name ?? "атлет"} 💪
-        </h1>
+        <h1 className="text-2xl font-bold">Привіт, {user?.user_metadata?.name ?? "атлет"} 💪</h1>
         <p className="text-muted-foreground">Готовий до тренування?</p>
       </div>
 
@@ -55,31 +46,27 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-3 gap-3">
         <Card>
           <CardContent className="flex flex-col items-center p-4">
-            <Calendar className="mb-1 h-5 w-5 text-muted-foreground" />
-            <span className="text-2xl font-bold">
-              {weekWorkouts?.length ?? 0}
-            </span>
-            <span className="text-xs text-muted-foreground">тренувань</span>
+            <Calendar className="text-muted-foreground mb-1 h-5 w-5" />
+            <span className="text-2xl font-bold">{weekWorkouts?.length ?? 0}</span>
+            <span className="text-muted-foreground text-xs">тренувань</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center p-4">
-            <Dumbbell className="mb-1 h-5 w-5 text-muted-foreground" />
-            <span className="text-2xl font-bold">
-              {weekSets.length}
-            </span>
-            <span className="text-xs text-muted-foreground">підходів</span>
+            <Dumbbell className="text-muted-foreground mb-1 h-5 w-5" />
+            <span className="text-2xl font-bold">{weekSets.length}</span>
+            <span className="text-muted-foreground text-xs">підходів</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center p-4">
-            <TrendingUp className="mb-1 h-5 w-5 text-muted-foreground" />
+            <TrendingUp className="text-muted-foreground mb-1 h-5 w-5" />
             <span className="text-2xl font-bold">
               {weekVolume > 1000
                 ? `${(weekVolume / 1000).toFixed(1)}т`
                 : `${Math.round(weekVolume)}`}
             </span>
-            <span className="text-xs text-muted-foreground">об&apos;єм кг</span>
+            <span className="text-muted-foreground text-xs">об&apos;єм кг</span>
           </CardContent>
         </Card>
       </div>
@@ -91,14 +78,14 @@ export default async function DashboardPage() {
           {recentWorkouts.map((workout) => (
             <div key={workout.id} className="relative flex items-center gap-1">
               <Link href={`/workout/${workout.id}`} className="flex-1">
-                <Card className="transition-colors hover:bg-accent/50">
+                <Card className="hover:bg-accent/50 transition-colors">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">
                       {workout.name ?? "Тренування"}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="flex gap-4 text-xs text-muted-foreground">
+                    <div className="text-muted-foreground flex gap-4 text-xs">
                       <span>
                         {workout.started_at &&
                           new Date(workout.started_at).toLocaleDateString("uk-UA", {
@@ -106,9 +93,7 @@ export default async function DashboardPage() {
                             month: "short",
                           })}
                       </span>
-                      <span>
-                        {Array.isArray(workout.sets) ? workout.sets.length : 0} підходів
-                      </span>
+                      <span>{Array.isArray(workout.sets) ? workout.sets.length : 0} підходів</span>
                     </div>
                   </CardContent>
                 </Card>

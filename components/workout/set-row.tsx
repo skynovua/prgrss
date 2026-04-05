@@ -27,7 +27,7 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
         set.completed && "bg-accent/50"
       )}
     >
-      <span className="w-8 text-center text-sm font-medium text-muted-foreground">
+      <span className="text-muted-foreground w-8 text-center text-sm font-medium">
         {set.setNumber}
       </span>
 
@@ -76,7 +76,7 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-10 w-10 shrink-0 text-muted-foreground"
+        className="text-muted-foreground h-10 w-10 shrink-0"
         onClick={() => onDelete(set.id)}
       >
         <Trash2 className="h-3 w-3" />

@@ -39,11 +39,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="uk"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col dark">
+    <html lang="uk" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <body className="dark flex min-h-full flex-col">
         {children}
         <Toaster richColors position="top-center" />
       </body>

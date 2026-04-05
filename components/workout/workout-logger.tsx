@@ -106,9 +106,7 @@ function workoutReducer(state: WorkoutState, action: WorkoutAction): WorkoutStat
             ? we
             : {
                 ...we,
-                sets: we.sets.map((s) =>
-                  s.id === action.set.id ? action.set : s
-                ),
+                sets: we.sets.map((s) => (s.id === action.set.id ? action.set : s)),
               }
         ),
       };
@@ -122,9 +120,7 @@ function workoutReducer(state: WorkoutState, action: WorkoutAction): WorkoutStat
             ? we
             : {
                 ...we,
-                sets: we.sets.map((s) =>
-                  s.id === action.set.id ? action.set : s
-                ),
+                sets: we.sets.map((s) => (s.id === action.set.id ? action.set : s)),
               }
         ),
       };
@@ -183,7 +179,7 @@ const ExerciseCard = memo(function ExerciseCard({
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-base">{we.exercise.name}</CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {we.exercise.muscle_group &&
                 MUSCLE_GROUP_LABELS[we.exercise.muscle_group as MuscleGroup]}
             </p>
@@ -191,17 +187,15 @@ const ExerciseCard = memo(function ExerciseCard({
           <Button
             variant="ghost"
             size="sm"
-            className="text-xs text-muted-foreground"
-            onClick={() =>
-              dispatch({ type: "REMOVE_EXERCISE", index: exerciseIndex })
-            }
+            className="text-muted-foreground text-xs"
+            onClick={() => dispatch({ type: "REMOVE_EXERCISE", index: exerciseIndex })}
           >
             Видалити
           </Button>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-1">
-        <div className="flex items-center gap-2 px-2 pb-1 text-xs font-medium text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-2 px-2 pb-1 text-xs font-medium">
           <span className="w-8 text-center">#</span>
           <span className="w-20 text-center">Вага</span>
           <span className="w-16 text-center">Повт</span>
@@ -214,15 +208,9 @@ const ExerciseCard = memo(function ExerciseCard({
           <SetRow
             key={set.id}
             set={set}
-            onUpdate={(s) =>
-              dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })
-            }
-            onComplete={(s) =>
-              dispatch({ type: "COMPLETE_SET", exerciseIndex, set: s })
-            }
-            onDelete={(id) =>
-              dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })
-            }
+            onUpdate={(s) => dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })}
+            onComplete={(s) => dispatch({ type: "COMPLETE_SET", exerciseIndex, set: s })}
+            onDelete={(id) => dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })}
           />
         ))}
 
@@ -251,12 +239,9 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
   const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
   const { exercises: workoutExercises, startedAt, timerOpen, saving } = state;
 
-  const handleAddExercise = useCallback(
-    (exercise: Exercise) => {
-      dispatch({ type: "ADD_EXERCISE", exercise });
-    },
-    []
-  );
+  const handleAddExercise = useCallback((exercise: Exercise) => {
+    dispatch({ type: "ADD_EXERCISE", exercise });
+  }, []);
 
   const handleFinish = async () => {
     if (workoutExercises.length === 0) return;
@@ -361,9 +346,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
   const totalVolume = workoutExercises.reduce(
     (acc, we) =>
       acc +
-      we.sets
-        .filter((s) => s.completed)
-        .reduce((a, s) => a + (s.weight ?? 0) * (s.reps ?? 0), 0),
+      we.sets.filter((s) => s.completed).reduce((a, s) => a + (s.weight ?? 0) * (s.reps ?? 0), 0),
     0
   );
 
@@ -373,7 +356,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Тренування</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {totalSets} підходів · {Math.round(totalVolume)} кг об&apos;єм
           </p>
         </div>
@@ -409,10 +392,8 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
 
       {/* Завершити тренування */}
       {workoutExercises.length > 0 && (
-        <div
-          className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4"
-        >
-          <div className="mx-auto max-w-lg rounded-2xl border border-border/80 bg-background/95 p-3 shadow-lg backdrop-blur supports-backdrop-filter:bg-background/80">
+        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4">
+          <div className="border-border/80 bg-background/95 supports-backdrop-filter:bg-background/80 mx-auto max-w-lg rounded-2xl border p-3 shadow-lg backdrop-blur">
             <Button
               className="w-full gap-2"
               size="lg"

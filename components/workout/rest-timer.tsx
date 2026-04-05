@@ -2,12 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pause, Play, RotateCcw, X } from "lucide-react";
 
 interface RestTimerProps {
@@ -18,11 +13,7 @@ interface RestTimerProps {
 
 const PRESETS = [60, 90, 120, 180];
 
-export function RestTimer({
-  open,
-  onOpenChange,
-  defaultSeconds = 90,
-}: RestTimerProps) {
+export function RestTimer({ open, onOpenChange, defaultSeconds = 90 }: RestTimerProps) {
   const [seconds, setSeconds] = useState(defaultSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const [initialSeconds, setInitialSeconds] = useState(defaultSeconds);
@@ -107,20 +98,13 @@ export function RestTimer({
                 className="text-primary transition-all duration-1000"
               />
             </svg>
-            <span className="text-4xl font-bold tabular-nums">
-              {formatTime(seconds)}
-            </span>
+            <span className="text-4xl font-bold tabular-nums">{formatTime(seconds)}</span>
           </div>
 
           {/* Пресети */}
           <div className="flex gap-2">
             {PRESETS.map((preset) => (
-              <Button
-                key={preset}
-                variant="outline"
-                size="sm"
-                onClick={() => handlePreset(preset)}
-              >
+              <Button key={preset} variant="outline" size="sm" onClick={() => handlePreset(preset)}>
                 {formatTime(preset)}
               </Button>
             ))}
@@ -131,22 +115,10 @@ export function RestTimer({
             <Button variant="outline" size="icon" onClick={handleReset}>
               <RotateCcw className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsRunning(!isRunning)}
-            >
-              {isRunning ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
+            <Button variant="outline" size="icon" onClick={() => setIsRunning(!isRunning)}>
+              {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant="outline" size="icon" onClick={() => onOpenChange(false)}>
               <X className="h-4 w-4" />
             </Button>
           </div>

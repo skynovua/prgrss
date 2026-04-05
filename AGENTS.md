@@ -7,20 +7,20 @@
 
 ## Стек
 
-| Шар | Технологія |
-|-----|-----------|
-| Frontend | Next.js (App Router) + React |
-| UI Components | shadcn/ui (Radix UI + Tailwind) |
-| Styling | Tailwind CSS |
-| Language | TypeScript (strict mode) |
-| Backend | Supabase (Auth, PostgreSQL, Edge Functions, Realtime, Storage) |
-| PWA | next-pwa + Service Worker |
-| Charts | Recharts |
-| Offline storage | Dexie.js (IndexedDB wrapper) |
-| Push | Web Push API (VAPID) через Supabase Edge Functions |
-| Deployment | Vercel (Next.js), Supabase Edge Functions |
-| Linting | ESLint + Prettier (автоформатування) |
-| Language | Українська (інтерфейс та коментарі) |
+| Шар             | Технологія                                                     |
+| --------------- | -------------------------------------------------------------- |
+| Frontend        | Next.js (App Router) + React                                   |
+| UI Components   | shadcn/ui (Radix UI + Tailwind)                                |
+| Styling         | Tailwind CSS                                                   |
+| Language        | TypeScript (strict mode)                                       |
+| Backend         | Supabase (Auth, PostgreSQL, Edge Functions, Realtime, Storage) |
+| PWA             | next-pwa + Service Worker                                      |
+| Charts          | Recharts                                                       |
+| Offline storage | Dexie.js (IndexedDB wrapper)                                   |
+| Push            | Web Push API (VAPID) через Supabase Edge Functions             |
+| Deployment      | Vercel (Next.js), Supabase Edge Functions                      |
+| Linting         | ESLint + Prettier (автоформатування)                           |
+| Language        | Українська (інтерфейс та коментарі)                            |
 
 ---
 
@@ -35,7 +35,7 @@
 
 ```ts
 // Приклад виклику
-const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
 ```
 
 ---
@@ -81,6 +81,7 @@ const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
 Row Level Security (RLS) увімкнений на всіх таблицях. Кожен користувач бачить тільки свої дані (`auth.uid() = user_id`).
 
 ### `users`
+
 Розширює `auth.users`. Зберігається через тригер при реєстрації.
 
 ```sql
@@ -91,6 +92,7 @@ created_at  timestamptz DEFAULT now()
 ```
 
 ### `programs`
+
 Шаблон тренувального циклу (наприклад, "12-week Upper/Lower").
 
 ```sql
@@ -103,6 +105,7 @@ created_at  timestamptz DEFAULT now()
 ```
 
 ### `workouts`
+
 Одне тренування (сесія).
 
 ```sql
@@ -117,6 +120,7 @@ created_at  timestamptz DEFAULT now()
 ```
 
 ### `exercises`
+
 Глобальна бібліотека вправ (і користувацькі).
 
 ```sql
@@ -129,6 +133,7 @@ is_custom    boolean DEFAULT false
 ```
 
 ### `sets`
+
 Кожен підхід у тренуванні. Це найважливіша таблиця для аналітики.
 
 ```sql
@@ -145,6 +150,7 @@ created_at  timestamptz DEFAULT now()
 ```
 
 ### `body_measurements`
+
 Антропометрія (вага тіла, обхвати).
 
 ```sql
@@ -161,6 +167,7 @@ legs        numeric(5,1)
 ```
 
 ### `push_subscriptions`
+
 Web Push підписки для нагадувань.
 
 ```sql
@@ -173,6 +180,7 @@ created_at  timestamptz DEFAULT now()
 ```
 
 ### `reminders`
+
 Налаштування нагадувань користувача.
 
 ```sql
@@ -197,11 +205,11 @@ message     text
 
 ```ts
 // lib/offline/schema.ts — Dexie схема
-const db = new Dexie('WorkoutDB')
+const db = new Dexie("WorkoutDB");
 db.version(1).stores({
-  pendingWorkouts: '++id, syncedAt',
-  pendingSets: '++id, workoutId, syncedAt',
-})
+  pendingWorkouts: "++id, syncedAt",
+  pendingSets: "++id, workoutId, syncedAt",
+});
 ```
 
 ---
@@ -227,10 +235,11 @@ VAPID ключі зберігаються в Supabase Secrets (`VAPID_PUBLIC_KEY
 
 ```ts
 export const calc1RM = (weight: number, reps: number) =>
-  reps === 1 ? weight : weight * (1 + reps / 30)
+  reps === 1 ? weight : weight * (1 + reps / 30);
 ```
 
 Для кожного тренування показувати:
+
 - Порівняння з попереднім (`weight_diff`, `volume_diff`)
 - Best set за сесію
 - Графік 1RM по часу
@@ -240,25 +249,30 @@ export const calc1RM = (weight: number, reps: number) =>
 ## Правила розробки
 
 **Компоненти**
+
 - Використовувати Server Components де можливо (сторінки, layout)
 - Client Components (`'use client'`) тільки для інтерактивних елементів (логер, таймер, форми)
 - Всі Supabase запити на сервері через `createServerClient` з `@supabase/ssr`
 
 **Типи**
+
 - Генерувати типи БД командою: `supabase gen types typescript --local > lib/db/types.ts`
 - Не писати типи вручну — тільки з генератора
 
 **Стилі**
+
 - Тільки Tailwind utility classes, без кастомного CSS
 - Темна тема підтримується через `dark:` префікс
 - Мобайл-фьорст: спочатку мобільний layout, потім `md:` / `lg:`
 
 **Запити до БД**
+
 - Всі запити через Supabase JS client (`@supabase/supabase-js`)
 - Складні аналітичні запити виносити в SQL Views або RPC функції
 - Не робити N+1 — використовувати join через Supabase `.select('*, sets(*)')`
 
 **PWA**
+
 - `manifest.json` з усіма необхідними іконками
 - Service Worker через `next-pwa` (автоматична генерація)
 - Offline fallback сторінка `/offline`
@@ -282,6 +296,7 @@ VAPID_PRIVATE_KEY=
 ## Roadmap
 
 ### MVP (Phase 1)
+
 - [ ] Auth (Google + Apple)
 - [ ] Workout logger (offline-first)
 - [ ] Exercise library
@@ -289,12 +304,14 @@ VAPID_PRIVATE_KEY=
 - [ ] Push-нагадування
 
 ### Phase 2
+
 - [ ] Шаблони програм
 - [ ] Графіки прогресії та 1RM
 - [ ] Антропометрія (вага, обхвати)
 - [ ] Таймер відпочинку між підходами
 
 ### Phase 3
+
 - [ ] Фото прогресу (Supabase Storage)
 - [ ] Експорт (CSV, PDF)
 - [ ] Apple Health / Google Fit sync

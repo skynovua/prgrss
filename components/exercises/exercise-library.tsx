@@ -50,13 +50,9 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
   const filtered = useMemo(() => {
     return exercises.filter((ex) => {
-      const matchesSearch = ex.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-      const matchesGroup =
-        activeGroup === "all" || ex.muscle_group === activeGroup;
-      const matchesEquipment =
-        activeEquipment === "all" || ex.equipment === activeEquipment;
+      const matchesSearch = ex.name.toLowerCase().includes(search.toLowerCase());
+      const matchesGroup = activeGroup === "all" || ex.muscle_group === activeGroup;
+      const matchesEquipment = activeEquipment === "all" || ex.equipment === activeEquipment;
       return matchesSearch && matchesGroup && matchesEquipment;
     });
   }, [exercises, search, activeGroup, activeEquipment]);
@@ -128,7 +124,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
       {/* Пошук */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
           placeholder="Пошук вправ..."
           value={search}
@@ -141,7 +137,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <Badge
           variant={activeGroup === "all" ? "default" : "outline"}
-          className="cursor-pointer shrink-0"
+          className="shrink-0 cursor-pointer"
           onClick={() => setActiveGroup("all")}
         >
           Всі
@@ -150,7 +146,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
           <Badge
             key={group}
             variant={activeGroup === group ? "default" : "outline"}
-            className="cursor-pointer shrink-0"
+            className="shrink-0 cursor-pointer"
             onClick={() => setActiveGroup(group)}
           >
             {MUSCLE_GROUP_LABELS[group]}
@@ -162,7 +158,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <Badge
           variant={activeEquipment === "all" ? "default" : "secondary"}
-          className="cursor-pointer shrink-0"
+          className="shrink-0 cursor-pointer"
           onClick={() => setActiveEquipment("all")}
         >
           Все обладнання
@@ -171,7 +167,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
           <Badge
             key={eq}
             variant={activeEquipment === eq ? "default" : "secondary"}
-            className="cursor-pointer shrink-0"
+            className="shrink-0 cursor-pointer"
             onClick={() => setActiveEquipment(eq)}
           >
             {EQUIPMENT_LABELS[eq]}
@@ -180,33 +176,29 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       </div>
 
       {/* Кількість результатів */}
-      <p className="text-sm text-muted-foreground">
-        {filtered.length} вправ
-      </p>
+      <p className="text-muted-foreground text-sm">{filtered.length} вправ</p>
 
       {/* Список вправ по групах */}
       {Array.from(grouped.entries()).map(([group, exs]) => (
         <div key={group} className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
             {MUSCLE_GROUP_LABELS[group as MuscleGroup] ?? group}
           </h2>
           {exs.map((exercise) => (
             <Card key={exercise.id}>
               <CardContent className="flex items-center gap-3 p-3">
                 <div className="flex-1">
-                  <p className="font-medium text-sm">{exercise.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium">{exercise.name}</p>
+                  <p className="text-muted-foreground text-xs">
                     {exercise.equipment && EQUIPMENT_LABELS[exercise.equipment]}
-                    {exercise.is_custom && (
-                      <span className="ml-2 text-primary">• Кастомна</span>
-                    )}
+                    {exercise.is_custom && <span className="text-primary ml-2">• Кастомна</span>}
                   </p>
                 </div>
                 {exercise.is_custom && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive h-8 w-8 shrink-0"
                     onClick={() => setDeleteTarget(exercise)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -229,9 +221,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Нова вправа</DialogTitle>
-            <DialogDescription>
-              Додайте кастомну вправу до бібліотеки.
-            </DialogDescription>
+            <DialogDescription>Додайте кастомну вправу до бібліотеки.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 pt-2">
             <div className="flex flex-col gap-2">
@@ -289,11 +279,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setDeleteTarget(null)}
-            >
+            <Button variant="outline" className="flex-1" onClick={() => setDeleteTarget(null)}>
               Скасувати
             </Button>
             <Button

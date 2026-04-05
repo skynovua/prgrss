@@ -75,14 +75,12 @@ export default function LoginPage() {
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
         {/* Лого */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+          <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-2xl">
             <span className="text-2xl font-black">P</span>
           </div>
           <div className="flex flex-col items-center gap-1">
             <h1 className="text-3xl font-bold tracking-tight">PRGRSS</h1>
-            <p className="text-sm text-muted-foreground">
-              Відстежуй тренування. Бач прогрес.
-            </p>
+            <p className="text-muted-foreground text-sm">Відстежуй тренування. Бач прогрес.</p>
           </div>
         </div>
 
@@ -119,13 +117,11 @@ export default function LoginPage() {
               Увійти з Apple
             </Button>
 
-            {error && (
-              <p className="text-center text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-destructive text-center text-sm">{error}</p>}
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-center text-xs">
           Входячи, ви погоджуєтесь з умовами використання
         </p>
       </div>

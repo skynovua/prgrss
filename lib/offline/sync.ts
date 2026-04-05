@@ -11,9 +11,7 @@ export async function syncPendingWorkouts() {
   if (!user) return;
 
   // Синхронізуємо тренування
-  const pendingWorkouts = await db.pendingWorkouts
-    .filter((w) => !w.syncedAt)
-    .toArray();
+  const pendingWorkouts = await db.pendingWorkouts.filter((w) => !w.syncedAt).toArray();
 
   for (const workout of pendingWorkouts) {
     const { error } = await supabase.from("workouts").insert({
@@ -45,17 +43,13 @@ export async function syncPendingWorkouts() {
       }));
 
       if (setsToInsert.length > 0) {
-        const { error: setsError } = await supabase
-          .from("sets")
-          .insert(setsToInsert);
+        const { error: setsError } = await supabase.from("sets").insert(setsToInsert);
 
         if (!setsError) {
           // Позначаємо сети як синхронізовані
           const now = new Date().toISOString();
           await Promise.all(
-            pendingSets.map((s) =>
-              db.pendingSets.update(s.id!, { syncedAt: now })
-            )
+            pendingSets.map((s) => db.pendingSets.update(s.id!, { syncedAt: now }))
           );
         }
       }

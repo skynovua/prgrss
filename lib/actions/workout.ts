@@ -16,10 +16,7 @@ export async function deleteWorkout(workoutId: string) {
   redirect("/dashboard");
 }
 
-export async function deleteSetFromWorkout(
-  setId: string,
-  workoutId: string
-) {
+export async function deleteSetFromWorkout(setId: string, workoutId: string) {
   await withAuth(async (_userId, supabase) => {
     await supabase.from("sets").delete().eq("id", setId);
   });
