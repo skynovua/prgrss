@@ -31,6 +31,7 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 className="flex -translate-y-1 flex-col items-center gap-0.5"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20">
@@ -44,6 +45,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               className={`flex min-w-0 flex-col items-center gap-0.5 px-3 py-2 transition-colors ${
                 isActive
                   ? "text-primary"

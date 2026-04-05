@@ -21,14 +21,13 @@ import { createClient } from "@/lib/supabase/client";
 
 interface WorkoutLoggerProps {
   exercises: Exercise[];
-  userId: string;
 }
 
 function generateId() {
   return crypto.randomUUID();
 }
 
-export function WorkoutLogger({ exercises, userId }: WorkoutLoggerProps) {
+export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
   const router = useRouter();
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>(
     []
@@ -132,10 +131,20 @@ export function WorkoutLogger({ exercises, userId }: WorkoutLoggerProps) {
     const finishedAt = new Date().toISOString();
     const workoutId = generateId();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setSaving(false);
+      router.push("/login");
+      return;
+    }
+
     // Спробуємо зберегти в Supabase
     const { error: workoutError } = await supabase.from("workouts").insert({
       id: workoutId,
-      user_id: userId,
+      user_id: user.id,
       started_at: startedAt,
       finished_at: finishedAt,
       name: workoutExercises

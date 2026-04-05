@@ -31,10 +31,9 @@ import { createExercise, deleteExercise } from "@/lib/actions/exercise";
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
-  userId: string;
 }
 
-export function ExerciseLibrary({ exercises, userId }: ExerciseLibraryProps) {
+export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
@@ -192,7 +191,7 @@ export function ExerciseLibrary({ exercises, userId }: ExerciseLibraryProps) {
                     )}
                   </p>
                 </div>
-                {exercise.is_custom && exercise.user_id === userId && (
+                {exercise.is_custom && (
                   <Button
                     variant="ghost"
                     size="icon"
