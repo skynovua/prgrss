@@ -14,28 +14,23 @@ export default async function DashboardPage() {
   // Останні тренування
   const { data: recentWorkouts } = await supabase
     .from("workouts")
-    .select("*, sets(*)")
+    .select("*, sets(id, weight, reps)")
     .order("started_at", { ascending: false })
     .limit(5);
 
-  // Статистика за тиждень
+  // Статистика за тиждень — один запит з join
   const weekAgo = new Date(
     Date.now() - 7 * 24 * 60 * 60 * 1000
   ).toISOString();
   const { data: weekWorkouts } = await supabase
     .from("workouts")
-    .select("id")
+    .select("id, sets(weight, reps)")
     .gte("started_at", weekAgo);
 
-  const { data: weekSets } = await supabase
-    .from("sets")
-    .select("weight, reps, workout_id")
-    .in(
-      "workout_id",
-      (weekWorkouts ?? []).map((w) => w.id)
-    );
-
-  const weekVolume = (weekSets ?? []).reduce(
+  const weekSets = (weekWorkouts ?? []).flatMap((w) =>
+    Array.isArray(w.sets) ? w.sets : []
+  );
+  const weekVolume = weekSets.reduce(
     (acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0),
     0
   );
@@ -71,7 +66,7 @@ export default async function DashboardPage() {
           <CardContent className="flex flex-col items-center p-4">
             <Dumbbell className="mb-1 h-5 w-5 text-muted-foreground" />
             <span className="text-2xl font-bold">
-              {weekSets?.length ?? 0}
+              {weekSets.length}
             </span>
             <span className="text-xs text-muted-foreground">підходів</span>
           </CardContent>
@@ -112,7 +107,7 @@ export default async function DashboardPage() {
                           })}
                       </span>
                       <span>
-                        {(workout.sets as unknown[])?.length ?? 0} підходів
+                        {Array.isArray(workout.sets) ? workout.sets.length : 0} підходів
                       </span>
                     </div>
                   </CardContent>

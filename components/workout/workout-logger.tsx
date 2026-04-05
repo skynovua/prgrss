@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useReducer, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,115 +18,250 @@ import {
 } from "@/lib/types";
 import { db } from "@/lib/offline/db";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
-interface WorkoutLoggerProps {
-  exercises: Exercise[];
+// --- Reducer ---
+
+interface WorkoutState {
+  exercises: WorkoutExercise[];
+  startedAt: string;
+  timerOpen: boolean;
+  saving: boolean;
 }
+
+type WorkoutAction =
+  | { type: "ADD_EXERCISE"; exercise: Exercise }
+  | { type: "REMOVE_EXERCISE"; index: number }
+  | { type: "ADD_SET"; exerciseIndex: number }
+  | { type: "UPDATE_SET"; exerciseIndex: number; set: LocalSet }
+  | { type: "COMPLETE_SET"; exerciseIndex: number; set: LocalSet }
+  | { type: "DELETE_SET"; exerciseIndex: number; setId: string }
+  | { type: "SET_TIMER_OPEN"; open: boolean }
+  | { type: "SET_SAVING"; saving: boolean };
 
 function generateId() {
   return crypto.randomUUID();
 }
 
-export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
-  const router = useRouter();
-  const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>(
-    []
-  );
-  const [startedAt] = useState(() => new Date().toISOString());
-  const [timerOpen, setTimerOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const handleAddExercise = useCallback((exercise: Exercise) => {
-    setWorkoutExercises((prev) => [
-      ...prev,
-      {
-        exercise,
-        sets: [
+function workoutReducer(state: WorkoutState, action: WorkoutAction): WorkoutState {
+  switch (action.type) {
+    case "ADD_EXERCISE":
+      return {
+        ...state,
+        exercises: [
+          ...state.exercises,
           {
-            id: generateId(),
-            setNumber: 1,
-            weight: null,
-            reps: null,
-            rpe: null,
-            durationS: null,
-            completed: false,
+            exercise: action.exercise,
+            sets: [
+              {
+                id: generateId(),
+                setNumber: 1,
+                weight: null,
+                reps: null,
+                rpe: null,
+                durationS: null,
+                completed: false,
+              },
+            ],
           },
         ],
-      },
-    ]);
-  }, []);
+      };
 
-  const handleAddSet = useCallback((exerciseIndex: number) => {
-    setWorkoutExercises((prev) => {
-      const updated = [...prev];
-      const ex = { ...updated[exerciseIndex] };
-      ex.sets = [
-        ...ex.sets,
-        {
-          id: generateId(),
-          setNumber: ex.sets.length + 1,
-          weight: ex.sets.length > 0 ? ex.sets[ex.sets.length - 1].weight : null,
-          reps: ex.sets.length > 0 ? ex.sets[ex.sets.length - 1].reps : null,
-          rpe: null,
-          durationS: null,
-          completed: false,
-        },
-      ];
-      updated[exerciseIndex] = ex;
-      return updated;
-    });
-  }, []);
+    case "REMOVE_EXERCISE":
+      return {
+        ...state,
+        exercises: state.exercises.filter((_, i) => i !== action.index),
+      };
 
-  const handleUpdateSet = useCallback(
-    (exerciseIndex: number, updatedSet: LocalSet) => {
-      setWorkoutExercises((prev) => {
-        const updated = [...prev];
-        const ex = { ...updated[exerciseIndex] };
-        ex.sets = ex.sets.map((s) => (s.id === updatedSet.id ? updatedSet : s));
-        updated[exerciseIndex] = ex;
-        return updated;
-      });
+    case "ADD_SET": {
+      return {
+        ...state,
+        exercises: state.exercises.map((we, i) => {
+          if (i !== action.exerciseIndex) return we;
+          const lastSet = we.sets[we.sets.length - 1];
+          return {
+            ...we,
+            sets: [
+              ...we.sets,
+              {
+                id: generateId(),
+                setNumber: we.sets.length + 1,
+                weight: lastSet?.weight ?? null,
+                reps: lastSet?.reps ?? null,
+                rpe: null,
+                durationS: null,
+                completed: false,
+              },
+            ],
+          };
+        }),
+      };
+    }
+
+    case "UPDATE_SET":
+      return {
+        ...state,
+        exercises: state.exercises.map((we, i) =>
+          i !== action.exerciseIndex
+            ? we
+            : {
+                ...we,
+                sets: we.sets.map((s) =>
+                  s.id === action.set.id ? action.set : s
+                ),
+              }
+        ),
+      };
+
+    case "COMPLETE_SET":
+      return {
+        ...state,
+        timerOpen: action.set.completed,
+        exercises: state.exercises.map((we, i) =>
+          i !== action.exerciseIndex
+            ? we
+            : {
+                ...we,
+                sets: we.sets.map((s) =>
+                  s.id === action.set.id ? action.set : s
+                ),
+              }
+        ),
+      };
+
+    case "DELETE_SET": {
+      return {
+        ...state,
+        exercises: state.exercises
+          .map((we, i) => {
+            if (i !== action.exerciseIndex) return we;
+            const filtered = we.sets
+              .filter((s) => s.id !== action.setId)
+              .map((s, idx) => ({ ...s, setNumber: idx + 1 }));
+            return filtered.length === 0 ? null : { ...we, sets: filtered };
+          })
+          .filter((we): we is WorkoutExercise => we !== null),
+      };
+    }
+
+    case "SET_TIMER_OPEN":
+      return { ...state, timerOpen: action.open };
+
+    case "SET_SAVING":
+      return { ...state, saving: action.saving };
+
+    default:
+      return state;
+  }
+}
+
+function createInitialState(): WorkoutState {
+  return {
+    exercises: [],
+    startedAt: new Date().toISOString(),
+    timerOpen: false,
+    saving: false,
+  };
+}
+
+// --- Memoized Exercise Card ---
+
+interface ExerciseCardProps {
+  we: WorkoutExercise;
+  exerciseIndex: number;
+  dispatch: React.ActionDispatch<[action: WorkoutAction]>;
+}
+
+const ExerciseCard = memo(function ExerciseCard({
+  we,
+  exerciseIndex,
+  dispatch,
+}: ExerciseCardProps) {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-base">{we.exercise.name}</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              {we.exercise.muscle_group &&
+                MUSCLE_GROUP_LABELS[we.exercise.muscle_group as MuscleGroup]}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground"
+            onClick={() =>
+              dispatch({ type: "REMOVE_EXERCISE", index: exerciseIndex })
+            }
+          >
+            Видалити
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1">
+        <div className="flex items-center gap-2 px-2 pb-1 text-xs font-medium text-muted-foreground">
+          <span className="w-8 text-center">#</span>
+          <span className="w-20 text-center">Вага</span>
+          <span className="w-16 text-center">Повт</span>
+          <span className="w-16 text-center">RPE</span>
+          <span className="w-10" />
+          <span className="w-10" />
+        </div>
+
+        {we.sets.map((set) => (
+          <SetRow
+            key={set.id}
+            set={set}
+            onUpdate={(s) =>
+              dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })
+            }
+            onComplete={(s) =>
+              dispatch({ type: "COMPLETE_SET", exerciseIndex, set: s })
+            }
+            onDelete={(id) =>
+              dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })
+            }
+          />
+        ))}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1 gap-1"
+          onClick={() => dispatch({ type: "ADD_SET", exerciseIndex })}
+        >
+          <Plus className="h-3 w-3" />
+          Додати підхід
+        </Button>
+      </CardContent>
+    </Card>
+  );
+});
+
+// --- Main Component ---
+
+interface WorkoutLoggerProps {
+  exercises: Exercise[];
+}
+
+export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
+  const router = useRouter();
+  const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
+  const { exercises: workoutExercises, startedAt, timerOpen, saving } = state;
+
+  const handleAddExercise = useCallback(
+    (exercise: Exercise) => {
+      dispatch({ type: "ADD_EXERCISE", exercise });
     },
     []
   );
-
-  const handleCompleteSet = useCallback(
-    (exerciseIndex: number, updatedSet: LocalSet) => {
-      handleUpdateSet(exerciseIndex, updatedSet);
-      if (updatedSet.completed) {
-        setTimerOpen(true);
-      }
-    },
-    [handleUpdateSet]
-  );
-
-  const handleDeleteSet = useCallback(
-    (exerciseIndex: number, setId: string) => {
-      setWorkoutExercises((prev) => {
-        const updated = [...prev];
-        const ex = { ...updated[exerciseIndex] };
-        ex.sets = ex.sets
-          .filter((s) => s.id !== setId)
-          .map((s, i) => ({ ...s, setNumber: i + 1 }));
-        // Якщо не залишилось сетів — видаляємо вправу
-        if (ex.sets.length === 0) {
-          return updated.filter((_, i) => i !== exerciseIndex);
-        }
-        updated[exerciseIndex] = ex;
-        return updated;
-      });
-    },
-    []
-  );
-
-  const handleRemoveExercise = useCallback((exerciseIndex: number) => {
-    setWorkoutExercises((prev) => prev.filter((_, i) => i !== exerciseIndex));
-  }, []);
 
   const handleFinish = async () => {
     if (workoutExercises.length === 0) return;
 
-    setSaving(true);
+    dispatch({ type: "SET_SAVING", saving: true });
     const supabase = createClient();
     const finishedAt = new Date().toISOString();
     const workoutId = generateId();
@@ -136,7 +271,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setSaving(false);
+      dispatch({ type: "SET_SAVING", saving: false });
       router.push("/login");
       return;
     }
@@ -155,34 +290,43 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
 
     if (workoutError) {
       // Offline — зберігаємо в Dexie
-      await db.pendingWorkouts.add({
-        uuid: workoutId,
-        name: workoutExercises
-          .map((we) => we.exercise.name)
-          .slice(0, 3)
-          .join(", "),
-        startedAt,
-        finishedAt,
-        notes: null,
-        programId: null,
-        syncedAt: null,
-      });
+      try {
+        await db.pendingWorkouts.add({
+          uuid: workoutId,
+          name: workoutExercises
+            .map((we) => we.exercise.name)
+            .slice(0, 3)
+            .join(", "),
+          startedAt,
+          finishedAt,
+          notes: null,
+          programId: null,
+          syncedAt: null,
+        });
 
-      for (const we of workoutExercises) {
-        for (const set of we.sets.filter((s) => s.completed)) {
-          await db.pendingSets.add({
-            uuid: generateId(),
-            workoutUuid: workoutId,
-            exerciseId: we.exercise.id,
-            setNumber: set.setNumber,
-            reps: set.reps,
-            weight: set.weight,
-            rpe: set.rpe,
-            durationS: set.durationS,
-            notes: null,
-            syncedAt: null,
-          });
+        for (const we of workoutExercises) {
+          for (const set of we.sets.filter((s) => s.completed)) {
+            await db.pendingSets.add({
+              uuid: generateId(),
+              workoutUuid: workoutId,
+              exerciseId: we.exercise.id,
+              setNumber: set.setNumber,
+              reps: set.reps,
+              weight: set.weight,
+              rpe: set.rpe,
+              durationS: set.durationS,
+              notes: null,
+              syncedAt: null,
+            });
+          }
         }
+        toast.info("Збережено офлайн", {
+          description: "Синхронізується при появі інтернету",
+        });
+      } catch {
+        toast.error("Не вдалося зберегти тренування");
+        dispatch({ type: "SET_SAVING", saving: false });
+        return;
       }
     } else {
       // Online — зберігаємо сети
@@ -203,9 +347,10 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
       if (setsToInsert.length > 0) {
         await supabase.from("sets").insert(setsToInsert);
       }
+      toast.success("Тренування збережено");
     }
 
-    setSaving(false);
+    dispatch({ type: "SET_SAVING", saving: false });
     router.push("/dashboard");
   };
 
@@ -235,7 +380,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => setTimerOpen(true)}
+          onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}
         >
           <Timer className="h-5 w-5" />
         </Button>
@@ -245,67 +390,22 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
 
       {/* Вправи */}
       {workoutExercises.map((we, exerciseIndex) => (
-        <Card key={`${we.exercise.id}-${exerciseIndex}`}>
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-base">{we.exercise.name}</CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  {we.exercise.muscle_group &&
-                    MUSCLE_GROUP_LABELS[
-                      we.exercise.muscle_group as MuscleGroup
-                    ]}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-muted-foreground"
-                onClick={() => handleRemoveExercise(exerciseIndex)}
-              >
-                Видалити
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1">
-            {/* Заголовки колонок */}
-            <div className="flex items-center gap-2 px-2 pb-1 text-xs font-medium text-muted-foreground">
-              <span className="w-8 text-center">#</span>
-              <span className="w-20 text-center">Вага</span>
-              <span className="w-16 text-center">Повт</span>
-              <span className="w-16 text-center">RPE</span>
-              <span className="w-10" />
-              <span className="w-10" />
-            </div>
-
-            {we.sets.map((set) => (
-              <SetRow
-                key={set.id}
-                set={set}
-                onUpdate={(s) => handleUpdateSet(exerciseIndex, s)}
-                onComplete={(s) => handleCompleteSet(exerciseIndex, s)}
-                onDelete={(id) => handleDeleteSet(exerciseIndex, id)}
-              />
-            ))}
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-1 gap-1"
-              onClick={() => handleAddSet(exerciseIndex)}
-            >
-              <Plus className="h-3 w-3" />
-              Додати підхід
-            </Button>
-          </CardContent>
-        </Card>
+        <ExerciseCard
+          key={`${we.exercise.id}-${exerciseIndex}`}
+          we={we}
+          exerciseIndex={exerciseIndex}
+          dispatch={dispatch}
+        />
       ))}
 
       {/* Додати вправу */}
       <ExercisePicker exercises={exercises} onSelect={handleAddExercise} />
 
       {/* Таймер відпочинку */}
-      <RestTimer open={timerOpen} onOpenChange={setTimerOpen} />
+      <RestTimer
+        open={timerOpen}
+        onOpenChange={(open) => dispatch({ type: "SET_TIMER_OPEN", open })}
+      />
 
       {/* Завершити тренування */}
       {workoutExercises.length > 0 && (

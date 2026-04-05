@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ArrowLeft,
   Trash2,
@@ -23,38 +17,16 @@ import Link from "next/link";
 import {
   MUSCLE_GROUP_LABELS,
   type MuscleGroup,
+  type SetData,
+  type ExerciseData,
+  type WorkoutWithSets,
 } from "@/lib/types";
 import { deleteWorkout, deleteSetFromWorkout } from "@/lib/actions/workout";
 import { calc1RM } from "@/lib/utils/calc";
-
-interface SetData {
-  id: string;
-  set_number: number;
-  weight: number | null;
-  reps: number | null;
-  rpe: number | null;
-  duration_s: number | null;
-  exercise_id: string;
-}
-
-interface ExerciseData {
-  id: string;
-  name: string;
-  muscle_group: string | null;
-  equipment: string | null;
-}
-
-interface WorkoutData {
-  id: string;
-  name: string | null;
-  started_at: string | null;
-  finished_at: string | null;
-  notes: string | null;
-  sets: SetData[];
-}
+import { toast } from "sonner";
 
 interface WorkoutDetailProps {
-  workout: WorkoutData;
+  workout: WorkoutWithSets;
   exercises: ExerciseData[];
 }
 
@@ -90,12 +62,25 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
 
   const handleDelete = async () => {
     setDeleting(true);
-    await deleteWorkout(workout.id);
+    try {
+      await deleteWorkout(workout.id);
+    } catch (err) {
+      toast.error("Не вдалося видалити тренування", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
+      setDeleting(false);
+    }
   };
 
   const handleDeleteSet = async (setId: string) => {
-    await deleteSetFromWorkout(setId, workout.id);
-    router.refresh();
+    try {
+      await deleteSetFromWorkout(setId, workout.id);
+      router.refresh();
+    } catch (err) {
+      toast.error("Не вдалося видалити підхід", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
+    }
   };
 
   return (
@@ -263,33 +248,16 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
       )}
 
       {/* Діалог видалення */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="max-w-xs">
-          <DialogHeader>
-            <DialogTitle>Видалити тренування?</DialogTitle>
-            <DialogDescription>
-              Це видалить тренування та всі підходи. Цю дію неможливо скасувати.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
-              Скасувати
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? "Видаляю..." : "Видалити"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Видалити тренування?"
+        description="Це видалить тренування та всі підходи. Цю дію неможливо скасувати."
+        confirmText="Видалити"
+        isDestructive
+        isLoading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

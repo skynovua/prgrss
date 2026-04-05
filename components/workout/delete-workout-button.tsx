@@ -2,15 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Trash2 } from "lucide-react";
 import { deleteWorkout } from "@/lib/actions/workout";
+import { toast } from "sonner";
 
 export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
   const [open, setOpen] = useState(false);
@@ -18,7 +13,14 @@ export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
 
   const handleDelete = async () => {
     setDeleting(true);
-    await deleteWorkout(workoutId);
+    try {
+      await deleteWorkout(workoutId);
+    } catch (err) {
+      toast.error("Не вдалося видалити тренування", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
+      setDeleting(false);
+    }
   };
 
   return (
@@ -36,34 +38,16 @@ export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
         <Trash2 className="h-4 w-4" />
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-xs">
-          <DialogHeader>
-            <DialogTitle>Видалити тренування?</DialogTitle>
-            <DialogDescription>
-              Це видалить тренування та всі підходи. Цю дію неможливо
-              скасувати.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setOpen(false)}
-            >
-              Скасувати
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? "Видаляю..." : "Видалити"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Видалити тренування?"
+        description="Це видалить тренування та всі підходи. Цю дію неможливо скасувати."
+        confirmText="Видалити"
+        isDestructive
+        isLoading={deleting}
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

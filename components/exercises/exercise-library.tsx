@@ -28,6 +28,7 @@ import {
   EQUIPMENT_LABELS,
 } from "@/lib/types";
 import { createExercise, deleteExercise } from "@/lib/actions/exercise";
+import { toast } from "sonner";
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
@@ -84,6 +85,11 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       setAddDialogOpen(false);
       setNewName("");
       router.refresh();
+      toast.success("Вправу додано");
+    } catch (err) {
+      toast.error("Не вдалося додати вправу", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
     } finally {
       setSaving(false);
     }
@@ -96,6 +102,11 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       await deleteExercise(deleteTarget.id);
       setDeleteTarget(null);
       router.refresh();
+      toast.success("Вправу видалено");
+    } catch (err) {
+      toast.error("Не вдалося видалити вправу", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
     } finally {
       setSaving(false);
     }
