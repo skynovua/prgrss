@@ -214,7 +214,7 @@ export function WorkoutLogger({ exercises, userId }: WorkoutLoggerProps) {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pb-24">
+    <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
       {/* Хедер */}
       <div className="flex items-center justify-between">
         <div>
@@ -301,10 +301,9 @@ export function WorkoutLogger({ exercises, userId }: WorkoutLoggerProps) {
       {/* Завершити тренування */}
       {workoutExercises.length > 0 && (
         <div
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 p-4 backdrop-blur supports-backdrop-filter:bg-background/80"
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
+          className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4"
         >
-          <div className="mx-auto max-w-lg">
+          <div className="mx-auto max-w-lg rounded-2xl border border-border/80 bg-background/95 p-3 shadow-lg backdrop-blur supports-backdrop-filter:bg-background/80">
             <Button
               className="w-full gap-2"
               size="lg"
