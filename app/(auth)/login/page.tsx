@@ -43,18 +43,29 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (provider: "google" | "apple") => {
-    setLoading(provider);
-    setError(null);
+    try {
+      setLoading(provider);
+      setError(null);
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      console.log("[Auth] provider:", provider, "redirectTo:", redirectTo);
 
-    if (error) {
-      setError("Не вдалось увійти. Спробуйте ще раз.");
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo,
+        },
+      });
+
+      console.log("[Auth] result:", { data, error });
+
+      if (error) {
+        setError(`Помилка: ${error.message}`);
+        setLoading(null);
+      }
+    } catch (err) {
+      console.error("[Auth] exception:", err);
+      setError(`Виняток: ${err instanceof Error ? err.message : String(err)}`);
       setLoading(null);
     }
   };
