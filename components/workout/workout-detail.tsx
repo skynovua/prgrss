@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useOptimistic, startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,18 +29,23 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const [optimisticSets, removeOptimisticSet] = useOptimistic(
+    workout.sets,
+    (state, setId: string) => state.filter((s) => s.id !== setId)
+  );
+
   // Групуємо сети по вправах
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
   const grouped = new Map<string, SetData[]>();
-  for (const set of workout.sets) {
+  for (const set of optimisticSets) {
     const existing = grouped.get(set.exercise_id) ?? [];
     existing.push(set);
     grouped.set(set.exercise_id, existing);
   }
 
   // Статистика
-  const totalSets = workout.sets.length;
-  const totalVolume = workout.sets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
+  const totalSets = optimisticSets.length;
+  const totalVolume = optimisticSets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
 
   const duration =
     workout.started_at && workout.finished_at
@@ -62,15 +67,17 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
     }
   };
 
-  const handleDeleteSet = async (setId: string) => {
-    try {
-      await deleteSetFromWorkout(setId, workout.id);
-      router.refresh();
-    } catch (err) {
-      toast.error("Не вдалося видалити підхід", {
-        description: err instanceof Error ? err.message : "Спробуйте ще раз",
-      });
-    }
+  const handleDeleteSet = (setId: string) => {
+    startTransition(async () => {
+      removeOptimisticSet(setId);
+      try {
+        await deleteSetFromWorkout(setId, workout.id);
+      } catch (err) {
+        toast.error("Не вдалося видалити підхід", {
+          description: err instanceof Error ? err.message : "Спробуйте ще раз",
+        });
+      }
+    });
   };
 
   return (

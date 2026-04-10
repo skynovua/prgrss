@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dumbbell, Plus, TrendingUp, Calendar } from "lucide-react";
 import Link from "next/link";
-import { DeleteWorkoutButton } from "@/components/workout/delete-workout-button";
+import { ActiveWorkoutBanner } from "@/components/workout/active-workout-banner";
+import { RecentWorkouts } from "@/components/workout/recent-workouts";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -34,6 +35,8 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold">Привіт, {user?.user_metadata?.name ?? "атлет"} 💪</h1>
         <p className="text-muted-foreground">Готовий до тренування?</p>
       </div>
+
+      <ActiveWorkoutBanner />
 
       <Link href="/workout/new">
         <Button size="lg" className="w-full gap-2">
@@ -73,35 +76,14 @@ export default async function DashboardPage() {
 
       {/* Останні тренування */}
       {recentWorkouts && recentWorkouts.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Останні тренування</h2>
-          {recentWorkouts.map((workout) => (
-            <div key={workout.id} className="relative flex items-center gap-1">
-              <Link href={`/workout/${workout.id}`} className="flex-1">
-                <Card className="hover:bg-accent/50 transition-colors">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {workout.name ?? "Тренування"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-muted-foreground flex gap-4 text-xs">
-                      <span>
-                        {workout.started_at &&
-                          new Date(workout.started_at).toLocaleDateString("uk-UA", {
-                            day: "numeric",
-                            month: "short",
-                          })}
-                      </span>
-                      <span>{Array.isArray(workout.sets) ? workout.sets.length : 0} підходів</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              <DeleteWorkoutButton workoutId={workout.id} />
-            </div>
-          ))}
-        </div>
+        <RecentWorkouts
+          workouts={recentWorkouts.map((w) => ({
+            id: w.id,
+            name: w.name,
+            started_at: w.started_at,
+            sets: Array.isArray(w.sets) ? w.sets : [],
+          }))}
+        />
       )}
     </div>
   );

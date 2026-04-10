@@ -1,10 +1,7 @@
 export default function AppLoading() {
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
-      <div className="text-muted-foreground flex items-center gap-3 text-sm">
-        <div className="border-muted-foreground/30 border-t-foreground h-4 w-4 animate-spin rounded-full border-2" />
-        Завантаження...
-      </div>
+    <div className="fixed inset-x-0 top-0 z-[100]">
+      <div className="bg-primary h-0.5 animate-pulse" />
     </div>
   );
 }

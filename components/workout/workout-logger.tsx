@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useCallback, memo } from "react";
+import { useReducer, useCallback, useEffect, useState, useRef, memo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +37,8 @@ type WorkoutAction =
   | { type: "COMPLETE_SET"; exerciseIndex: number; set: LocalSet }
   | { type: "DELETE_SET"; exerciseIndex: number; setId: string }
   | { type: "SET_TIMER_OPEN"; open: boolean }
-  | { type: "SET_SAVING"; saving: boolean };
+  | { type: "SET_SAVING"; saving: boolean }
+  | { type: "RESTORE"; exercises: WorkoutExercise[]; startedAt: string };
 
 function generateId() {
   return crypto.randomUUID();
@@ -146,6 +147,13 @@ function workoutReducer(state: WorkoutState, action: WorkoutAction): WorkoutStat
     case "SET_SAVING":
       return { ...state, saving: action.saving };
 
+    case "RESTORE":
+      return {
+        ...state,
+        exercises: action.exercises,
+        startedAt: action.startedAt,
+      };
+
     default:
       return state;
   }
@@ -228,6 +236,21 @@ const ExerciseCard = memo(function ExerciseCard({
   );
 });
 
+// --- Persistence helpers ---
+
+function saveActiveWorkout(state: WorkoutState) {
+  db.activeWorkout.put({
+    id: 1,
+    exercises: state.exercises,
+    startedAt: state.startedAt,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+async function clearActiveWorkout() {
+  await db.activeWorkout.delete(1);
+}
+
 // --- Main Component ---
 
 interface WorkoutLoggerProps {
@@ -237,7 +260,34 @@ interface WorkoutLoggerProps {
 export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
   const router = useRouter();
   const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
+  const [restored, setRestored] = useState(false);
+  const isFinishing = useRef(false);
   const { exercises: workoutExercises, startedAt, timerOpen, saving } = state;
+
+  // Відновлення з IndexedDB при маунті
+  useEffect(() => {
+    db.activeWorkout.get(1).then((active) => {
+      if (active && active.exercises.length > 0) {
+        dispatch({
+          type: "RESTORE",
+          exercises: active.exercises,
+          startedAt: active.startedAt,
+        });
+        toast.info("Відновлено незавершене тренування");
+      }
+      setRestored(true);
+    });
+  }, []);
+
+  // Автозбереження в IndexedDB при кожній зміні вправ
+  useEffect(() => {
+    if (!restored || isFinishing.current) return;
+    if (workoutExercises.length > 0) {
+      saveActiveWorkout(state);
+    } else {
+      clearActiveWorkout();
+    }
+  }, [workoutExercises, startedAt, restored, state]);
 
   const handleAddExercise = useCallback((exercise: Exercise) => {
     dispatch({ type: "ADD_EXERCISE", exercise });
@@ -247,6 +297,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
     if (workoutExercises.length === 0) return;
 
     dispatch({ type: "SET_SAVING", saving: true });
+    isFinishing.current = true;
     const supabase = createClient();
     const finishedAt = new Date().toISOString();
     const workoutId = generateId();
@@ -335,6 +386,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
       toast.success("Тренування збережено");
     }
 
+    await clearActiveWorkout();
     dispatch({ type: "SET_SAVING", saving: false });
     router.push("/dashboard");
   };
