@@ -4,12 +4,14 @@ import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dumbbell, X } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Dumbbell, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { db, type ActiveWorkout } from "@/lib/offline/db";
 
 export function ActiveWorkoutBanner() {
   const [active, setActive] = useState<ActiveWorkout | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const pathname = usePathname();
 
   const checkActiveWorkout = useCallback(() => {
@@ -38,32 +40,42 @@ export function ActiveWorkoutBanner() {
   const handleDiscard = async () => {
     await db.activeWorkout.delete(1);
     setActive(null);
+    setConfirmOpen(false);
   };
 
   return (
-    <Card className="border-primary/30 bg-primary/5">
-      <CardContent className="flex items-center gap-3 p-4">
-        <Dumbbell className="text-primary h-5 w-5 shrink-0" />
-        <div className="flex-1">
-          <p className="text-sm font-medium">Незавершене тренування</p>
-          <p className="text-muted-foreground text-xs">
-            {exerciseNames} · {totalSets} підходів
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <>
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="flex items-center gap-3 p-4">
+          <Link href="/workout/new" className="flex flex-1 items-center gap-3">
+            <Dumbbell className="text-primary h-5 w-5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">Незавершене тренування</p>
+              <p className="text-muted-foreground text-xs">
+                {exerciseNames} · {totalSets} підходів
+              </p>
+            </div>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground h-8 w-8"
-            onClick={handleDiscard}
+            className="text-muted-foreground hover:text-destructive h-8 w-8 shrink-0"
+            onClick={() => setConfirmOpen(true)}
           >
-            <X className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
-          <Link href="/workout/new">
-            <Button size="sm">Продовжити</Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Видалити тренування?"
+        description="Незавершене тренування буде втрачено. Цю дію не можна скасувати."
+        confirmText="Видалити"
+        isDestructive
+        onConfirm={handleDiscard}
+      />
+    </>
   );
 }

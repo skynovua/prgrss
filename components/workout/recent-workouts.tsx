@@ -61,9 +61,9 @@ function WorkoutRow({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative flex items-center gap-1">
-      <Link href={`/workout/${workout.id}`} className="flex-1">
-        <Card className="hover:bg-accent/50 transition-colors">
+    <Card className="hover:bg-accent/50 transition-colors">
+      <div className="flex items-center gap-1">
+        <Link href={`/workout/${workout.id}`} className="flex-1">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">{workout.name ?? "Тренування"}</CardTitle>
           </CardHeader>
@@ -79,20 +79,16 @@ function WorkoutRow({
               <span>{Array.isArray(workout.sets) ? workout.sets.length : 0} підходів</span>
             </div>
           </CardContent>
-        </Card>
-      </Link>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="text-muted-foreground hover:text-destructive h-8 w-8 shrink-0"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen(true);
-        }}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive mr-3 h-8 w-8 shrink-0"
+          onClick={() => setOpen(true)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
 
       <ConfirmDialog
         open={open}
@@ -103,6 +99,6 @@ function WorkoutRow({
         isDestructive
         onConfirm={() => onDelete(workout.id)}
       />
-    </div>
+    </Card>
   );
 }

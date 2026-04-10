@@ -1,7 +1,6 @@
 "use client";
 
-import { useReducer, useCallback, useEffect, useState, useRef, memo } from "react";
-import { useRouter } from "next/navigation";
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -12,161 +11,11 @@ import { Timer, Plus, Check } from "lucide-react";
 import {
   type Exercise,
   type WorkoutExercise,
-  type LocalSet,
   MUSCLE_GROUP_LABELS,
   type MuscleGroup,
 } from "@/lib/types";
-import { db } from "@/lib/offline/db";
-import { createClient } from "@/lib/supabase/client";
-import { toast } from "sonner";
-
-// --- Reducer ---
-
-interface WorkoutState {
-  exercises: WorkoutExercise[];
-  startedAt: string;
-  timerOpen: boolean;
-  saving: boolean;
-}
-
-type WorkoutAction =
-  | { type: "ADD_EXERCISE"; exercise: Exercise }
-  | { type: "REMOVE_EXERCISE"; index: number }
-  | { type: "ADD_SET"; exerciseIndex: number }
-  | { type: "UPDATE_SET"; exerciseIndex: number; set: LocalSet }
-  | { type: "COMPLETE_SET"; exerciseIndex: number; set: LocalSet }
-  | { type: "DELETE_SET"; exerciseIndex: number; setId: string }
-  | { type: "SET_TIMER_OPEN"; open: boolean }
-  | { type: "SET_SAVING"; saving: boolean }
-  | { type: "RESTORE"; exercises: WorkoutExercise[]; startedAt: string };
-
-function generateId() {
-  return crypto.randomUUID();
-}
-
-function workoutReducer(state: WorkoutState, action: WorkoutAction): WorkoutState {
-  switch (action.type) {
-    case "ADD_EXERCISE":
-      return {
-        ...state,
-        exercises: [
-          ...state.exercises,
-          {
-            exercise: action.exercise,
-            sets: [
-              {
-                id: generateId(),
-                setNumber: 1,
-                weight: null,
-                reps: null,
-                rpe: null,
-                durationS: null,
-                completed: false,
-              },
-            ],
-          },
-        ],
-      };
-
-    case "REMOVE_EXERCISE":
-      return {
-        ...state,
-        exercises: state.exercises.filter((_, i) => i !== action.index),
-      };
-
-    case "ADD_SET": {
-      return {
-        ...state,
-        exercises: state.exercises.map((we, i) => {
-          if (i !== action.exerciseIndex) return we;
-          const lastSet = we.sets[we.sets.length - 1];
-          return {
-            ...we,
-            sets: [
-              ...we.sets,
-              {
-                id: generateId(),
-                setNumber: we.sets.length + 1,
-                weight: lastSet?.weight ?? null,
-                reps: lastSet?.reps ?? null,
-                rpe: null,
-                durationS: null,
-                completed: false,
-              },
-            ],
-          };
-        }),
-      };
-    }
-
-    case "UPDATE_SET":
-      return {
-        ...state,
-        exercises: state.exercises.map((we, i) =>
-          i !== action.exerciseIndex
-            ? we
-            : {
-                ...we,
-                sets: we.sets.map((s) => (s.id === action.set.id ? action.set : s)),
-              }
-        ),
-      };
-
-    case "COMPLETE_SET":
-      return {
-        ...state,
-        timerOpen: action.set.completed,
-        exercises: state.exercises.map((we, i) =>
-          i !== action.exerciseIndex
-            ? we
-            : {
-                ...we,
-                sets: we.sets.map((s) => (s.id === action.set.id ? action.set : s)),
-              }
-        ),
-      };
-
-    case "DELETE_SET": {
-      return {
-        ...state,
-        exercises: state.exercises
-          .map((we, i) => {
-            if (i !== action.exerciseIndex) return we;
-            const filtered = we.sets
-              .filter((s) => s.id !== action.setId)
-              .map((s, idx) => ({ ...s, setNumber: idx + 1 }));
-            return filtered.length === 0 ? null : { ...we, sets: filtered };
-          })
-          .filter((we): we is WorkoutExercise => we !== null),
-      };
-    }
-
-    case "SET_TIMER_OPEN":
-      return { ...state, timerOpen: action.open };
-
-    case "SET_SAVING":
-      return { ...state, saving: action.saving };
-
-    case "RESTORE":
-      return {
-        ...state,
-        exercises: action.exercises,
-        startedAt: action.startedAt,
-      };
-
-    default:
-      return state;
-  }
-}
-
-function createInitialState(): WorkoutState {
-  return {
-    exercises: [],
-    startedAt: new Date().toISOString(),
-    timerOpen: false,
-    saving: false,
-  };
-}
+import type { WorkoutAction } from "@/lib/workout/reducer";
+import { useWorkout } from "@/lib/workout/use-workout";
 
 // --- Memoized Exercise Card ---
 
@@ -236,21 +85,6 @@ const ExerciseCard = memo(function ExerciseCard({
   );
 });
 
-// --- Persistence helpers ---
-
-function saveActiveWorkout(state: WorkoutState) {
-  db.activeWorkout.put({
-    id: 1,
-    exercises: state.exercises,
-    startedAt: state.startedAt,
-    updatedAt: new Date().toISOString(),
-  });
-}
-
-async function clearActiveWorkout() {
-  await db.activeWorkout.delete(1);
-}
-
 // --- Main Component ---
 
 interface WorkoutLoggerProps {
@@ -258,149 +92,16 @@ interface WorkoutLoggerProps {
 }
 
 export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
-  const router = useRouter();
-  const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
-  const [restored, setRestored] = useState(false);
-  const isFinishing = useRef(false);
-  const { exercises: workoutExercises, startedAt, timerOpen, saving } = state;
-
-  // Відновлення з IndexedDB при маунті
-  useEffect(() => {
-    db.activeWorkout.get(1).then((active) => {
-      if (active && active.exercises.length > 0) {
-        dispatch({
-          type: "RESTORE",
-          exercises: active.exercises,
-          startedAt: active.startedAt,
-        });
-        toast.info("Відновлено незавершене тренування");
-      }
-      setRestored(true);
-    });
-  }, []);
-
-  // Автозбереження в IndexedDB при кожній зміні вправ
-  useEffect(() => {
-    if (!restored || isFinishing.current) return;
-    if (workoutExercises.length > 0) {
-      saveActiveWorkout(state);
-    } else {
-      clearActiveWorkout();
-    }
-  }, [workoutExercises, startedAt, restored, state]);
-
-  const handleAddExercise = useCallback((exercise: Exercise) => {
-    dispatch({ type: "ADD_EXERCISE", exercise });
-  }, []);
-
-  const handleFinish = async () => {
-    if (workoutExercises.length === 0) return;
-
-    dispatch({ type: "SET_SAVING", saving: true });
-    isFinishing.current = true;
-    const supabase = createClient();
-    const finishedAt = new Date().toISOString();
-    const workoutId = generateId();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      dispatch({ type: "SET_SAVING", saving: false });
-      router.push("/login");
-      return;
-    }
-
-    // Спробуємо зберегти в Supabase
-    const { error: workoutError } = await supabase.from("workouts").insert({
-      id: workoutId,
-      user_id: user.id,
-      started_at: startedAt,
-      finished_at: finishedAt,
-      name: workoutExercises
-        .map((we) => we.exercise.name)
-        .slice(0, 3)
-        .join(", "),
-    });
-
-    if (workoutError) {
-      // Offline — зберігаємо в Dexie
-      try {
-        await db.pendingWorkouts.add({
-          uuid: workoutId,
-          name: workoutExercises
-            .map((we) => we.exercise.name)
-            .slice(0, 3)
-            .join(", "),
-          startedAt,
-          finishedAt,
-          notes: null,
-          programId: null,
-          syncedAt: null,
-        });
-
-        for (const we of workoutExercises) {
-          for (const set of we.sets.filter((s) => s.completed)) {
-            await db.pendingSets.add({
-              uuid: generateId(),
-              workoutUuid: workoutId,
-              exerciseId: we.exercise.id,
-              setNumber: set.setNumber,
-              reps: set.reps,
-              weight: set.weight,
-              rpe: set.rpe,
-              durationS: set.durationS,
-              notes: null,
-              syncedAt: null,
-            });
-          }
-        }
-        toast.info("Збережено офлайн", {
-          description: "Синхронізується при появі інтернету",
-        });
-      } catch {
-        toast.error("Не вдалося зберегти тренування");
-        dispatch({ type: "SET_SAVING", saving: false });
-        return;
-      }
-    } else {
-      // Online — зберігаємо сети
-      const setsToInsert = workoutExercises.flatMap((we) =>
-        we.sets
-          .filter((s) => s.completed)
-          .map((set) => ({
-            workout_id: workoutId,
-            exercise_id: we.exercise.id,
-            set_number: set.setNumber,
-            reps: set.reps,
-            weight: set.weight,
-            rpe: set.rpe,
-            duration_s: set.durationS,
-          }))
-      );
-
-      if (setsToInsert.length > 0) {
-        await supabase.from("sets").insert(setsToInsert);
-      }
-      toast.success("Тренування збережено");
-    }
-
-    await clearActiveWorkout();
-    dispatch({ type: "SET_SAVING", saving: false });
-    router.push("/dashboard");
-  };
-
-  const totalSets = workoutExercises.reduce(
-    (acc, we) => acc + we.sets.filter((s) => s.completed).length,
-    0
-  );
-  const totalVolume = workoutExercises.reduce(
-    (acc, we) =>
-      acc +
-      we.sets.filter((s) => s.completed).reduce((a, s) => a + (s.weight ?? 0) * (s.reps ?? 0), 0),
-    0
-  );
+  const {
+    dispatch,
+    workoutExercises,
+    timerOpen,
+    saving,
+    totalSets,
+    totalVolume,
+    addExercise,
+    handleFinish,
+  } = useWorkout();
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
@@ -434,7 +135,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
       ))}
 
       {/* Додати вправу */}
-      <ExercisePicker exercises={exercises} onSelect={handleAddExercise} />
+      <ExercisePicker exercises={exercises} onSelect={addExercise} />
 
       {/* Таймер відпочинку */}
       <RestTimer
