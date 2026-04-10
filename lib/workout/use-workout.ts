@@ -69,6 +69,7 @@ export function useWorkout() {
       }
 
       router.push(result.redirectTo);
+      router.refresh();
     } catch {
       toast.error("Не вдалося зберегти тренування");
     } finally {
