@@ -169,8 +169,10 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
                 <span className="w-8 text-center">#</span>
                 <span className="w-16 text-center">Вага</span>
                 <span className="w-12 text-center">Повт</span>
-                <span className="w-12 text-center">RPE</span>
-                <span className="flex-1 text-center">1RM</span>
+                <span className="w-12 text-center" title="Складність підходу від 6 до 10">
+                  Зусилля
+                </span>
+                <span className="flex-1 text-center">Оц. 1RM</span>
                 <span className="w-8" />
               </div>
 
@@ -214,7 +216,7 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
               {/* Best set підсвічення */}
               {bestSet.rm > 0 && (
                 <p className="text-muted-foreground mt-2 text-xs">
-                  Найкращий підхід: est. 1RM ≈ {Math.round(bestSet.rm)} кг
+                  Найкращий підхід: оц. 1RM ≈ {Math.round(bestSet.rm)} кг
                 </p>
               )}
             </CardContent>
