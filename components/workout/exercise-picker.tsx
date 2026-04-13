@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -49,8 +48,8 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
           <SheetTitle>Вибрати вправу</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col gap-3 pt-4">
-          <div className="relative">
+        <div className="flex flex-col gap-3">
+          <div className="relative mx-3">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Пошук вправ..."
@@ -60,28 +59,34 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            <Badge
-              variant={activeGroup === "all" ? "default" : "outline"}
-              className="shrink-0 cursor-pointer"
+          <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-3">
+            <button
               onClick={() => setActiveGroup("all")}
+              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                activeGroup === "all"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground active:bg-accent"
+              }`}
             >
               Всі
-            </Badge>
+            </button>
             {(Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[]).map((group) => (
-              <Badge
+              <button
                 key={group}
-                variant={activeGroup === group ? "default" : "outline"}
-                className="shrink-0 cursor-pointer"
                 onClick={() => setActiveGroup(group)}
+                className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                  activeGroup === group
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground active:bg-accent"
+                }`}
               >
                 {MUSCLE_GROUP_LABELS[group]}
-              </Badge>
+              </button>
             ))}
           </div>
 
           <ScrollArea className="h-[calc(85vh-200px)]">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 pb-6">
               {filtered.map((exercise) => (
                 <button
                   key={exercise.id}

@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -133,46 +132,50 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         />
       </div>
 
-      {/* Фільтри м'язових груп */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        <Badge
-          variant={activeGroup === "all" ? "default" : "outline"}
-          className="shrink-0 cursor-pointer"
-          onClick={() => setActiveGroup("all")}
-        >
-          Всі
-        </Badge>
-        {muscleGroups.map((group) => (
-          <Badge
-            key={group}
-            variant={activeGroup === group ? "default" : "outline"}
-            className="shrink-0 cursor-pointer"
-            onClick={() => setActiveGroup(group)}
+      {/* Фільтри */}
+      <div className="flex items-center gap-2">
+        <div className="scrollbar-none flex flex-1 gap-1.5 overflow-x-auto">
+          <button
+            onClick={() => setActiveGroup("all")}
+            className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+              activeGroup === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground active:bg-accent"
+            }`}
           >
-            {MUSCLE_GROUP_LABELS[group]}
-          </Badge>
-        ))}
-      </div>
-
-      {/* Фільтри обладнання */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        <Badge
-          variant={activeEquipment === "all" ? "default" : "secondary"}
-          className="shrink-0 cursor-pointer"
-          onClick={() => setActiveEquipment("all")}
-        >
-          Все обладнання
-        </Badge>
-        {equipmentKeys.map((eq) => (
-          <Badge
-            key={eq}
-            variant={activeEquipment === eq ? "default" : "secondary"}
-            className="shrink-0 cursor-pointer"
-            onClick={() => setActiveEquipment(eq)}
-          >
-            {EQUIPMENT_LABELS[eq]}
-          </Badge>
-        ))}
+            Всі
+          </button>
+          {muscleGroups.map((group) => (
+            <button
+              key={group}
+              onClick={() => setActiveGroup(group)}
+              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                activeGroup === group
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground active:bg-accent"
+              }`}
+            >
+              {MUSCLE_GROUP_LABELS[group]}
+            </button>
+          ))}
+        </div>
+        <Select value={activeEquipment} onValueChange={(v) => v && setActiveEquipment(v)}>
+          <SelectTrigger size="sm">
+            <SelectValue placeholder="Обладнання">
+              {activeEquipment === "all"
+                ? "Все обладнання"
+                : (EQUIPMENT_LABELS[activeEquipment] ?? activeEquipment)}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все обладнання</SelectItem>
+            {equipmentKeys.map((eq) => (
+              <SelectItem key={eq} value={eq}>
+                {EQUIPMENT_LABELS[eq]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Кількість результатів */}
