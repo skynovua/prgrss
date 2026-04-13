@@ -64,8 +64,7 @@ export function WorkoutCalendar({ workouts }: WorkoutCalendarProps) {
     for (const w of workouts) {
       const date = w.started_at.slice(0, 10);
       const existing = map.get(date) ?? [];
-      existing.push(w);
-      map.set(date, existing);
+      map.set(date, [...existing, w]);
     }
     return map;
   }, [workouts]);
