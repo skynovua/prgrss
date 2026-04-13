@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic, startTransition, useState } from "react";
+import { useOptimistic, useActionState, startTransition, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,14 +17,23 @@ interface RecentWorkout {
 }
 
 export function RecentWorkouts({ workouts }: { workouts: RecentWorkout[] }) {
+  const [, dispatchDelete] = useActionState(async (_prev: null, workoutId: string) => {
+    try {
+      await deleteWorkout(workoutId);
+    } catch (err) {
+      toast.error("Не вдалося видалити тренування", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
+    }
+    return null;
+  }, null);
+
   const [optimisticWorkouts, removeOptimistic] = useOptimistic(
     workouts,
     (state, workoutId: string) => state.filter((w) => w.id !== workoutId)
   );
 
   if (optimisticWorkouts.length === 0) return null;
-
-  console.log("optimisticWorkouts", optimisticWorkouts);
 
   return (
     <div className="flex flex-col gap-3">
@@ -34,15 +43,9 @@ export function RecentWorkouts({ workouts }: { workouts: RecentWorkout[] }) {
           key={workout.id}
           workout={workout}
           onDelete={(id) => {
-            startTransition(async () => {
+            startTransition(() => {
               removeOptimistic(id);
-              try {
-                await deleteWorkout(id);
-              } catch (err) {
-                toast.error("Не вдалося видалити тренування", {
-                  description: err instanceof Error ? err.message : "Спробуйте ще раз",
-                });
-              }
+              dispatchDelete(id);
             });
           }}
         />
