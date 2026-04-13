@@ -1,4 +1,4 @@
--- Створюємо Storage bucket для аватарок
+-- Створюємо Storage bucket для аватарок (або оновлюємо існуючий)
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'avatars',
@@ -6,7 +6,11 @@ values (
   true,
   2097152, -- 2MB
   array['image/jpeg', 'image/png', 'image/webp']
-);
+)
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
 -- RLS для Storage: користувач може завантажувати тільки у свою папку
 create policy "Користувач завантажує свій аватар"
