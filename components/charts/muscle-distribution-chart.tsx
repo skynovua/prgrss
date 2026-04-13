@@ -45,8 +45,8 @@ export function MuscleDistributionChart({ data }: Props) {
               innerRadius={50}
               outerRadius={90}
               paddingAngle={2}
-              label={({ name, value }: { name: string; value: number }) =>
-                `${name} ${Math.round((value / total) * 100)}%`
+              label={({ name, value }: { name?: string; value?: number }) =>
+                `${name ?? ""} ${Math.round(((value ?? 0) / total) * 100)}%`
               }
             >
               {data.map((_, i) => (
@@ -60,7 +60,7 @@ export function MuscleDistributionChart({ data }: Props) {
                 borderRadius: "8px",
                 fontSize: 12,
               }}
-              formatter={(value: number) => [`${value} підходів`, undefined]}
+              formatter={(value) => [`${value} підходів`, undefined]}
             />
             <Legend wrapperStyle={{ fontSize: 12 }} />
           </PieChart>

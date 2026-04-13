@@ -80,7 +80,7 @@ export function OneRMChart({ data }: Props) {
                 borderRadius: "8px",
                 fontSize: 12,
               }}
-              formatter={(value: number) => [`${value} кг`, undefined]}
+              formatter={(value) => [`${value} кг`, undefined]}
             />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             {data.map((exercise, i) => (

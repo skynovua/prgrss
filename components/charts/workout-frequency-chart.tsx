@@ -40,8 +40,8 @@ export function WorkoutFrequencyChart({ data }: Props) {
                 borderRadius: "8px",
                 fontSize: 12,
               }}
-              formatter={(value: number) => [`${value} тренувань`, undefined]}
-              labelFormatter={(label: string) => `Тиждень від ${label}`}
+              formatter={(value) => [`${value} тренувань`, undefined]}
+              labelFormatter={(label) => `Тиждень від ${label}`}
             />
             <Bar dataKey="count" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
           </BarChart>

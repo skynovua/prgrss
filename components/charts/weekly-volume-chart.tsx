@@ -40,8 +40,8 @@ export function WeeklyVolumeChart({ data }: Props) {
                 borderRadius: "8px",
                 fontSize: 12,
               }}
-              formatter={(value: number) => [`${value.toLocaleString("uk-UA")} кг`, "Об'єм"]}
-              labelFormatter={(label: string) => `Тиждень від ${label}`}
+              formatter={(value) => [`${Number(value).toLocaleString("uk-UA")} кг`, "Об'єм"]}
+              labelFormatter={(label) => `Тиждень від ${label}`}
             />
             <Bar dataKey="volume" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
           </BarChart>
