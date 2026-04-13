@@ -62,7 +62,7 @@ export function OneRMChart({ data }: Props) {
   return (
     <Card>
       <CardContent className="p-4">
-        <h3 className="mb-4 text-sm font-medium">Estimated 1RM (90 днів)</h3>
+        <h3 className="mb-4 text-sm font-medium">Оцінка 1RM (90 днів)</h3>
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

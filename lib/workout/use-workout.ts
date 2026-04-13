@@ -1,7 +1,7 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { Exercise } from "@/lib/types";
+import type { Exercise, PreviousSetsMap } from "@/lib/types";
 import { workoutReducer, createInitialState } from "./reducer";
 import {
   saveActiveWorkout,
@@ -10,7 +10,7 @@ import {
   finishWorkout,
 } from "./persistence";
 
-export function useWorkout() {
+export function useWorkout(previousSets?: PreviousSetsMap) {
   const router = useRouter();
   const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
   const [restored, setRestored] = useState(false);
@@ -42,9 +42,16 @@ export function useWorkout() {
     }
   }, [workoutExercises, startedAt, restored, state]);
 
-  const addExercise = useCallback((exercise: Exercise) => {
-    dispatch({ type: "ADD_EXERCISE", exercise });
-  }, []);
+  const addExercise = useCallback(
+    (exercise: Exercise) => {
+      dispatch({
+        type: "ADD_EXERCISE",
+        exercise,
+        previousSets: previousSets?.[exercise.id],
+      });
+    },
+    [previousSets]
+  );
 
   const handleFinish = async () => {
     if (workoutExercises.length === 0) return;

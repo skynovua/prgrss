@@ -1,4 +1,4 @@
-import type { Exercise, WorkoutExercise, LocalSet } from "@/lib/types";
+import type { Exercise, WorkoutExercise, LocalSet, PreviousSetData } from "@/lib/types";
 
 // --- State ---
 
@@ -12,7 +12,7 @@ export interface WorkoutState {
 // --- Actions ---
 
 export type WorkoutAction =
-  | { type: "ADD_EXERCISE"; exercise: Exercise }
+  | { type: "ADD_EXERCISE"; exercise: Exercise; previousSets?: PreviousSetData[] }
   | { type: "REMOVE_EXERCISE"; index: number }
   | { type: "ADD_SET"; exerciseIndex: number }
   | { type: "UPDATE_SET"; exerciseIndex: number; set: LocalSet }
@@ -30,14 +30,20 @@ function generateId() {
 
 export function workoutReducer(state: WorkoutState, action: WorkoutAction): WorkoutState {
   switch (action.type) {
-    case "ADD_EXERCISE":
-      return {
-        ...state,
-        exercises: [
-          ...state.exercises,
-          {
-            exercise: action.exercise,
-            sets: [
+    case "ADD_EXERCISE": {
+      const prev = action.previousSets;
+      const sets: LocalSet[] =
+        prev && prev.length > 0
+          ? prev.map((ps, i) => ({
+              id: generateId(),
+              setNumber: i + 1,
+              weight: ps.weight,
+              reps: ps.reps,
+              rpe: null,
+              durationS: null,
+              completed: false,
+            }))
+          : [
               {
                 id: generateId(),
                 setNumber: 1,
@@ -47,10 +53,19 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
                 durationS: null,
                 completed: false,
               },
-            ],
+            ];
+
+      return {
+        ...state,
+        exercises: [
+          ...state.exercises,
+          {
+            exercise: action.exercise,
+            sets,
           },
         ],
       };
+    }
 
     case "REMOVE_EXERCISE":
       return {

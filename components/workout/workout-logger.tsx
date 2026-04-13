@@ -11,6 +11,8 @@ import { Timer, Plus, Check } from "lucide-react";
 import {
   type Exercise,
   type WorkoutExercise,
+  type PreviousSetsMap,
+  type PreviousSetData,
   MUSCLE_GROUP_LABELS,
   type MuscleGroup,
 } from "@/lib/types";
@@ -23,12 +25,14 @@ import { getAutoRestTimer } from "@/components/workout/workout-settings";
 interface ExerciseCardProps {
   we: WorkoutExercise;
   exerciseIndex: number;
+  previousSets?: PreviousSetData[];
   dispatch: React.ActionDispatch<[action: WorkoutAction]>;
 }
 
 const ExerciseCard = memo(function ExerciseCard({
   we,
   exerciseIndex,
+  previousSets,
   dispatch,
 }: ExerciseCardProps) {
   return (
@@ -57,27 +61,34 @@ const ExerciseCard = memo(function ExerciseCard({
           <span className="w-8 text-center">#</span>
           <span className="w-20 text-center">Вага</span>
           <span className="w-16 text-center">Повт</span>
-          <span className="w-16 text-center">RPE</span>
-          <span className="w-10" />
-          <span className="w-10" />
+          <span className="w-16 text-center" title="Складність підходу від 6 до 10">
+            Зусилля
+          </span>
+          <span className="w-11" />
+          <span className="w-11" />
         </div>
 
-        {we.sets.map((set) => (
-          <SetRow
-            key={set.id}
-            set={set}
-            onUpdate={(s) => dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })}
-            onComplete={(s) =>
-              dispatch({
-                type: "COMPLETE_SET",
-                exerciseIndex,
-                set: s,
-                autoTimer: getAutoRestTimer(),
-              })
-            }
-            onDelete={(id) => dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })}
-          />
-        ))}
+        {we.sets.map((set) => {
+          const prev = previousSets?.find((ps) => ps.setNumber === set.setNumber);
+          return (
+            <SetRow
+              key={set.id}
+              set={set}
+              previousWeight={prev?.weight}
+              previousReps={prev?.reps}
+              onUpdate={(s) => dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })}
+              onComplete={(s) =>
+                dispatch({
+                  type: "COMPLETE_SET",
+                  exerciseIndex,
+                  set: s,
+                  autoTimer: getAutoRestTimer(),
+                })
+              }
+              onDelete={(id) => dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })}
+            />
+          );
+        })}
 
         <Button
           variant="ghost"
@@ -97,9 +108,10 @@ const ExerciseCard = memo(function ExerciseCard({
 
 interface WorkoutLoggerProps {
   exercises: Exercise[];
+  previousSets?: PreviousSetsMap;
 }
 
-export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
+export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   const {
     dispatch,
     workoutExercises,
@@ -109,7 +121,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
     totalVolume,
     addExercise,
     handleFinish,
-  } = useWorkout();
+  } = useWorkout(previousSets);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
@@ -138,6 +150,7 @@ export function WorkoutLogger({ exercises }: WorkoutLoggerProps) {
           key={`${we.exercise.id}-${exerciseIndex}`}
           we={we}
           exerciseIndex={exerciseIndex}
+          previousSets={previousSets?.[we.exercise.id]}
           dispatch={dispatch}
         />
       ))}

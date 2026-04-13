@@ -53,3 +53,12 @@ export interface LocalSet {
   durationS: number | null;
   completed: boolean;
 }
+
+export interface PreviousSetData {
+  setNumber: number;
+  weight: number | null;
+  reps: number | null;
+  rpe: number | null;
+}
+
+export type PreviousSetsMap = Record<string, PreviousSetData[]>;

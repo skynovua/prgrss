@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { createClient } from "@/lib/supabase/client";
 
 export function LogoutButton() {
@@ -11,6 +12,7 @@ export function LogoutButton() {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -37,7 +39,7 @@ export function LogoutButton() {
       <Button
         variant="destructive"
         className="w-full gap-2"
-        onClick={handleLogout}
+        onClick={() => setConfirmOpen(true)}
         disabled={loading}
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
@@ -45,6 +47,17 @@ export function LogoutButton() {
       </Button>
 
       {error && <p className="text-destructive text-sm">{error}</p>}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Вийти з акаунту?"
+        description="Ви впевнені, що хочете вийти? Незбережені дані можуть бути втрачені."
+        confirmText="Вийти"
+        isDestructive
+        isLoading={loading}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 }

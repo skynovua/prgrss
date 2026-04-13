@@ -132,9 +132,9 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         />
       </div>
 
-      {/* Фільтри */}
-      <div className="flex items-center gap-2">
-        <div className="scrollbar-none flex flex-1 gap-1.5 overflow-x-auto">
+      {/* Фільтри: м'язові групи */}
+      <div className="relative">
+        <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveGroup("all")}
             className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
@@ -159,23 +159,37 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             </button>
           ))}
         </div>
-        <Select value={activeEquipment} onValueChange={(v) => v && setActiveEquipment(v)}>
-          <SelectTrigger size="sm">
-            <SelectValue placeholder="Обладнання">
-              {activeEquipment === "all"
-                ? "Все обладнання"
-                : (EQUIPMENT_LABELS[activeEquipment] ?? activeEquipment)}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все обладнання</SelectItem>
-            {equipmentKeys.map((eq) => (
-              <SelectItem key={eq} value={eq}>
-                {EQUIPMENT_LABELS[eq]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
+      </div>
+
+      {/* Фільтри: обладнання */}
+      <div className="relative">
+        <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+          <button
+            onClick={() => setActiveEquipment("all")}
+            className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+              activeEquipment === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground active:bg-accent"
+            }`}
+          >
+            Все обладнання
+          </button>
+          {equipmentKeys.map((eq) => (
+            <button
+              key={eq}
+              onClick={() => setActiveEquipment(eq)}
+              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                activeEquipment === eq
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground active:bg-accent"
+              }`}
+            >
+              {EQUIPMENT_LABELS[eq]}
+            </button>
+          ))}
+        </div>
+        <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
       </div>
 
       {/* Кількість результатів */}

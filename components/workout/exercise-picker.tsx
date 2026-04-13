@@ -59,30 +59,33 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
             />
           </div>
 
-          <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-3">
-            <button
-              onClick={() => setActiveGroup("all")}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
-                activeGroup === "all"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground active:bg-accent"
-              }`}
-            >
-              Всі
-            </button>
-            {(Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[]).map((group) => (
+          <div className="relative">
+            <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-3">
               <button
-                key={group}
-                onClick={() => setActiveGroup(group)}
+                onClick={() => setActiveGroup("all")}
                 className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
-                  activeGroup === group
+                  activeGroup === "all"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground active:bg-accent"
                 }`}
               >
-                {MUSCLE_GROUP_LABELS[group]}
+                Всі
               </button>
-            ))}
+              {(Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[]).map((group) => (
+                <button
+                  key={group}
+                  onClick={() => setActiveGroup(group)}
+                  className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                    activeGroup === group
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground active:bg-accent"
+                  }`}
+                >
+                  {MUSCLE_GROUP_LABELS[group]}
+                </button>
+              ))}
+            </div>
+            <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
           </div>
 
           <ScrollArea className="h-[calc(85vh-200px)]">

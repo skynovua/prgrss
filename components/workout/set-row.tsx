@@ -8,12 +8,21 @@ import { cn } from "@/lib/utils";
 
 interface SetRowProps {
   set: LocalSet;
+  previousWeight?: number | null;
+  previousReps?: number | null;
   onUpdate: (set: LocalSet) => void;
   onComplete: (set: LocalSet) => void;
   onDelete: (id: string) => void;
 }
 
-export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
+export function SetRow({
+  set,
+  previousWeight,
+  previousReps,
+  onUpdate,
+  onComplete,
+  onDelete,
+}: SetRowProps) {
   const handleChange = (field: keyof LocalSet, value: string) => {
     const parsed = value === "" ? null : Number(value);
     if (value !== "" && isNaN(parsed as number)) return;
@@ -34,30 +43,31 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
       <Input
         type="number"
         inputMode="decimal"
-        placeholder="кг"
+        placeholder={previousWeight != null ? `${previousWeight}` : "кг"}
         value={set.weight ?? ""}
         onChange={(e) => handleChange("weight", e.target.value)}
-        className="h-10 w-20 text-center"
+        className="h-11 w-20 text-center text-base font-medium"
         disabled={set.completed}
       />
 
       <Input
         type="number"
         inputMode="numeric"
-        placeholder="повт"
+        placeholder={previousReps != null ? `${previousReps}` : "повт"}
         value={set.reps ?? ""}
         onChange={(e) => handleChange("reps", e.target.value)}
-        className="h-10 w-16 text-center"
+        className="h-11 w-16 text-center text-base font-medium"
         disabled={set.completed}
       />
 
       <Input
         type="number"
         inputMode="decimal"
-        placeholder="RPE"
+        placeholder="6-10"
+        title="RPE — складність підходу від 6 до 10"
         value={set.rpe ?? ""}
         onChange={(e) => handleChange("rpe", e.target.value)}
-        className="h-10 w-16 text-center"
+        className="h-11 w-16 text-center text-base font-medium"
         min={6}
         max={10}
         step={0.5}
@@ -67,7 +77,10 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
       <Button
         variant={set.completed ? "default" : "outline"}
         size="icon"
-        className="h-10 w-10 shrink-0"
+        className={cn(
+          "h-11 w-11 shrink-0",
+          set.completed && "border-green-600 bg-green-600 hover:bg-green-700"
+        )}
         onClick={() => onComplete({ ...set, completed: !set.completed })}
       >
         <Check className="h-4 w-4" />
@@ -76,7 +89,7 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="text-muted-foreground h-10 w-10 shrink-0"
+        className="text-muted-foreground h-11 w-11 shrink-0"
         onClick={() => onDelete(set.id)}
       >
         <Trash2 className="h-3 w-3" />
