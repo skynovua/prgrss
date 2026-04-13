@@ -45,8 +45,8 @@ export function MuscleDistributionChart({ data }: Props) {
               innerRadius={50}
               outerRadius={90}
               paddingAngle={2}
-              label={({ label, sets }: { label: string; sets: number }) =>
-                `${label} ${Math.round((sets / total) * 100)}%`
+              label={({ name, value }: { name: string; value: number }) =>
+                `${name} ${Math.round((value / total) * 100)}%`
               }
             >
               {data.map((_, i) => (

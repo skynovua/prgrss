@@ -29,11 +29,30 @@ export default async function DashboardPage() {
   const weekSets = (weekWorkouts ?? []).flatMap((w) => (Array.isArray(w.sets) ? w.sets : []));
   const weekVolume = weekSets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
 
+  // Профіль з таблиці users
+  const { data: profile } = await supabase
+    .from("users")
+    .select("name, avatar_url")
+    .eq("id", user!.id)
+    .single();
+
+  const avatarUrl = profile?.avatar_url ?? user?.user_metadata?.avatar_url ?? null;
+  const displayName = profile?.name ?? user?.user_metadata?.name ?? "атлет";
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <div>
-        <h1 className="text-2xl font-bold">Привіт, {user?.user_metadata?.name ?? "атлет"} 💪</h1>
-        <p className="text-muted-foreground">Готовий до тренування?</p>
+      <div className="flex items-center gap-3">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+        ) : (
+          <div className="bg-muted text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div>
+          <h1 className="text-2xl font-bold">Привіт, {displayName} 💪</h1>
+          <p className="text-muted-foreground">Готовий до тренування?</p>
+        </div>
       </div>
 
       <ActiveWorkoutBanner />
