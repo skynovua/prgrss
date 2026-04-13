@@ -16,7 +16,7 @@ export type WorkoutAction =
   | { type: "REMOVE_EXERCISE"; index: number }
   | { type: "ADD_SET"; exerciseIndex: number }
   | { type: "UPDATE_SET"; exerciseIndex: number; set: LocalSet }
-  | { type: "COMPLETE_SET"; exerciseIndex: number; set: LocalSet }
+  | { type: "COMPLETE_SET"; exerciseIndex: number; set: LocalSet; autoTimer: boolean }
   | { type: "DELETE_SET"; exerciseIndex: number; setId: string }
   | { type: "SET_TIMER_OPEN"; open: boolean }
   | { type: "SET_SAVING"; saving: boolean }
@@ -99,7 +99,7 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
     case "COMPLETE_SET":
       return {
         ...state,
-        timerOpen: action.set.completed,
+        timerOpen: action.autoTimer && action.set.completed,
         exercises: state.exercises.map((we, i) =>
           i !== action.exerciseIndex
             ? we

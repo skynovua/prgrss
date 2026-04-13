@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { WorkoutSettings } from "@/components/workout/workout-settings";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -27,6 +28,8 @@ export default async function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <WorkoutSettings />
 
       <Card>
         <CardHeader>

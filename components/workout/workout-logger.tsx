@@ -16,6 +16,7 @@ import {
 } from "@/lib/types";
 import type { WorkoutAction } from "@/lib/workout/reducer";
 import { useWorkout } from "@/lib/workout/use-workout";
+import { getAutoRestTimer } from "@/components/workout/workout-settings";
 
 // --- Memoized Exercise Card ---
 
@@ -66,7 +67,14 @@ const ExerciseCard = memo(function ExerciseCard({
             key={set.id}
             set={set}
             onUpdate={(s) => dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })}
-            onComplete={(s) => dispatch({ type: "COMPLETE_SET", exerciseIndex, set: s })}
+            onComplete={(s) =>
+              dispatch({
+                type: "COMPLETE_SET",
+                exerciseIndex,
+                set: s,
+                autoTimer: getAutoRestTimer(),
+              })
+            }
             onDelete={(id) => dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })}
           />
         ))}
