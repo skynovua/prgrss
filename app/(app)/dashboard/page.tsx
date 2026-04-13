@@ -5,6 +5,7 @@ import { Dumbbell, Plus, TrendingUp, Calendar } from "lucide-react";
 import Link from "next/link";
 import { ActiveWorkoutBanner } from "@/components/workout/active-workout-banner";
 import { RecentWorkouts } from "@/components/workout/recent-workouts";
+import { WorkoutCalendar } from "@/components/workout/workout-calendar";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -28,6 +29,18 @@ export default async function DashboardPage() {
 
   const weekSets = (weekWorkouts ?? []).flatMap((w) => (Array.isArray(w.sets) ? w.sets : []));
   const weekVolume = weekSets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
+
+  // Тренування за останні 3 місяці для календаря
+  const threeMonthsAgo = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() - 2,
+    1
+  ).toISOString();
+  const { data: calendarWorkouts } = await supabase
+    .from("workouts")
+    .select("id, name, started_at, sets(id)")
+    .gte("started_at", threeMonthsAgo)
+    .order("started_at", { ascending: false });
 
   // Профіль з таблиці users
   const { data: profile } = await supabase
@@ -92,6 +105,16 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Календар тренувань */}
+      <WorkoutCalendar
+        workouts={(calendarWorkouts ?? []).map((w) => ({
+          id: w.id,
+          name: w.name,
+          started_at: w.started_at!,
+          setsCount: Array.isArray(w.sets) ? w.sets.length : 0,
+        }))}
+      />
 
       {/* Останні тренування */}
       {recentWorkouts && recentWorkouts.length > 0 && (
