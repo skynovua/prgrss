@@ -16,7 +16,7 @@ export default function WorkoutNewPage() {
 
   if (!exercises) {
     return (
-      <div className="fixed inset-x-0 top-0 z-[100]">
+      <div className="fixed inset-x-0 top-0 z-100">
         <div className="bg-primary h-0.5 animate-pulse" />
       </div>
     );
