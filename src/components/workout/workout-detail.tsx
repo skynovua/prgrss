@@ -12,9 +12,8 @@ import {
   type ExerciseData,
   type WorkoutWithSets,
 } from "@/src/lib/types";
-import { deleteWorkout, deleteSetFromWorkout } from "@/src/lib/api/workouts";
+import { useDeleteWorkout, useDeleteSet } from "@/src/lib/hooks/use-workouts";
 import { calc1RM } from "@/src/lib/utils/calc";
-import { toast } from "sonner";
 
 interface WorkoutDetailProps {
   workout: WorkoutWithSets;
@@ -23,8 +22,9 @@ interface WorkoutDetailProps {
 
 export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
   const navigate = useNavigate();
+  const deleteWorkoutMutation = useDeleteWorkout();
+  const deleteSetMutation = useDeleteSet();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   const [optimisticSets, removeOptimisticSet] = useOptimistic(
     workout.sets,
@@ -51,29 +51,16 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
         )
       : null;
 
-  const handleDelete = async () => {
-    setDeleting(true);
-    try {
-      await deleteWorkout(workout.id);
-      navigate({ to: "/dashboard" });
-    } catch (err) {
-      toast.error("Не вдалося видалити тренування", {
-        description: err instanceof Error ? err.message : "Спробуйте ще раз",
-      });
-      setDeleting(false);
-    }
+  const handleDelete = () => {
+    deleteWorkoutMutation.mutate(workout.id, {
+      onSuccess: () => navigate({ to: "/dashboard" }),
+    });
   };
 
   const handleDeleteSet = (setId: string) => {
-    startTransition(async () => {
+    startTransition(() => {
       removeOptimisticSet(setId);
-      try {
-        await deleteSetFromWorkout(setId);
-      } catch (err) {
-        toast.error("Не вдалося видалити підхід", {
-          description: err instanceof Error ? err.message : "Спробуйте ще раз",
-        });
-      }
+      deleteSetMutation.mutate(setId);
     });
   };
 
@@ -238,7 +225,7 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
         description="Це видалить тренування та всі підходи. Цю дію неможливо скасувати."
         confirmText="Видалити"
         isDestructive
-        isLoading={deleting}
+        isLoading={deleteWorkoutMutation.isPending}
         onConfirm={handleDelete}
       />
     </div>

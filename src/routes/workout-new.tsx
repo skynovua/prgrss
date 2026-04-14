@@ -1,18 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
 import { WorkoutLogger } from "@/src/components/workout/workout-logger";
-import { fetchExercises } from "@/src/lib/api/exercises";
-import { fetchPreviousSets } from "@/src/lib/api/workouts";
+import { useExercises } from "@/src/lib/hooks/use-exercises";
+import { usePreviousSets } from "@/src/lib/hooks/use-workouts";
 
 export default function WorkoutNewPage() {
-  const { data: exercises } = useQuery({
-    queryKey: ["exercises"],
-    queryFn: fetchExercises,
-  });
+  const { data: exercises } = useExercises();
 
-  const { data: previousSets } = useQuery({
-    queryKey: ["previousSets"],
-    queryFn: fetchPreviousSets,
-  });
+  const { data: previousSets } = usePreviousSets();
 
   if (!exercises) {
     return (

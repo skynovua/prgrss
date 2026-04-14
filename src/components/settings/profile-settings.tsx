@@ -3,9 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ca
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Camera, Check, Loader2 } from "lucide-react";
-import { updateProfile, uploadAvatar } from "@/src/lib/api/profile";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useUpdateProfile, useUploadAvatar } from "@/src/lib/hooks/use-profile";
 
 interface ProfileSettingsProps {
   name: string;
@@ -18,46 +16,28 @@ export function ProfileSettings({
   email,
   avatarUrl: initialAvatarUrl,
 }: ProfileSettingsProps) {
-  const queryClient = useQueryClient();
+  const updateProfileMutation = useUpdateProfile();
+  const uploadAvatarMutation = useUploadAvatar();
   const [name, setName] = useState(initialName);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
-  const [savingName, setSavingName] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nameChanged = name.trim() !== initialName;
 
-  async function handleSaveName() {
+  function handleSaveName() {
     if (!nameChanged) return;
-    setSavingName(true);
-    try {
-      await updateProfile({ name });
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toast.success("Ім'я оновлено");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Помилка");
-    } finally {
-      setSavingName(false);
-    }
+    updateProfileMutation.mutate({ name });
   }
 
-  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadingAvatar(true);
-    try {
-      const newUrl = await uploadAvatar(file);
-      setAvatarUrl(newUrl);
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toast.success("Фото оновлено");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Помилка завантаження");
-    } finally {
-      setUploadingAvatar(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    uploadAvatarMutation.mutate(file, {
+      onSuccess: (newUrl) => setAvatarUrl(newUrl),
+      onSettled: () => {
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      },
+    });
   }
 
   const initials = (name || "А").charAt(0).toUpperCase();
@@ -73,7 +53,7 @@ export function ProfileSettings({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingAvatar}
+            disabled={uploadAvatarMutation.isPending}
             className="group bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-full"
           >
             {avatarUrl ? (
@@ -84,7 +64,7 @@ export function ProfileSettings({
               </span>
             )}
             <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-              {uploadingAvatar ? (
+              {uploadAvatarMutation.isPending ? (
                 <Loader2 className="h-5 w-5 animate-spin text-white" />
               ) : (
                 <Camera className="h-5 w-5 text-white" />
@@ -115,8 +95,12 @@ export function ProfileSettings({
           <label className="text-sm font-medium">Ім&apos;я</label>
           <div className="flex gap-2">
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ваше ім'я" />
-            <Button size="icon" onClick={handleSaveName} disabled={!nameChanged || savingName}>
-              {savingName ? (
+            <Button
+              size="icon"
+              onClick={handleSaveName}
+              disabled={!nameChanged || updateProfileMutation.isPending}
+            >
+              {updateProfileMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Check className="h-4 w-4" />

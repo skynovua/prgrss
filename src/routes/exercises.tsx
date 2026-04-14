@@ -1,12 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { ExerciseLibrary } from "@/src/components/exercises/exercise-library";
-import { fetchExercises } from "@/src/lib/api/exercises";
+import { useExercises } from "@/src/lib/hooks/use-exercises";
 
 export default function ExercisesPage() {
-  const { data: exercises, isLoading } = useQuery({
-    queryKey: ["exercises"],
-    queryFn: fetchExercises,
-  });
+  const { data: exercises, isLoading } = useExercises();
 
   if (isLoading) {
     return (

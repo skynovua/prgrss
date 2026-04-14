@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Dumbbell, Plus, TrendingUp, Calendar } from "lucide-react";
@@ -6,13 +5,10 @@ import { Link } from "@tanstack/react-router";
 import { ActiveWorkoutBanner } from "@/src/components/workout/active-workout-banner";
 import { RecentWorkouts } from "@/src/components/workout/recent-workouts";
 import { WorkoutCalendar } from "@/src/components/workout/workout-calendar";
-import { fetchDashboardData } from "@/src/lib/api/dashboard";
+import { useDashboard } from "@/src/lib/hooks/use-dashboard";
 
 export default function DashboardPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["dashboard"],
-    queryFn: fetchDashboardData,
-  });
+  const { data, isLoading } = useDashboard();
 
   if (isLoading || !data) {
     return (

@@ -6,7 +6,8 @@ import { OneRMChart } from "@/src/components/charts/one-rm-chart";
 import { WeeklyVolumeChart } from "@/src/components/charts/weekly-volume-chart";
 import { MuscleDistributionChart } from "@/src/components/charts/muscle-distribution-chart";
 import { WorkoutFrequencyChart } from "@/src/components/charts/workout-frequency-chart";
-import { getProgressData, type ProgressData, type Period } from "@/src/lib/api/stats";
+import { useProgress } from "@/src/lib/hooks/use-progress";
+import type { Period } from "@/src/lib/api/stats";
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: "7d", label: "7 днів" },
@@ -15,32 +16,23 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: "all", label: "Весь час" },
 ];
 
-interface Props {
-  initialData: ProgressData;
-  initialPeriod: Period;
-}
+export function ProgressContent() {
+  const [period, setPeriod] = useState<Period>("30d");
+  const { data, isFetching, isLoading } = useProgress(period);
 
-export function ProgressContent({ initialData, initialPeriod }: Props) {
-  const [data, setData] = useState(initialData);
-  const [period, setPeriod] = useState<Period>(initialPeriod);
-  const [isPending, setIsPending] = useState(false);
-
-  async function handlePeriodChange(newPeriod: Period) {
-    setPeriod(newPeriod);
-    setIsPending(true);
-    try {
-      const newData = await getProgressData(newPeriod);
-      setData(newData);
-    } finally {
-      setIsPending(false);
-    }
+  if (isLoading || !data) {
+    return (
+      <div className="fixed inset-x-0 top-0 z-100">
+        <div className="bg-primary h-0.5 animate-pulse" />
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Прогрес</h1>
-        {isPending && <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />}
+        {isFetching && <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />}
       </div>
 
       {/* Фільтр періоду */}
@@ -48,7 +40,7 @@ export function ProgressContent({ initialData, initialPeriod }: Props) {
         {PERIODS.map((p) => (
           <button
             key={p.value}
-            onClick={() => handlePeriodChange(p.value)}
+            onClick={() => setPeriod(p.value)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
               period === p.value
                 ? "bg-primary text-primary-foreground"

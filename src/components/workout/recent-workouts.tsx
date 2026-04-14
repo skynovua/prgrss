@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
 import { Trash2 } from "lucide-react";
-import { deleteWorkout } from "@/src/lib/api/workouts";
-import { toast } from "sonner";
+import { useDeleteWorkout } from "@/src/lib/hooks/use-workouts";
 
 interface RecentWorkout {
   id: string;
@@ -16,20 +14,15 @@ interface RecentWorkout {
 }
 
 export function RecentWorkouts({ workouts }: { workouts: RecentWorkout[] }) {
-  const queryClient = useQueryClient();
+  const deleteMutation = useDeleteWorkout();
   const [localWorkouts, setLocalWorkouts] = useState(workouts);
 
-  const handleDelete = async (workoutId: string) => {
-    setLocalWorkouts((prev) => prev.filter((w) => w.id !== workoutId));
-    try {
-      await deleteWorkout(workoutId);
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    } catch (err) {
-      toast.error("Не вдалося видалити тренування", {
-        description: err instanceof Error ? err.message : "Спробуйте ще раз",
-      });
-      setLocalWorkouts(workouts);
-    }
+  const handleDelete = (workoutId: string) => {
+    const prev = localWorkouts;
+    setLocalWorkouts((w) => w.filter((w) => w.id !== workoutId));
+    deleteMutation.mutate(workoutId, {
+      onError: () => setLocalWorkouts(prev),
+    });
   };
 
   if (localWorkouts.length === 0) return null;

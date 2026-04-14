@@ -1,17 +1,12 @@
 import { useParams, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { WorkoutDetail } from "@/src/components/workout/workout-detail";
-import { fetchWorkoutDetail } from "@/src/lib/api/workouts";
+import { useWorkoutDetail } from "@/src/lib/hooks/use-workouts";
 
 export default function WorkoutDetailPage() {
   const { id } = useParams({ strict: false });
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["workout", id],
-    queryFn: () => fetchWorkoutDetail(id!),
-    enabled: !!id,
-  });
+  const { data, isLoading } = useWorkoutDetail(id);
 
   if (isLoading) {
     return (

@@ -1,15 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { LogoutButton } from "@/src/components/auth/logout-button";
 import { WorkoutSettings } from "@/src/components/workout/workout-settings";
 import { ProfileSettings } from "@/src/components/settings/profile-settings";
-import { fetchProfile } from "@/src/lib/api/profile";
+import { useProfile } from "@/src/lib/hooks/use-profile";
 
 export default function SettingsPage() {
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: fetchProfile,
-  });
+  const { data: profile, isLoading } = useProfile();
 
   if (isLoading || !profile) {
     return (

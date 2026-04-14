@@ -66,9 +66,9 @@ const appRoute = createRoute({
   id: "app",
   beforeLoad: async () => {
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
       throw redirect({ to: "/login" });
     }
   },

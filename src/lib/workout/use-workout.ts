@@ -1,5 +1,6 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Exercise, PreviousSetsMap } from "@/src/lib/types";
 import { workoutReducer, createInitialState } from "./reducer";
@@ -12,6 +13,7 @@ import {
 
 export function useWorkout(previousSets?: PreviousSetsMap) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
   const [restored, setRestored] = useState(false);
   const isFinishing = useRef(false);
@@ -74,6 +76,10 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       } else {
         toast.success("Тренування збережено");
       }
+
+      await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      await queryClient.invalidateQueries({ queryKey: ["previousSets"] });
+      await queryClient.invalidateQueries({ queryKey: ["progress"] });
 
       navigate({ to: result.redirectTo });
     } catch {

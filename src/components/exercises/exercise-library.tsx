@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
@@ -24,21 +23,20 @@ import {
   MUSCLE_GROUP_LABELS,
   EQUIPMENT_LABELS,
 } from "@/src/lib/types";
-import { createExercise, deleteExercise } from "@/src/lib/api/exercises";
-import { toast } from "sonner";
+import { useCreateExercise, useDeleteExercise } from "@/src/lib/hooks/use-exercises";
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
 }
 
 export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
-  const queryClient = useQueryClient();
+  const createMutation = useCreateExercise();
+  const deleteMutation = useDeleteExercise();
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
   const [activeEquipment, setActiveEquipment] = useState<string>("all");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Exercise | null>(null);
-  const [saving, setSaving] = useState(false);
 
   // Форма нової вправи
   const [newName, setNewName] = useState("");
@@ -68,41 +66,26 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    setSaving(true);
-    try {
-      await createExercise({
+    createMutation.mutate(
+      {
         name: newName.trim(),
         muscle_group: newGroup,
         equipment: newEquipment,
-      });
-      setAddDialogOpen(false);
-      setNewName("");
-      queryClient.invalidateQueries({ queryKey: ["exercises"] });
-      toast.success("Вправу додано");
-    } catch (err) {
-      toast.error("Не вдалося додати вправу", {
-        description: err instanceof Error ? err.message : "Спробуйте ще раз",
-      });
-    } finally {
-      setSaving(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setAddDialogOpen(false);
+          setNewName("");
+        },
+      }
+    );
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    setSaving(true);
-    try {
-      await deleteExercise(deleteTarget.id);
-      setDeleteTarget(null);
-      queryClient.invalidateQueries({ queryKey: ["exercises"] });
-      toast.success("Вправу видалено");
-    } catch (err) {
-      toast.error("Не вдалося видалити вправу", {
-        description: err instanceof Error ? err.message : "Спробуйте ще раз",
-      });
-    } finally {
-      setSaving(false);
-    }
+    deleteMutation.mutate(deleteTarget.id, {
+      onSuccess: () => setDeleteTarget(null),
+    });
   };
 
   const muscleGroups = Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[];
@@ -277,8 +260,8 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleCreate} disabled={!newName.trim() || saving}>
-              {saving ? "Зберігаю..." : "Додати вправу"}
+            <Button onClick={handleCreate} disabled={!newName.trim() || createMutation.isPending}>
+              {createMutation.isPending ? "Зберігаю..." : "Додати вправу"}
             </Button>
           </div>
         </DialogContent>
@@ -301,9 +284,9 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
               variant="destructive"
               className="flex-1"
               onClick={handleDelete}
-              disabled={saving}
+              disabled={deleteMutation.isPending}
             >
-              {saving ? "Видаляю..." : "Видалити"}
+              {deleteMutation.isPending ? "Видаляю..." : "Видалити"}
             </Button>
           </div>
         </DialogContent>

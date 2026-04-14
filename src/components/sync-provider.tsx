@@ -1,21 +1,29 @@
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { syncPendingWorkouts } from "@/src/lib/offline/sync";
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // Синхронізуємо при завантаженні
-    syncPendingWorkouts();
+  const queryClient = useQueryClient();
 
-    // Синхронізуємо при появі інтернету
+  useEffect(() => {
+    const syncAndInvalidate = async () => {
+      await syncPendingWorkouts();
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["previousSets"] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
+    };
+
+    syncAndInvalidate();
+
     const handleOnline = () => {
-      syncPendingWorkouts();
+      syncAndInvalidate();
     };
     window.addEventListener("online", handleOnline);
 
     return () => {
       window.removeEventListener("online", handleOnline);
     };
-  }, []);
+  }, [queryClient]);
 
   return <>{children}</>;
 }
