@@ -251,18 +251,21 @@ export type Database = {
       };
       users: {
         Row: {
+          auto_rest_timer: boolean;
           avatar_url: string | null;
           created_at: string | null;
           id: string;
           name: string | null;
         };
         Insert: {
+          auto_rest_timer?: boolean;
           avatar_url?: string | null;
           created_at?: string | null;
           id: string;
           name?: string | null;
         };
         Update: {
+          auto_rest_timer?: boolean;
           avatar_url?: string | null;
           created_at?: string | null;
           id?: string;

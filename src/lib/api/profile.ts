@@ -1,15 +1,16 @@
 import { supabase } from "@/src/lib/supabase/client";
 
-export async function updateProfile(data: { name: string }) {
+export async function updateProfile(data: { name?: string; auto_rest_timer?: boolean }) {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Не авторизовано");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("Не авторизовано");
 
-  const { error } = await supabase
-    .from("users")
-    .update({ name: data.name.trim() })
-    .eq("id", user.id);
+  const update: { name?: string; auto_rest_timer?: boolean } = {};
+  if (data.name !== undefined) update.name = data.name.trim();
+  if (data.auto_rest_timer !== undefined) update.auto_rest_timer = data.auto_rest_timer;
+
+  const { error } = await supabase.from("users").update(update).eq("id", session.user.id);
 
   if (error) throw new Error("Не вдалося оновити профіль");
 }
@@ -53,13 +54,14 @@ export async function uploadAvatar(file: File) {
 
 export async function fetchProfile() {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return null;
 
+  const user = session.user;
   const { data: profile } = await supabase
     .from("users")
-    .select("name, avatar_url")
+    .select("name, avatar_url, auto_rest_timer")
     .eq("id", user.id)
     .single();
 
@@ -67,5 +69,6 @@ export async function fetchProfile() {
     name: profile?.name ?? user.user_metadata?.name ?? "",
     email: user.email ?? "",
     avatarUrl: profile?.avatar_url ?? user.user_metadata?.avatar_url ?? null,
+    autoRestTimer: profile?.auto_rest_timer ?? true,
   };
 }

@@ -17,7 +17,7 @@ export function useUpdateProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toast.success("Ім'я оновлено");
+      toast.success("Профіль оновлено");
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Помилка");

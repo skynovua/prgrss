@@ -16,7 +16,7 @@ import {
 } from "@/src/lib/types";
 import type { WorkoutAction } from "@/src/lib/workout/reducer";
 import { useWorkout } from "@/src/lib/workout/use-workout";
-import { getAutoRestTimer } from "@/src/components/workout/workout-settings";
+import { useProfile } from "@/src/lib/hooks/use-profile";
 
 // --- Memoized Exercise Card ---
 
@@ -24,6 +24,7 @@ interface ExerciseCardProps {
   we: WorkoutExercise;
   exerciseIndex: number;
   previousSets?: PreviousSetData[];
+  autoRestTimer: boolean;
   dispatch: React.ActionDispatch<[action: WorkoutAction]>;
 }
 
@@ -31,6 +32,7 @@ const ExerciseCard = memo(function ExerciseCard({
   we,
   exerciseIndex,
   previousSets,
+  autoRestTimer,
   dispatch,
 }: ExerciseCardProps) {
   return (
@@ -80,7 +82,7 @@ const ExerciseCard = memo(function ExerciseCard({
                   type: "COMPLETE_SET",
                   exerciseIndex,
                   set: s,
-                  autoTimer: getAutoRestTimer(),
+                  autoTimer: autoRestTimer,
                 })
               }
               onDelete={(id) => dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })}
@@ -110,6 +112,8 @@ interface WorkoutLoggerProps {
 }
 
 export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
+  const { data: profile } = useProfile();
+  const autoRestTimer = profile?.autoRestTimer ?? true;
   const {
     dispatch,
     workoutExercises,
@@ -149,6 +153,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
           we={we}
           exerciseIndex={exerciseIndex}
           previousSets={previousSets?.[we.exercise.id]}
+          autoRestTimer={autoRestTimer}
           dispatch={dispatch}
         />
       ))}

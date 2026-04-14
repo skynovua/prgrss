@@ -2,9 +2,11 @@ import { supabase } from "@/src/lib/supabase/client";
 
 export async function fetchDashboardData() {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return null;
+
+  const user = session.user;
 
   // Паралельні запити
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

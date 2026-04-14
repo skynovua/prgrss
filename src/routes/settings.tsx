@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { LogoutButton } from "@/src/components/auth/logout-button";
-import { WorkoutSettings } from "@/src/components/workout/workout-settings";
 import { ProfileSettings } from "@/src/components/settings/profile-settings";
 import { useProfile } from "@/src/lib/hooks/use-profile";
 
@@ -19,9 +18,12 @@ export default function SettingsPage() {
     <div className="flex flex-1 flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Налаштування</h1>
 
-      <ProfileSettings name={profile.name} email={profile.email} avatarUrl={profile.avatarUrl} />
-
-      <WorkoutSettings />
+      <ProfileSettings
+        name={profile.name}
+        email={profile.email}
+        avatarUrl={profile.avatarUrl}
+        autoRestTimer={profile.autoRestTimer}
+      />
 
       <Card>
         <CardHeader>
