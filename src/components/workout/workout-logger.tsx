@@ -1,0 +1,188 @@
+import { memo } from "react";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { Separator } from "@/src/components/ui/separator";
+import { ExercisePicker } from "@/src/components/workout/exercise-picker";
+import { SetRow } from "@/src/components/workout/set-row";
+import { RestTimer } from "@/src/components/workout/rest-timer";
+import { Timer, Plus, Check } from "lucide-react";
+import {
+  type Exercise,
+  type WorkoutExercise,
+  type PreviousSetsMap,
+  type PreviousSetData,
+  MUSCLE_GROUP_LABELS,
+  type MuscleGroup,
+} from "@/src/lib/types";
+import type { WorkoutAction } from "@/src/lib/workout/reducer";
+import { useWorkout } from "@/src/lib/workout/use-workout";
+import { useProfile } from "@/src/lib/hooks/use-profile";
+
+// --- Memoized Exercise Card ---
+
+interface ExerciseCardProps {
+  we: WorkoutExercise;
+  exerciseIndex: number;
+  previousSets?: PreviousSetData[];
+  autoRestTimer: boolean;
+  dispatch: React.ActionDispatch<[action: WorkoutAction]>;
+}
+
+const ExerciseCard = memo(function ExerciseCard({
+  we,
+  exerciseIndex,
+  previousSets,
+  autoRestTimer,
+  dispatch,
+}: ExerciseCardProps) {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-base">{we.exercise.name}</CardTitle>
+            <p className="text-muted-foreground text-xs">
+              {we.exercise.muscle_group &&
+                MUSCLE_GROUP_LABELS[we.exercise.muscle_group as MuscleGroup]}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground text-xs"
+            onClick={() => dispatch({ type: "REMOVE_EXERCISE", index: exerciseIndex })}
+          >
+            Видалити
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1">
+        <div className="text-muted-foreground flex items-center gap-2 px-2 pb-1 text-xs font-medium">
+          <span className="w-8 text-center">#</span>
+          <span className="w-20 text-center">Вага</span>
+          <span className="w-16 text-center">Повт</span>
+          <span className="w-16 text-center" title="Складність підходу від 6 до 10">
+            Зусилля
+          </span>
+          <span className="w-11" />
+          <span className="w-11" />
+        </div>
+
+        {we.sets.map((set) => {
+          const prev = previousSets?.find((ps) => ps.setNumber === set.setNumber);
+          return (
+            <SetRow
+              key={set.id}
+              set={set}
+              previousWeight={prev?.weight}
+              previousReps={prev?.reps}
+              onUpdate={(s) => dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })}
+              onComplete={(s) =>
+                dispatch({
+                  type: "COMPLETE_SET",
+                  exerciseIndex,
+                  set: s,
+                  autoTimer: autoRestTimer,
+                })
+              }
+              onDelete={(id) => dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })}
+            />
+          );
+        })}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1 gap-1"
+          onClick={() => dispatch({ type: "ADD_SET", exerciseIndex })}
+        >
+          <Plus className="h-3 w-3" />
+          Додати підхід
+        </Button>
+      </CardContent>
+    </Card>
+  );
+});
+
+// --- Main Component ---
+
+interface WorkoutLoggerProps {
+  exercises: Exercise[];
+  previousSets?: PreviousSetsMap;
+}
+
+export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
+  const { data: profile } = useProfile();
+  const autoRestTimer = profile?.autoRestTimer ?? true;
+  const {
+    dispatch,
+    workoutExercises,
+    timerOpen,
+    saving,
+    totalSets,
+    totalVolume,
+    addExercise,
+    handleFinish,
+  } = useWorkout(previousSets);
+
+  return (
+    <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
+      {/* Хедер */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Тренування</h1>
+          <p className="text-muted-foreground text-sm">
+            {totalSets} підходів · {Math.round(totalVolume)} кг об&apos;єм
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}
+        >
+          <Timer className="h-5 w-5" />
+        </Button>
+      </div>
+
+      <Separator />
+
+      {/* Вправи */}
+      {workoutExercises.map((we, exerciseIndex) => (
+        <ExerciseCard
+          key={`${we.exercise.id}-${exerciseIndex}`}
+          we={we}
+          exerciseIndex={exerciseIndex}
+          previousSets={previousSets?.[we.exercise.id]}
+          autoRestTimer={autoRestTimer}
+          dispatch={dispatch}
+        />
+      ))}
+
+      {/* Додати вправу */}
+      <ExercisePicker exercises={exercises} onSelect={addExercise} />
+
+      {/* Таймер відпочинку */}
+      <RestTimer
+        open={timerOpen}
+        onOpenChange={(open) => dispatch({ type: "SET_TIMER_OPEN", open })}
+      />
+
+      {/* Завершити тренування */}
+      {workoutExercises.length > 0 && (
+        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4">
+          <div className="border-border/80 bg-background/95 supports-backdrop-filter:bg-background/80 mx-auto max-w-lg rounded-2xl border p-3 shadow-lg backdrop-blur">
+            <Button
+              className="w-full gap-2"
+              size="lg"
+              onClick={handleFinish}
+              disabled={saving || totalSets === 0}
+            >
+              <Check className="h-4 w-4" />
+              {saving ? "Зберігаю..." : "Завершити тренування"}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
