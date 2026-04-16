@@ -42,16 +42,9 @@ export interface ExerciseProgressData {
   data: ExerciseProgressPoint[];
 }
 
-export interface ProgressData {
-  stats: {
-    totalWorkouts: number;
-    avgDuration: number | null;
-    streak: number;
-  };
-  lastComparison: LastWorkoutComparison | null;
-  muscleTonnage: MuscleGroupTonnage[];
-  topExercises: TopExercise[];
-  exerciseProgress: ExerciseProgressData[];
+export interface PeriodStats {
+  totalWorkouts: number;
+  avgDuration: number | null;
 }
 
 const MUSCLE_LABELS: Record<string, string> = {
@@ -70,29 +63,28 @@ const PERIOD_DAYS: Record<Period, number | null> = {
   all: null,
 };
 
-function periodToDate(period: Period): string | null {
+export function periodToDate(period: Period): string | null {
   const days = PERIOD_DAYS[period];
   if (!days) return null;
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
-export async function getProgressData(period: Period = "30d"): Promise<ProgressData> {
-  const since = periodToDate(period);
+// --- Стрік (завжди глобальний, не залежить від періоду) ---
 
-  const [stats, lastComparison, muscleTonnage, topExercises, exerciseProgress] = await Promise.all([
-    fetchStats(since),
-    fetchLastComparison(),
-    fetchMuscleTonnage(since),
-    fetchTopExercises(since),
-    fetchExerciseProgress(since),
-  ]);
+export async function fetchStreak(): Promise<number> {
+  const { data: workouts } = await supabase
+    .from("workouts")
+    .select("started_at")
+    .not("finished_at", "is", null)
+    .order("started_at", { ascending: false });
 
-  return { stats, lastComparison, muscleTonnage, topExercises, exerciseProgress };
+  if (!workouts || workouts.length === 0) return 0;
+  return calcWeekStreak(workouts.map((w) => w.started_at).filter(Boolean) as string[]);
 }
 
-// --- Загальна статистика + стрік + середня тривалість ---
+// --- Статистика за період ---
 
-async function fetchStats(since: string | null) {
+export async function fetchPeriodStats(since: string | null): Promise<PeriodStats> {
   let query = supabase
     .from("workouts")
     .select("started_at, finished_at")
@@ -105,10 +97,9 @@ async function fetchStats(since: string | null) {
 
   const { data: workouts } = await query;
   if (!workouts || workouts.length === 0) {
-    return { totalWorkouts: 0, avgDuration: null, streak: 0 };
+    return { totalWorkouts: 0, avgDuration: null };
   }
 
-  // Середня тривалість
   const durations = workouts
     .map((w) => {
       if (!w.started_at || !w.finished_at) return null;
@@ -121,14 +112,7 @@ async function fetchStats(since: string | null) {
       ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
       : null;
 
-  // Стрік (скільки тижнів поспіль є хоча б 1 тренування)
-  const streak = calcWeekStreak(workouts.map((w) => w.started_at).filter(Boolean) as string[]);
-
-  return {
-    totalWorkouts: workouts.length,
-    avgDuration,
-    streak,
-  };
+  return { totalWorkouts: workouts.length, avgDuration };
 }
 
 function calcWeekStreak(dates: string[]): number {
@@ -162,7 +146,7 @@ function calcWeekStreak(dates: string[]): number {
 
 // --- Порівняння з минулим тренуванням ---
 
-async function fetchLastComparison(): Promise<LastWorkoutComparison | null> {
+export async function fetchLastComparison(): Promise<LastWorkoutComparison | null> {
   const { data: workouts } = await supabase
     .from("workouts")
     .select("id, started_at, finished_at, sets(weight, reps)")
@@ -199,7 +183,7 @@ async function fetchLastComparison(): Promise<LastWorkoutComparison | null> {
 
 // --- Тонаж по м'язових групах ---
 
-async function fetchMuscleTonnage(since: string | null): Promise<MuscleGroupTonnage[]> {
+export async function fetchMuscleTonnage(since: string | null): Promise<MuscleGroupTonnage[]> {
   let query = supabase
     .from("sets")
     .select("weight, reps, exercises(muscle_group), workouts!inner(started_at, user_id)");
@@ -237,7 +221,7 @@ async function fetchMuscleTonnage(since: string | null): Promise<MuscleGroupTonn
 
 // --- Топ вправ за об'ємом ---
 
-async function fetchTopExercises(since: string | null): Promise<TopExercise[]> {
+export async function fetchTopExercises(since: string | null): Promise<TopExercise[]> {
   let query = supabase
     .from("sets")
     .select("weight, reps, exercise_id, exercises(name), workouts!inner(started_at, user_id)");
@@ -276,7 +260,7 @@ async function fetchTopExercises(since: string | null): Promise<TopExercise[]> {
 
 // --- Прогрес конкретної вправи ---
 
-async function fetchExerciseProgress(since: string | null): Promise<ExerciseProgressData[]> {
+export async function fetchExerciseProgress(since: string | null): Promise<ExerciseProgressData[]> {
   let query = supabase
     .from("sets")
     .select("weight, reps, exercise_id, exercises(name), workouts!inner(started_at, user_id)")

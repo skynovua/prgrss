@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/src/components/ui/card";
 import { Separator } from "@/src/components/ui/separator";
 import { ExerciseProgressChart } from "@/src/components/charts/one-rm-chart";
 import { MuscleDistributionChart } from "@/src/components/charts/muscle-distribution-chart";
-import { useProgress } from "@/src/lib/hooks/use-progress";
+import { useGlobalStats, usePeriodProgress } from "@/src/lib/hooks/use-progress";
 import type { Period, LastWorkoutComparison, TopExercise } from "@/src/lib/api/stats";
 
 const PERIODS: { value: Period; label: string }[] = [
@@ -16,9 +16,10 @@ const PERIODS: { value: Period; label: string }[] = [
 
 export function ProgressContent() {
   const [period, setPeriod] = useState<Period>("30d");
-  const { data, isFetching, isLoading } = useProgress(period);
+  const { data: global, isLoading: globalLoading } = useGlobalStats();
+  const { data: periodData, isFetching, isLoading: periodLoading } = usePeriodProgress(period);
 
-  if (isLoading || !data) {
+  if (globalLoading || periodLoading) {
     return (
       <div className="fixed inset-x-0 top-0 z-100">
         <div className="bg-primary h-0.5 animate-pulse" />
@@ -55,41 +56,43 @@ export function ProgressContent() {
         <Card>
           <CardContent className="flex flex-col items-center p-4">
             <Flame className="text-muted-foreground mb-1 h-5 w-5" />
-            <span className="text-2xl font-bold">{data.stats.streak}</span>
+            <span className="text-2xl font-bold">{global?.streak ?? 0}</span>
             <span className="text-muted-foreground text-xs">тижнів стрік</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center p-4">
             <Clock className="text-muted-foreground mb-1 h-5 w-5" />
-            <span className="text-2xl font-bold">{data.stats.avgDuration ?? "—"}</span>
+            <span className="text-2xl font-bold">{periodData?.stats.avgDuration ?? "—"}</span>
             <span className="text-muted-foreground text-xs">хв середня</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center p-4">
             <Dumbbell className="text-muted-foreground mb-1 h-5 w-5" />
-            <span className="text-2xl font-bold">{data.stats.totalWorkouts}</span>
+            <span className="text-2xl font-bold">{periodData?.stats.totalWorkouts ?? 0}</span>
             <span className="text-muted-foreground text-xs">тренувань</span>
           </CardContent>
         </Card>
       </div>
 
       {/* Порівняння з минулим тренуванням */}
-      {data.lastComparison && <LastWorkoutCard comparison={data.lastComparison} />}
+      {global?.lastComparison && <LastWorkoutCard comparison={global.lastComparison} />}
 
       <Separator />
 
       {/* Тонаж по м'язових групах */}
-      <MuscleDistributionChart data={data.muscleTonnage} />
+      {periodData && <MuscleDistributionChart data={periodData.muscleTonnage} />}
 
       {/* Топ вправ за об'ємом */}
-      {data.topExercises.length > 0 && <TopExercisesList exercises={data.topExercises} />}
+      {periodData && periodData.topExercises.length > 0 && (
+        <TopExercisesList exercises={periodData.topExercises} />
+      )}
 
       <Separator />
 
       {/* Прогрес конкретної вправи */}
-      <ExerciseProgressChart data={data.exerciseProgress} />
+      {periodData && <ExerciseProgressChart data={periodData.exerciseProgress} />}
     </div>
   );
 }
