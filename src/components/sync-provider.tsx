@@ -7,10 +7,14 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const syncAndInvalidate = async () => {
-      await syncPendingWorkouts();
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["previousSets"] });
-      queryClient.invalidateQueries({ queryKey: ["progress"] });
+      try {
+        await syncPendingWorkouts();
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+        queryClient.invalidateQueries({ queryKey: ["previousSets"] });
+        queryClient.invalidateQueries({ queryKey: ["progress"] });
+      } catch {
+        // Офлайн або помилка мережі — ігноруємо
+      }
     };
 
     syncAndInvalidate();

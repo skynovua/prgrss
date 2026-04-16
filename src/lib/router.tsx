@@ -67,9 +67,14 @@ const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "app",
   beforeLoad: async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    let session = null;
+    try {
+      const result = await supabase.auth.getSession();
+      session = result.data.session;
+    } catch {
+      // Мережева помилка — дозволяємо доступ (офлайн режим)
+      return;
+    }
     if (!session) {
       throw redirect({ to: "/login" });
     }

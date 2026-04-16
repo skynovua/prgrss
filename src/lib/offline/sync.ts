@@ -3,9 +3,10 @@ import { supabase } from "@/src/lib/supabase/client";
 
 export async function syncPendingWorkouts() {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user) return;
+  const user = session.user;
 
   // Синхронізуємо тренування
   const pendingWorkouts = await db.pendingWorkouts.filter((w) => !w.syncedAt).toArray();

@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
-import type { WorkoutExercise } from "@/src/lib/types";
+import type { Exercise, WorkoutExercise } from "@/src/lib/types";
 
 interface PendingWorkout {
   id?: number;
@@ -37,12 +37,14 @@ const db = new Dexie("WorkoutDB") as Dexie & {
   pendingWorkouts: EntityTable<PendingWorkout, "id">;
   pendingSets: EntityTable<PendingSet, "id">;
   activeWorkout: EntityTable<ActiveWorkout, "id">;
+  cachedExercises: EntityTable<Exercise, "id">;
 };
 
-db.version(2).stores({
+db.version(3).stores({
   pendingWorkouts: "++id, uuid, syncedAt",
   pendingSets: "++id, uuid, workoutUuid, syncedAt",
   activeWorkout: "id",
+  cachedExercises: "id, muscle_group",
 });
 
 export type { PendingWorkout, PendingSet, ActiveWorkout };
