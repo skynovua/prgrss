@@ -9,16 +9,16 @@
 
 | Шар             | Технологія                                                     |
 | --------------- | -------------------------------------------------------------- |
-| Frontend        | Next.js (App Router) + React                                   |
+| Frontend        | Vite + React (SPA)                                             |
 | UI Components   | shadcn/ui (Radix UI + Tailwind)                                |
 | Styling         | Tailwind CSS                                                   |
 | Language        | TypeScript (strict mode)                                       |
 | Backend         | Supabase (Auth, PostgreSQL, Edge Functions, Realtime, Storage) |
-| PWA             | next-pwa + Service Worker                                      |
+| PWA             | vite-plugin-pwa (Workbox) + Service Worker                     |
 | Charts          | Recharts                                                       |
 | Offline storage | Dexie.js (IndexedDB wrapper)                                   |
 | Push            | Web Push API (VAPID) через Supabase Edge Functions             |
-| Deployment      | Vercel (Next.js), Supabase Edge Functions                      |
+| Deployment      | Vercel (Vite SPA), Supabase Edge Functions                     |
 | Linting         | ESLint + Prettier (автоформатування)                           |
 | Language        | Українська (інтерфейс та коментарі)                            |
 
@@ -43,35 +43,46 @@ const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
 ## Структура проєкту
 
 ```
-/app
-  /(auth)
-    /login          — сторінка входу (Google / Apple)
-  /(app)
+/src
+  /routes           — сторінки (SPA routing)
+    /login          — сторінка входу (Google)
     /dashboard      — головний екран, статистика
-    /workout
-      /new          — новий workout logger
-      /[id]         — деталі тренування
+    /workout-new    — новий workout logger
+    /workout-detail — деталі тренування
+    /workout-edit   — редагування тренування
     /exercises      — бібліотека вправ
     /programs       — шаблони програм
-    /progress       — графіки, 1RM, антропометрія
-    /settings       — нагадування, профіль, експорт
+    /progress       — графіки, 1RM
+    /settings       — профіль, налаштування
+    /offline        — offline fallback
 
-/components
-  /ui               — базові UI-компоненти
-  /workout          — логер, таймер відпочинку, set row
-  /charts           — графіки прогресії
-  /notifications    — налаштування push
+  /components
+    /ui             — базові UI-компоненти (shadcn/ui)
+    /workout        — логер, таймер відпочинку, set row, exercise picker
+    /charts         — графіки прогресії
+    /notifications  — налаштування push
+    /auth           — logout button
+    /exercises      — бібліотека вправ
+    /settings       — профіль
 
-/lib
-  /supabase.ts      — клієнт Supabase (client + server)
-  /auth.ts          — auth helpers
-  /db               — типи та запити до БД
-  /offline          — Dexie schema + sync logic
-  /push.ts          — VAPID підписка
+  /lib
+    /supabase       — клієнт Supabase
+    /auth.tsx       — auth helpers
+    /router.tsx     — SPA router
+    /api            — API функції (dashboard, exercises, workouts, stats, profile)
+    /db             — типи БД
+    /offline        — Dexie schema + sync logic
+    /hooks          — React hooks
+    /utils          — утиліти (calc, etc.)
+    /workout        — reducer, persistence, use-workout hook
 
 /supabase
   /functions        — Edge Functions (reminder-push, cron)
   /migrations       — SQL міграції
+
+/public
+  /icons            — PWA іконки
+  /splash           — splash screens
 ```
 
 ---
@@ -250,9 +261,9 @@ export const calc1RM = (weight: number, reps: number) =>
 
 **Компоненти**
 
-- Використовувати Server Components де можливо (сторінки, layout)
-- Client Components (`'use client'`) тільки для інтерактивних елементів (логер, таймер, форми)
-- Всі Supabase запити на сервері через `createServerClient` з `@supabase/ssr`
+- Це Vite SPA — всі компоненти клієнтські
+- Supabase запити через `createClient` з `@supabase/supabase-js`
+- Роутинг — кастомний SPA router (`lib/router.tsx`)
 
 **Типи**
 
@@ -274,7 +285,7 @@ export const calc1RM = (weight: number, reps: number) =>
 **PWA**
 
 - `manifest.json` з усіма необхідними іконками
-- Service Worker через `next-pwa` (автоматична генерація)
+- Service Worker через `vite-plugin-pwa` (автоматична генерація)
 - Offline fallback сторінка `/offline`
 
 ---
@@ -297,18 +308,28 @@ VAPID_PRIVATE_KEY=
 
 ### MVP (Phase 1)
 
-- [ ] Auth (Google + Apple)
-- [ ] Workout logger (offline-first)
-- [ ] Exercise library
-- [ ] Базова статистика (обсяг, підходи)
-- [ ] Push-нагадування
+- [x] Auth (Google) — PKCE flow, захищені роути, сесія через Supabase
+- [ ] Auth (Apple) — не реалізовано
+- [x] Workout logger (offline-first) — Dexie.js, auto-save, sync on reconnect
+- [x] Exercise library — 60+ вправ (UA), пошук, фільтри, кастомні вправи
+- [x] Базова статистика (обсяг, підходи) — dashboard з тижневою статистикою
+- [ ] Push-нагадування — не розпочато (Edge Functions, VAPID, Web Push)
 
 ### Phase 2
 
-- [ ] Шаблони програм
-- [ ] Графіки прогресії та 1RM
-- [ ] Антропометрія (вага, обхвати)
-- [ ] Таймер відпочинку між підходами
+- [ ] Шаблони програм — DB таблиця є, UI не реалізовано
+- [x] Графіки прогресії та 1RM — Recharts, Epley formula, 4 періоди фільтрації
+- [ ] Антропометрія (вага, обхвати) — DB таблиця є, UI не реалізовано
+- [x] Таймер відпочинку між підходами — діалог, пресети, вібрація, auto-toggle
+
+### Додатково реалізовано (поза початковим roadmap)
+
+- [x] Workout details + editing (24h window, RLS policy)
+- [x] Dashboard — привітання, аватар, календар тренувань (3 міс), recent workouts
+- [x] Profile settings — ім'я, аватар (Supabase Storage), auto-rest timer toggle
+- [x] Active workout banner
+- [x] Muscle distribution chart (pie/bar)
+- [x] PWA — Vite PWA plugin, manifest, service worker, offline fallback
 
 ### Phase 3
 
