@@ -20,6 +20,7 @@ import WorkoutEditPage from "@/src/routes/workout-edit";
 import ProgressPage from "@/src/routes/progress";
 import SettingsPage from "@/src/routes/settings";
 import ProgramsPage from "@/src/routes/programs";
+import InstallPage from "@/src/routes/install";
 
 // --- Root layout ---
 const rootRoute = createRootRoute({
@@ -132,6 +133,12 @@ const programsRoute = createRoute({
   component: ProgramsPage,
 });
 
+const installRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/install",
+  component: InstallPage,
+});
+
 // --- Route tree ---
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -147,6 +154,7 @@ const routeTree = rootRoute.addChildren([
     progressRoute,
     settingsRoute,
     programsRoute,
+    installRoute,
   ]),
 ]);
 
