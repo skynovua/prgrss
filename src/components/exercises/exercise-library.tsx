@@ -234,7 +234,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
               <label className="text-sm font-medium">М&apos;язова група</label>
               <Select value={newGroup} onValueChange={(v) => v && setNewGroup(v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>{MUSCLE_GROUP_LABELS[newGroup as MuscleGroup]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {muscleGroups.map((g) => (
@@ -249,7 +249,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
               <label className="text-sm font-medium">Обладнання</label>
               <Select value={newEquipment} onValueChange={(v) => v && setNewEquipment(v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>{EQUIPMENT_LABELS[newEquipment]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {equipmentKeys.map((eq) => (
