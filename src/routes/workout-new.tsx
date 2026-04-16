@@ -3,14 +3,25 @@ import { useExercises } from "@/src/lib/hooks/use-exercises";
 import { usePreviousSets } from "@/src/lib/hooks/use-workouts";
 
 export default function WorkoutNewPage() {
-  const { data: exercises } = useExercises();
+  const { data: exercises, isLoading, isError } = useExercises();
 
   const { data: previousSets } = usePreviousSets();
 
-  if (!exercises) {
+  if (isLoading) {
     return (
       <div className="fixed inset-x-0 top-0 z-100">
         <div className="bg-primary h-0.5 animate-pulse" />
+      </div>
+    );
+  }
+
+  if (isError || !exercises || exercises.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
+        <p className="text-muted-foreground text-lg">Не вдалося завантажити вправи</p>
+        <p className="text-muted-foreground text-sm">
+          Відкрийте додаток з інтернетом хоча б раз, щоб вправи зберіглися для офлайн роботи
+        </p>
       </div>
     );
   }

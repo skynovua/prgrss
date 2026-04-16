@@ -36,12 +36,46 @@ export async function finishWorkout(
   const workoutId = generateId();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) {
-    return { success: false, redirectTo: "/login" };
+  if (!session?.user) {
+    // Офлайн і немає сесії — зберігаємо локально
+    await db.pendingWorkouts.add({
+      uuid: workoutId,
+      name: workoutExercises
+        .map((we) => we.exercise.name)
+        .slice(0, 3)
+        .join(", "),
+      startedAt,
+      finishedAt,
+      notes: null,
+      programId: null,
+      syncedAt: null,
+    });
+
+    for (const we of workoutExercises) {
+      for (const set of we.sets.filter((s) => s.completed)) {
+        await db.pendingSets.add({
+          uuid: generateId(),
+          workoutUuid: workoutId,
+          exerciseId: we.exercise.id,
+          setNumber: set.setNumber,
+          reps: set.reps,
+          weight: set.weight,
+          rpe: set.rpe,
+          durationS: set.durationS,
+          notes: null,
+          syncedAt: null,
+        });
+      }
+    }
+
+    await clearActiveWorkout();
+    return { success: true, offline: true, redirectTo: "/dashboard" };
   }
+
+  const user = session.user;
 
   const workoutName = workoutExercises
     .map((we) => we.exercise.name)

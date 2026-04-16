@@ -1,8 +1,29 @@
 import { supabase } from "@/src/lib/supabase/client";
+import { db } from "@/src/lib/offline/db";
 
 export async function fetchExercises() {
-  const { data } = await supabase.from("exercises").select("*").order("muscle_group").order("name");
-  return data ?? [];
+  const { data, error } = await supabase
+    .from("exercises")
+    .select("*")
+    .order("muscle_group")
+    .order("name");
+
+  if (data && !error) {
+    // Кешуємо вправи в IndexedDB для офлайн доступу
+    try {
+      await db.cachedExercises.clear();
+      await db.cachedExercises.bulkPut(data);
+    } catch {
+      // Не блокуємо якщо кеш не записався
+    }
+    return data;
+  }
+
+  // Офлайн — повертаємо з IndexedDB
+  const cached = await db.cachedExercises.orderBy("muscle_group").toArray();
+  if (cached.length > 0) return cached;
+
+  throw new Error("Не вдалося завантажити вправи");
 }
 
 export async function createExercise(formData: {
