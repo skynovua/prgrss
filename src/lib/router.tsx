@@ -16,6 +16,7 @@ import DashboardPage from "@/src/routes/dashboard";
 import ExercisesPage from "@/src/routes/exercises";
 import WorkoutNewPage from "@/src/routes/workout-new";
 import WorkoutDetailPage from "@/src/routes/workout-detail";
+import WorkoutEditPage from "@/src/routes/workout-edit";
 import ProgressPage from "@/src/routes/progress";
 import SettingsPage from "@/src/routes/settings";
 import ProgramsPage from "@/src/routes/programs";
@@ -107,6 +108,12 @@ const workoutDetailRoute = createRoute({
   component: WorkoutDetailPage,
 });
 
+const workoutEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/workout/$id/edit",
+  component: WorkoutEditPage,
+});
+
 const progressRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/progress",
@@ -136,6 +143,7 @@ const routeTree = rootRoute.addChildren([
     exercisesRoute,
     workoutNewRoute,
     workoutDetailRoute,
+    workoutEditRoute,
     progressRoute,
     settingsRoute,
     programsRoute,

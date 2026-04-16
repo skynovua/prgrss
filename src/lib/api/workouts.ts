@@ -1,4 +1,65 @@
 import { supabase } from "@/src/lib/supabase/client";
+import type { WorkoutExercise } from "@/src/lib/types";
+
+const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 години
+
+export function isWorkoutEditable(startedAt: string | null): boolean {
+  if (!startedAt) return false;
+  return Date.now() - new Date(startedAt).getTime() < EDIT_WINDOW_MS;
+}
+
+export async function updateWorkout(
+  workoutId: string,
+  workoutExercises: WorkoutExercise[],
+  notes?: string | null
+) {
+  // Перевіряємо 24-год вікно на клієнті (на сервері — RLS-політика)
+  const { data: workout } = await supabase
+    .from("workouts")
+    .select("started_at")
+    .eq("id", workoutId)
+    .single();
+
+  if (!workout || !isWorkoutEditable(workout.started_at)) {
+    throw new Error("Час редагування вичерпано (24 години)");
+  }
+
+  // Видаляємо старі сети
+  await supabase.from("sets").delete().eq("workout_id", workoutId);
+
+  // Вставляємо нові
+  const setsToInsert = workoutExercises.flatMap((we) =>
+    we.sets
+      .filter((s) => s.completed)
+      .map((set) => ({
+        workout_id: workoutId,
+        exercise_id: we.exercise.id,
+        set_number: set.setNumber,
+        reps: set.reps,
+        weight: set.weight,
+        rpe: set.rpe,
+        duration_s: set.durationS,
+      }))
+  );
+
+  if (setsToInsert.length > 0) {
+    const { error } = await supabase.from("sets").insert(setsToInsert);
+    if (error) throw error;
+  }
+
+  // Оновлюємо назву
+  const workoutName = workoutExercises
+    .map((we) => we.exercise.name)
+    .slice(0, 3)
+    .join(", ");
+
+  const { error } = await supabase
+    .from("workouts")
+    .update({ name: workoutName, notes: notes ?? null })
+    .eq("id", workoutId);
+
+  if (error) throw error;
+}
 
 export async function deleteWorkout(workoutId: string) {
   // RLS захищає — видалити можна тільки свої

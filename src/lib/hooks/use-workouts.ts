@@ -4,7 +4,9 @@ import {
   fetchPreviousSets,
   deleteWorkout,
   deleteSetFromWorkout,
+  updateWorkout,
 } from "@/src/lib/api/workouts";
+import type { WorkoutExercise } from "@/src/lib/types";
 import { toast } from "sonner";
 
 export function useWorkoutDetail(id: string | undefined) {
@@ -48,6 +50,33 @@ export function useDeleteSet() {
     },
     onError: (err) => {
       toast.error("Не вдалося видалити підхід", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
+    },
+  });
+}
+
+export function useUpdateWorkout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      workoutId,
+      exercises,
+      notes,
+    }: {
+      workoutId: string;
+      exercises: WorkoutExercise[];
+      notes?: string | null;
+    }) => updateWorkout(workoutId, exercises, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["workout"] });
+      queryClient.invalidateQueries({ queryKey: ["previousSets"] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
+    },
+    onError: (err) => {
+      toast.error("Не вдалося оновити тренування", {
         description: err instanceof Error ? err.message : "Спробуйте ще раз",
       });
     },

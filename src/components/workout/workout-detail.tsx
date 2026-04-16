@@ -1,10 +1,10 @@
-import { useOptimistic, startTransition, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Separator } from "@/src/components/ui/separator";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
-import { ArrowLeft, Trash2, Clock, Dumbbell, TrendingUp } from "lucide-react";
+import { ArrowLeft, Trash2, Clock, Dumbbell, TrendingUp, Pencil } from "lucide-react";
 import {
   MUSCLE_GROUP_LABELS,
   type MuscleGroup,
@@ -12,7 +12,8 @@ import {
   type ExerciseData,
   type WorkoutWithSets,
 } from "@/src/lib/types";
-import { useDeleteWorkout, useDeleteSet } from "@/src/lib/hooks/use-workouts";
+import { useDeleteWorkout } from "@/src/lib/hooks/use-workouts";
+import { isWorkoutEditable } from "@/src/lib/api/workouts";
 import { calc1RM } from "@/src/lib/utils/calc";
 
 interface WorkoutDetailProps {
@@ -23,26 +24,21 @@ interface WorkoutDetailProps {
 export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
   const navigate = useNavigate();
   const deleteWorkoutMutation = useDeleteWorkout();
-  const deleteSetMutation = useDeleteSet();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const [optimisticSets, removeOptimisticSet] = useOptimistic(
-    workout.sets,
-    (state, setId: string) => state.filter((s) => s.id !== setId)
-  );
+  const canEdit = isWorkoutEditable(workout.started_at);
 
   // Групуємо сети по вправах
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
   const grouped = new Map<string, SetData[]>();
-  for (const set of optimisticSets) {
+  for (const set of workout.sets) {
     const existing = grouped.get(set.exercise_id) ?? [];
     existing.push(set);
     grouped.set(set.exercise_id, existing);
   }
 
   // Статистика
-  const totalSets = optimisticSets.length;
-  const totalVolume = optimisticSets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
+  const totalSets = workout.sets.length;
+  const totalVolume = workout.sets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
 
   const duration =
     workout.started_at && workout.finished_at
@@ -54,13 +50,6 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
   const handleDelete = () => {
     deleteWorkoutMutation.mutate(workout.id, {
       onSuccess: () => navigate({ to: "/dashboard" }),
-    });
-  };
-
-  const handleDeleteSet = (setId: string) => {
-    startTransition(() => {
-      removeOptimisticSet(setId);
-      deleteSetMutation.mutate(setId);
     });
   };
 
@@ -84,6 +73,13 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
               })}
           </p>
         </div>
+        {canEdit && (
+          <Link to="/workout/$id/edit" params={{ id: workout.id }}>
+            <Button variant="ghost" size="icon">
+              <Pencil className="h-5 w-5" />
+            </Button>
+          </Link>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -157,7 +153,6 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
                   Зусилля
                 </span>
                 <span className="flex-1 text-center">Оц. 1RM</span>
-                <span className="w-8" />
               </div>
 
               {sortedSets.map((set) => {
@@ -185,14 +180,6 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
                     <span className="text-muted-foreground flex-1 text-center text-sm">
                       {estimated1RM ?? "—"}
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive h-7 w-7"
-                      onClick={() => handleDeleteSet(set.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
                   </div>
                 );
               })}
