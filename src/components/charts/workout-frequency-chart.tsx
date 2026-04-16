@@ -1,6 +1,10 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent } from "@/src/components/ui/card";
-import type { WorkoutFrequencyPoint } from "@/src/lib/api/stats";
+
+interface WorkoutFrequencyPoint {
+  week: string;
+  count: number;
+}
 
 interface Props {
   data: WorkoutFrequencyPoint[];

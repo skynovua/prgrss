@@ -1,6 +1,11 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent } from "@/src/components/ui/card";
-import type { WeeklyVolumePoint } from "@/src/lib/api/stats";
+
+interface WeeklyVolumePoint {
+  week: string;
+  volume: number;
+  workouts: number;
+}
 
 interface Props {
   data: WeeklyVolumePoint[];
