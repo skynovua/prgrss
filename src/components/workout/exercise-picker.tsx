@@ -27,9 +27,10 @@ type SortMode = "all" | "popular" | "favorites";
 interface ExercisePickerProps {
   exercises: Exercise[];
   onSelect: (exercise: Exercise) => void;
+  trigger?: React.ReactNode;
 }
 
-export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
+export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
@@ -92,10 +93,12 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline" className="w-full gap-2">
-          <Plus className="h-4 w-4" />
-          Додати вправу
-        </Button>
+        {trigger ?? (
+          <Button variant="outline" className="w-full gap-2">
+            <Plus className="h-4 w-4" />
+            Додати вправу
+          </Button>
+        )}
       </DrawerTrigger>
       <DrawerContent className="h-[85vh]">
         <DrawerHeader>
