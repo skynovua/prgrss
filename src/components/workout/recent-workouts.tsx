@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
@@ -16,6 +16,11 @@ interface RecentWorkout {
 export function RecentWorkouts({ workouts }: { workouts: RecentWorkout[] }) {
   const deleteMutation = useDeleteWorkout();
   const [localWorkouts, setLocalWorkouts] = useState(workouts);
+
+  // Синхронізуємо локальний стан з новими даними від React Query
+  useEffect(() => {
+    setLocalWorkouts(workouts);
+  }, [workouts]);
 
   const handleDelete = (workoutId: string) => {
     const prev = localWorkouts;

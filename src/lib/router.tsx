@@ -139,7 +139,7 @@ const programsRoute = createRoute({
 });
 
 const installRoute = createRoute({
-  getParentRoute: () => appRoute,
+  getParentRoute: () => rootRoute,
   path: "/install",
   component: InstallPage,
 });
@@ -150,6 +150,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   authCallbackRoute,
   offlineRoute,
+  installRoute,
   appRoute.addChildren([
     dashboardRoute,
     exercisesRoute,
@@ -159,7 +160,6 @@ const routeTree = rootRoute.addChildren([
     progressRoute,
     settingsRoute,
     programsRoute,
-    installRoute,
   ]),
 ]);
 

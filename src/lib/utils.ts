@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Конвертує ISO/UTC рядок в локальну дату "YYYY-MM-DD" */
+export function toLocalDateKey(isoString: string): string {
+  const d = new Date(isoString);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export type Platform = "ios" | "android" | "desktop" | "unknown";
 
 export function detectPlatform(): Platform {

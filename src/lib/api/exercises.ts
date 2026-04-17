@@ -60,3 +60,42 @@ export async function deleteExercise(exerciseId: string) {
     .eq("is_custom", true);
   if (error) throw new Error(error.message);
 }
+
+// --- Вподобані вправи ---
+
+export async function fetchFavoriteExerciseIds(): Promise<string[]> {
+  const { data, error } = await supabase.from("favorite_exercises").select("exercise_id");
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => r.exercise_id);
+}
+
+export async function toggleFavoriteExercise(exerciseId: string, isFavorite: boolean) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("Не авторизовано");
+
+  if (isFavorite) {
+    const { error } = await supabase
+      .from("favorite_exercises")
+      .delete()
+      .eq("user_id", session.user.id)
+      .eq("exercise_id", exerciseId);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("favorite_exercises")
+      .insert({ user_id: session.user.id, exercise_id: exerciseId });
+    if (error) throw new Error(error.message);
+  }
+}
+
+// --- Популярні вправи ---
+
+export async function fetchPopularExerciseIds(): Promise<string[]> {
+  const { data, error } = await supabase.rpc("get_popular_exercises", { lim: 20 });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => r.exercise_id);
+}

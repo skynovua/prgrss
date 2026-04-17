@@ -1,9 +1,10 @@
-import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useNavigate, Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { createClient } from "@/src/lib/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download, X } from "lucide-react";
+import { isStandalone } from "@/src/lib/utils";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -33,6 +34,14 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<"google" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showInstall, setShowInstall] = useState(false);
+
+  useEffect(() => {
+    if (!isStandalone() && !localStorage.getItem("pwa-banner-dismissed")) {
+      const timer = setTimeout(() => setShowInstall(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Якщо вже залогінений — перенаправляємо
   supabase.auth.getUser().then(({ data: { user } }) => {
@@ -99,6 +108,29 @@ export default function LoginPage() {
           Входячи, ви погоджуєтесь з умовами використання
         </p>
       </div>
+
+      {showInstall && (
+        <div className="animate-in slide-in-from-bottom fixed inset-x-0 bottom-0 z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] duration-300">
+          <div className="bg-card border-border mx-auto flex max-w-sm items-center gap-3 rounded-xl border p-4 shadow-lg">
+            <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+              <Download className="h-5 w-5" />
+            </div>
+            <Link to="/install" className="flex min-w-0 flex-col">
+              <span className="text-sm font-medium">Встановити додаток</span>
+              <span className="text-muted-foreground text-xs">Швидший доступ та робота офлайн</span>
+            </Link>
+            <button
+              onClick={() => {
+                setShowInstall(false);
+                localStorage.setItem("pwa-banner-dismissed", "1");
+              }}
+              className="text-muted-foreground hover:text-foreground ml-auto shrink-0 p-1"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

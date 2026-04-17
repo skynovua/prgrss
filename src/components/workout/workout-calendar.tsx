@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { toLocalDateKey } from "@/src/lib/utils";
 import { cn } from "@/src/lib/utils";
 
 interface WorkoutDay {
@@ -60,7 +61,7 @@ export function WorkoutCalendar({ workouts }: WorkoutCalendarProps) {
   const workoutMap = useMemo(() => {
     const map = new Map<string, WorkoutDay[]>();
     for (const w of workouts) {
-      const date = w.started_at.slice(0, 10);
+      const date = toLocalDateKey(w.started_at);
       const existing = map.get(date) ?? [];
       map.set(date, [...existing, w]);
     }
