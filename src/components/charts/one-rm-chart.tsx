@@ -98,10 +98,11 @@ export function ExerciseProgressChart({ data }: Props) {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
                 fontSize: 12,
+                color: "var(--card-foreground)",
               }}
               formatter={(value) => [
                 `${Number(value).toLocaleString("uk-UA")} кг`,

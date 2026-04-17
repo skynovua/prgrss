@@ -39,11 +39,13 @@ export function MuscleDistributionChart({ data }: Props) {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
                 fontSize: 12,
+                color: "var(--card-foreground)",
               }}
+              cursor={{ fill: "var(--accent)", opacity: 0.3 }}
               formatter={(value) => [`${Number(value).toLocaleString("uk-UA")} кг`, "Тонаж"]}
             />
             <Bar dataKey="volume" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
