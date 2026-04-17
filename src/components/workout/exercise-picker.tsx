@@ -173,7 +173,7 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
                   <button
                     key={exercise.id}
                     onClick={() => handleSelect(exercise)}
-                    className="hover:bg-accent flex items-center justify-between rounded-lg px-3 py-3 text-left transition-colors"
+                    className="hover:bg-accent flex items-center justify-between px-3 py-3 text-left transition-colors"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{exercise.name}</p>
