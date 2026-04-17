@@ -1,5 +1,6 @@
 import { supabase } from "@/src/lib/supabase/client";
 import { calc1RM } from "@/src/lib/utils/calc";
+import { toLocalDateKey } from "@/src/lib/utils";
 
 export type Period = "7d" | "30d" | "90d" | "all";
 
@@ -295,7 +296,7 @@ export async function fetchExerciseProgress(since: string | null): Promise<Exerc
     const workouts = s.workouts as unknown as { started_at: string } | { started_at: string }[];
     const startedAt = Array.isArray(workouts) ? workouts[0]?.started_at : workouts?.started_at;
     if (!startedAt) continue;
-    const date = new Date(startedAt).toISOString().slice(0, 10);
+    const date = toLocalDateKey(startedAt);
 
     if (!exerciseMap.has(s.exercise_id)) {
       exerciseMap.set(s.exercise_id, { name, dates: new Map() });
