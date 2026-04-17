@@ -5,7 +5,7 @@ import { Separator } from "@/src/components/ui/separator";
 import { ExercisePicker } from "@/src/components/workout/exercise-picker";
 import { SetRow } from "@/src/components/workout/set-row";
 import { RestTimer } from "@/src/components/workout/rest-timer";
-import { Timer, Plus, Check } from "lucide-react";
+import { Timer, Plus, Check, Dumbbell } from "lucide-react";
 import {
   type Exercise,
   type WorkoutExercise,
@@ -147,19 +147,43 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
       <Separator />
 
       {/* Вправи */}
-      {workoutExercises.map((we, exerciseIndex) => (
-        <ExerciseCard
-          key={`${we.exercise.id}-${exerciseIndex}`}
-          we={we}
-          exerciseIndex={exerciseIndex}
-          previousSets={previousSets?.[we.exercise.id]}
-          autoRestTimer={autoRestTimer}
-          dispatch={dispatch}
-        />
-      ))}
+      {workoutExercises.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
+          <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
+            <Dumbbell className="text-muted-foreground h-8 w-8" />
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-lg font-semibold">Почнемо!</p>
+            <p className="text-muted-foreground text-sm">Додай першу вправу до тренування</p>
+          </div>
+          <ExercisePicker
+            exercises={exercises}
+            onSelect={addExercise}
+            trigger={
+              <Button size="lg" className="gap-2">
+                <Plus className="h-5 w-5" />
+                Додати вправу
+              </Button>
+            }
+          />
+        </div>
+      ) : (
+        <>
+          {workoutExercises.map((we, exerciseIndex) => (
+            <ExerciseCard
+              key={`${we.exercise.id}-${exerciseIndex}`}
+              we={we}
+              exerciseIndex={exerciseIndex}
+              previousSets={previousSets?.[we.exercise.id]}
+              autoRestTimer={autoRestTimer}
+              dispatch={dispatch}
+            />
+          ))}
 
-      {/* Додати вправу */}
-      <ExercisePicker exercises={exercises} onSelect={addExercise} />
+          {/* Додати вправу */}
+          <ExercisePicker exercises={exercises} onSelect={addExercise} />
+        </>
+      )}
 
       {/* Таймер відпочинку */}
       <RestTimer
@@ -177,7 +201,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
               onClick={handleFinish}
               disabled={saving || totalSets === 0}
             >
-              <Check className="h-4 w-4" />
+              <Check className="h-5 w-5" />
               {saving ? "Зберігаю..." : "Завершити тренування"}
             </Button>
           </div>

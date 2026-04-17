@@ -97,7 +97,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Бібліотека вправ</h1>
         <Button size="sm" className="gap-1" onClick={() => setAddDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3 w-3" />
           Додати
         </Button>
       </div>

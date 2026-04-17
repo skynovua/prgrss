@@ -95,7 +95,7 @@ export function SetRow({
         className="text-muted-foreground h-11 w-11 shrink-0"
         onClick={() => onDelete(set.id)}
       >
-        <Trash2 className="h-3 w-3" />
+        <Trash2 className="h-4 w-4" />
       </Button>
     </div>
   );

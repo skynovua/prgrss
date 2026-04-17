@@ -278,7 +278,7 @@ export function WorkoutEditor({
               onClick={handleSave}
               disabled={state.saving || totalSets === 0}
             >
-              <Check className="h-4 w-4" />
+              <Check className="h-5 w-5" />
               {state.saving ? "Зберігаю..." : "Зберегти зміни"}
             </Button>
           </div>

@@ -2,12 +2,12 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import { Input } from "@/src/components/ui/input";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/src/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/src/components/ui/drawer";
 import { Button } from "@/src/components/ui/button";
 import { Plus, Search, Heart, TrendingUp } from "lucide-react";
 import {
@@ -27,9 +27,10 @@ type SortMode = "all" | "popular" | "favorites";
 interface ExercisePickerProps {
   exercises: Exercise[];
   onSelect: (exercise: Exercise) => void;
+  trigger?: React.ReactNode;
 }
 
-export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
+export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
@@ -90,21 +91,21 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
   );
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        render={
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
+        {trigger ?? (
           <Button variant="outline" className="w-full gap-2">
             <Plus className="h-4 w-4" />
             Додати вправу
           </Button>
-        }
-      />
-      <SheetContent side="bottom" className="h-[85vh]">
-        <SheetHeader>
-          <SheetTitle>Вибрати вправу</SheetTitle>
-        </SheetHeader>
+        )}
+      </DrawerTrigger>
+      <DrawerContent className="h-[85vh]">
+        <DrawerHeader>
+          <DrawerTitle>Вибрати вправу</DrawerTitle>
+        </DrawerHeader>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
           <div className="relative mx-3">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
@@ -167,7 +168,7 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
             <div className="from-popover pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
           </div>
 
-          <ScrollArea className="h-[calc(85vh-260px)]">
+          <ScrollArea className="flex-1 overflow-auto">
             <div className="flex flex-col gap-1 pb-6">
               {filtered.map((exercise) => {
                 const isFav = favoriteSet.has(exercise.id);
@@ -175,7 +176,7 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
                   <button
                     key={exercise.id}
                     onClick={() => handleSelect(exercise)}
-                    className="hover:bg-accent flex items-center justify-between rounded-lg px-3 py-3 text-left transition-colors"
+                    className="hover:bg-accent flex items-center justify-between px-3 py-3 text-left transition-colors"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{exercise.name}</p>
@@ -185,7 +186,7 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
                         · {exercise.equipment && EQUIPMENT_LABELS[exercise.equipment]}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center">
                       <span
                         role="button"
                         tabIndex={0}
@@ -196,15 +197,14 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
                             handleToggleFavorite(e as unknown as React.MouseEvent, exercise.id);
                           }
                         }}
-                        className="rounded-full p-1.5 transition-colors active:scale-90"
+                        className="-mr-1.5 rounded-full p-2.5 transition-colors active:scale-90"
                       >
                         <Heart
-                          className={`h-4 w-4 ${
+                          className={`h-5 w-5 ${
                             isFav ? "fill-red-500 text-red-500" : "text-muted-foreground"
                           }`}
                         />
                       </span>
-                      <Plus className="text-muted-foreground h-4 w-4" />
                     </div>
                   </button>
                 );
@@ -221,7 +221,7 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
             </div>
           </ScrollArea>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
