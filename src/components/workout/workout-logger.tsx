@@ -150,7 +150,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
       {workoutExercises.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
           <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
-            <Dumbbell className="text-muted-foreground h-10 w-10" />
+            <Dumbbell className="text-muted-foreground h-8 w-8" />
           </div>
           <div className="flex flex-col items-center gap-1">
             <p className="text-lg font-semibold">Почнемо!</p>
@@ -201,7 +201,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
               onClick={handleFinish}
               disabled={saving || totalSets === 0}
             >
-              <Check className="h-4 w-4" />
+              <Check className="h-5 w-5" />
               {saving ? "Зберігаю..." : "Завершити тренування"}
             </Button>
           </div>

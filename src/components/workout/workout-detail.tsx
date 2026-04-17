@@ -95,7 +95,7 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
         {duration !== null && (
           <Card>
             <CardContent className="flex flex-col items-center p-3">
-              <Clock className="text-muted-foreground mb-1 h-4 w-4" />
+              <Clock className="text-muted-foreground mb-1 h-5 w-5" />
               <span className="text-lg font-bold">{duration}</span>
               <span className="text-muted-foreground text-xs">хв</span>
             </CardContent>
@@ -103,14 +103,14 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
         )}
         <Card>
           <CardContent className="flex flex-col items-center p-3">
-            <Dumbbell className="text-muted-foreground mb-1 h-4 w-4" />
+            <Dumbbell className="text-muted-foreground mb-1 h-5 w-5" />
             <span className="text-lg font-bold">{totalSets}</span>
             <span className="text-muted-foreground text-xs">підходів</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center p-3">
-            <TrendingUp className="text-muted-foreground mb-1 h-4 w-4" />
+            <TrendingUp className="text-muted-foreground mb-1 h-5 w-5" />
             <span className="text-lg font-bold">
               {totalVolume > 1000 ? `${(totalVolume / 1000).toFixed(1)}т` : Math.round(totalVolume)}
             </span>
