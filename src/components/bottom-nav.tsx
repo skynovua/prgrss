@@ -1,12 +1,20 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, type LinkProps } from "@tanstack/react-router";
 import { Home, Dumbbell, Plus, TrendingUp, Settings } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const NAV_ITEMS = [
-  { href: "/dashboard" as const, label: "Головна", icon: Home, accent: false },
-  { href: "/exercises" as const, label: "Вправи", icon: Dumbbell, accent: false },
-  { href: "/workout/new" as const, label: "Старт", icon: Plus, accent: true },
-  { href: "/progress" as const, label: "Прогрес", icon: TrendingUp, accent: false },
-  { href: "/settings" as const, label: "Більше", icon: Settings, accent: false },
+interface NavItem {
+  href: NonNullable<LinkProps["to"]>;
+  label: string;
+  icon: LucideIcon;
+  accent: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard", label: "Головна", icon: Home, accent: false },
+  { href: "/exercises", label: "Вправи", icon: Dumbbell, accent: false },
+  { href: "/workout/new", label: "Старт", icon: Plus, accent: true },
+  { href: "/progress", label: "Прогрес", icon: TrendingUp, accent: false },
+  { href: "/settings", label: "Більше", icon: Settings, accent: false },
 ];
 
 export function BottomNav() {
