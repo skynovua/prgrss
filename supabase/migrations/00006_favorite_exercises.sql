@@ -1,6 +1,6 @@
 -- Таблиця для вподобаних вправ
 create table public.favorite_exercises (
-  user_id uuid references public.users not null,
+  user_id uuid references public.users not null default auth.uid(),
   exercise_id uuid references public.exercises not null,
   created_at timestamptz default now(),
   primary key (user_id, exercise_id)

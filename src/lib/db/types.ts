@@ -55,39 +55,6 @@ export type Database = {
           },
         ];
       };
-      favorite_exercises: {
-        Row: {
-          user_id: string;
-          exercise_id: string;
-          created_at: string;
-        };
-        Insert: {
-          user_id: string;
-          exercise_id: string;
-          created_at?: string;
-        };
-        Update: {
-          user_id?: string;
-          exercise_id?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "favorite_exercises_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "favorite_exercises_exercise_id_fkey";
-            columns: ["exercise_id"];
-            isOneToOne: false;
-            referencedRelation: "exercises";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       exercises: {
         Row: {
           equipment: string | null;
@@ -116,6 +83,39 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "exercises_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      favorite_exercises: {
+        Row: {
+          created_at: string | null;
+          exercise_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          exercise_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          exercise_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "favorite_exercises_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "favorite_exercises_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
@@ -360,9 +360,7 @@ export type Database = {
     };
     Functions: {
       get_popular_exercises: {
-        Args: {
-          lim?: number;
-        };
+        Args: { lim?: number };
         Returns: {
           exercise_id: string;
           usage_count: number;

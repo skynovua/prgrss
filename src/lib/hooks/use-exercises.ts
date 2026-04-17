@@ -63,7 +63,25 @@ export function useToggleFavoriteExercise() {
   return useMutation({
     mutationFn: ({ exerciseId, isFavorite }: { exerciseId: string; isFavorite: boolean }) =>
       toggleFavoriteExercise(exerciseId, isFavorite),
-    onSuccess: () => {
+    onMutate: async ({ exerciseId, isFavorite }) => {
+      // Скасовуємо запити що летять, щоб не перезаписати optimistic update
+      await queryClient.cancelQueries({ queryKey: ["favorite-exercises"] });
+
+      const previous = queryClient.getQueryData<string[]>(["favorite-exercises"]);
+
+      queryClient.setQueryData<string[]>(["favorite-exercises"], (old = []) =>
+        isFavorite ? old.filter((id) => id !== exerciseId) : [...old, exerciseId]
+      );
+
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      // Відкат при помилці
+      if (context?.previous) {
+        queryClient.setQueryData(["favorite-exercises"], context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["favorite-exercises"] });
     },
   });

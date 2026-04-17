@@ -72,21 +72,21 @@ export async function fetchFavoriteExerciseIds(): Promise<string[]> {
 
 export async function toggleFavoriteExercise(exerciseId: string, isFavorite: boolean) {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Не авторизовано");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("Не авторизовано");
 
   if (isFavorite) {
     const { error } = await supabase
       .from("favorite_exercises")
       .delete()
-      .eq("user_id", user.id)
+      .eq("user_id", session.user.id)
       .eq("exercise_id", exerciseId);
     if (error) throw new Error(error.message);
   } else {
     const { error } = await supabase
       .from("favorite_exercises")
-      .insert({ user_id: user.id, exercise_id: exerciseId });
+      .insert({ user_id: session.user.id, exercise_id: exerciseId });
     if (error) throw new Error(error.message);
   }
 }

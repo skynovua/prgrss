@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { Input } from "@/src/components/ui/input";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
 import {
@@ -68,13 +68,26 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
     setSortMode("all");
   };
 
-  const handleToggleFavorite = (e: React.MouseEvent, exerciseId: string) => {
-    e.stopPropagation();
-    toggleFavorite.mutate({
-      exerciseId,
-      isFavorite: favoriteSet.has(exerciseId),
-    });
-  };
+  // Захист від спаму: блокуємо повторний клік на ту саму вправу поки мутація в процесі
+  const pendingIds = useRef(new Set<string>());
+
+  const handleToggleFavorite = useCallback(
+    (e: React.MouseEvent, exerciseId: string) => {
+      e.stopPropagation();
+      if (pendingIds.current.has(exerciseId)) return;
+
+      pendingIds.current.add(exerciseId);
+      toggleFavorite.mutate(
+        { exerciseId, isFavorite: favoriteSet.has(exerciseId) },
+        {
+          onSettled: () => {
+            pendingIds.current.delete(exerciseId);
+          },
+        }
+      );
+    },
+    [toggleFavorite, favoriteSet]
+  );
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
