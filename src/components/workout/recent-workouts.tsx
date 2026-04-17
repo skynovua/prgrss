@@ -1,95 +1,83 @@
-import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
-import { Trash2 } from "lucide-react";
-import { useDeleteWorkout } from "@/src/lib/hooks/use-workouts";
+import { Badge } from "@/src/components/ui/badge";
+import { ChevronRight } from "lucide-react";
+import { MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/src/lib/types";
 
 interface RecentWorkout {
   id: string;
   name: string | null;
   started_at: string | null;
-  sets: { id: string }[];
+  setsCount: number;
+  volume: number;
+  muscleGroups: string[];
+  duration: number | null;
 }
 
 export function RecentWorkouts({ workouts }: { workouts: RecentWorkout[] }) {
-  const deleteMutation = useDeleteWorkout();
-  const [localWorkouts, setLocalWorkouts] = useState(workouts);
-
-  // Синхронізуємо локальний стан з новими даними від React Query
-  useEffect(() => {
-    setLocalWorkouts(workouts);
-  }, [workouts]);
-
-  const handleDelete = (workoutId: string) => {
-    const prev = localWorkouts;
-    setLocalWorkouts((w) => w.filter((w) => w.id !== workoutId));
-    deleteMutation.mutate(workoutId, {
-      onError: () => setLocalWorkouts(prev),
-    });
-  };
-
-  if (localWorkouts.length === 0) return null;
+  if (workouts.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Останні тренування</h2>
-      {localWorkouts.map((workout) => (
-        <WorkoutRow key={workout.id} workout={workout} onDelete={handleDelete} />
-      ))}
+    <div className="flex flex-col gap-1.5">
+      <h2 className="text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase">
+        Останні тренування
+      </h2>
+      <div className="bg-card divide-border divide-y rounded-xl">
+        {workouts.map((workout) => (
+          <WorkoutRow key={workout.id} workout={workout} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function WorkoutRow({
-  workout,
-  onDelete,
-}: {
-  workout: RecentWorkout;
-  onDelete: (id: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
+function WorkoutRow({ workout }: { workout: RecentWorkout }) {
+  const volumeLabel =
+    workout.volume > 1000
+      ? `${(workout.volume / 1000).toFixed(1)}т`
+      : `${Math.round(workout.volume)} кг`;
+
+  const meta: string[] = [];
+  if (workout.started_at) {
+    meta.push(
+      new Date(workout.started_at).toLocaleDateString("uk-UA", {
+        day: "numeric",
+        month: "short",
+      })
+    );
+  }
+  if (workout.duration) {
+    meta.push(`${workout.duration} хв`);
+  }
+  meta.push(`${workout.setsCount} підх`);
+  meta.push(volumeLabel);
 
   return (
-    <Card className="hover:bg-accent/50 transition-colors">
-      <div className="flex items-center gap-1">
-        <Link to="/workout/$id" params={{ id: workout.id }} className="flex-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">{workout.name ?? "Тренування"}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-muted-foreground flex gap-4 text-xs">
-              <span>
-                {workout.started_at &&
-                  new Date(workout.started_at).toLocaleDateString("uk-UA", {
-                    day: "numeric",
-                    month: "short",
-                  })}
-              </span>
-              <span>{Array.isArray(workout.sets) ? workout.sets.length : 0} підходів</span>
+    <Link
+      to="/workout/$id"
+      params={{ id: workout.id }}
+      className="active:bg-accent/50 flex items-center gap-3 px-4 py-3 transition-colors"
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="truncate text-sm font-medium">{workout.name ?? "Тренування"}</span>
+          {workout.muscleGroups.length > 0 && (
+            <div className="flex gap-1">
+              {workout.muscleGroups.slice(0, 2).map((mg) => (
+                <Badge key={mg} variant="secondary" className="shrink-0 px-1.5 py-0 text-[10px]">
+                  {MUSCLE_GROUP_LABELS[mg as MuscleGroup] ?? mg}
+                </Badge>
+              ))}
+              {workout.muscleGroups.length > 2 && (
+                <span className="text-muted-foreground text-[10px]">
+                  +{workout.muscleGroups.length - 2}
+                </span>
+              )}
             </div>
-          </CardContent>
-        </Link>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive mr-3 h-8 w-8 shrink-0"
-          onClick={() => setOpen(true)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+          )}
+        </div>
+        <p className="text-muted-foreground mt-0.5 text-xs">{meta.join(" · ")}</p>
       </div>
-
-      <ConfirmDialog
-        open={open}
-        onOpenChange={setOpen}
-        title="Видалити тренування?"
-        description="Це видалить тренування та всі підходи. Цю дію неможливо скасувати."
-        confirmText="Видалити"
-        isDestructive
-        onConfirm={() => onDelete(workout.id)}
-      />
-    </Card>
+      <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+    </Link>
   );
 }
