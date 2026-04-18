@@ -222,7 +222,7 @@ export function WorkoutEditor({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
+    <div className="flex flex-1 flex-col gap-4 p-4 pb-[5rem]">
       {/* Хедер */}
       <div className="flex items-center gap-3">
         <Link to="/workout/$id" params={{ id: workout.id }}>

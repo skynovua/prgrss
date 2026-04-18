@@ -126,7 +126,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   } = useWorkout(previousSets);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
+    <div className="flex flex-1 flex-col gap-4 p-4 pb-[5rem]">
       {/* Хедер */}
       <div className="flex items-center justify-between">
         <div>
