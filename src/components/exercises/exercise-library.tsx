@@ -118,7 +118,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveGroup("all")}
-            className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
               activeGroup === "all"
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground active:bg-accent"
@@ -130,7 +130,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             <button
               key={group}
               onClick={() => setActiveGroup(group)}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                 activeGroup === group
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground active:bg-accent"
@@ -148,7 +148,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveEquipment("all")}
-            className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
               activeEquipment === "all"
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground active:bg-accent"
@@ -160,7 +160,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             <button
               key={eq}
               onClick={() => setActiveEquipment(eq)}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                 activeEquipment === eq
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground active:bg-accent"

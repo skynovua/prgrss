@@ -143,7 +143,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
             <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-3">
               <button
                 onClick={() => setActiveGroup("all")}
-                className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeGroup === "all"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground active:bg-accent"
@@ -155,7 +155,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                 <button
                   key={group}
                   onClick={() => setActiveGroup(group)}
-                  className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     activeGroup === group
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground active:bg-accent"
@@ -179,7 +179,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                     className="hover:bg-accent flex items-center justify-between px-3 py-3 text-left transition-colors"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium">{exercise.name}</p>
+                      <p className="text-sm font-medium">{exercise.name}</p>
                       <p className="text-muted-foreground text-sm">
                         {exercise.muscle_group &&
                           MUSCLE_GROUP_LABELS[exercise.muscle_group as MuscleGroup]}{" "}
@@ -197,10 +197,10 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                             handleToggleFavorite(e as unknown as React.MouseEvent, exercise.id);
                           }
                         }}
-                        className="-mr-1.5 rounded-full p-2.5 transition-colors active:scale-90"
+                        className="rounded-full p-2.5 transition-colors active:scale-90"
                       >
                         <Heart
-                          className={`h-5 w-5 ${
+                          className={`h-4 w-4 ${
                             isFav ? "fill-red-500 text-red-500" : "text-muted-foreground"
                           }`}
                         />
