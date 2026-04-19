@@ -18,14 +18,14 @@ interface Props {
 type Metric = "estimated1RM" | "bestWeight" | "totalVolume";
 
 const METRIC_LABELS: Record<Metric, string> = {
-  estimated1RM: "Оц. 1RM",
   bestWeight: "Макс вага",
   totalVolume: "Об'єм",
+  estimated1RM: "Оц. 1RM",
 };
 
 export function ExerciseProgressChart({ data }: Props) {
   const [selectedExercise, setSelectedExercise] = useState(0);
-  const [metric, setMetric] = useState<Metric>("estimated1RM");
+  const [metric, setMetric] = useState<Metric>("bestWeight");
 
   if (data.length === 0) {
     return (
