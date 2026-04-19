@@ -2,12 +2,12 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import { Input } from "@/src/components/ui/input";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/src/components/ui/drawer";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/src/components/ui/sheet";
 import { Button } from "@/src/components/ui/button";
 import { Plus, Search, Heart, TrendingUp } from "lucide-react";
 import {
@@ -91,21 +91,25 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
   );
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        {trigger ?? (
-          <Button variant="outline" className="w-full gap-2">
-            <Plus className="h-4 w-4" />
-            Додати вправу
-          </Button>
-        )}
-      </DrawerTrigger>
-      <DrawerContent className="h-[85vh]">
-        <DrawerHeader>
-          <DrawerTitle>Вибрати вправу</DrawerTitle>
-        </DrawerHeader>
+    <Sheet open={open} onOpenChange={setOpen}>
+      {trigger ? (
+        <SheetTrigger render={trigger as React.ReactElement} />
+      ) : (
+        <SheetTrigger
+          render={
+            <Button variant="outline" className="w-full gap-2">
+              <Plus className="h-4 w-4" />
+              Додати вправу
+            </Button>
+          }
+        />
+      )}
+      <SheetContent side="bottom" className="h-[85vh]">
+        <SheetHeader>
+          <SheetTitle>Вибрати вправу</SheetTitle>
+        </SheetHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <div className="relative mx-3">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
@@ -143,7 +147,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
             <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-3">
               <button
                 onClick={() => setActiveGroup("all")}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
                   activeGroup === "all"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground active:bg-accent"
@@ -155,7 +159,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                 <button
                   key={group}
                   onClick={() => setActiveGroup(group)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
                     activeGroup === group
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground active:bg-accent"
@@ -168,7 +172,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
             <div className="from-popover pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
           </div>
 
-          <ScrollArea className="flex-1 overflow-auto">
+          <ScrollArea className="h-[calc(85vh-260px)]">
             <div className="flex flex-col gap-1 pb-6">
               {filtered.map((exercise) => {
                 const isFav = favoriteSet.has(exercise.id);
@@ -179,14 +183,14 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                     className="hover:bg-accent flex items-center justify-between px-3 py-3 text-left transition-colors"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{exercise.name}</p>
+                      <p className="font-medium">{exercise.name}</p>
                       <p className="text-muted-foreground text-sm">
                         {exercise.muscle_group &&
                           MUSCLE_GROUP_LABELS[exercise.muscle_group as MuscleGroup]}{" "}
                         · {exercise.equipment && EQUIPMENT_LABELS[exercise.equipment]}
                       </p>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-2">
                       <span
                         role="button"
                         tabIndex={0}
@@ -197,7 +201,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                             handleToggleFavorite(e as unknown as React.MouseEvent, exercise.id);
                           }
                         }}
-                        className="rounded-full p-2.5 transition-colors active:scale-90"
+                        className="rounded-full p-1.5 transition-colors active:scale-90"
                       >
                         <Heart
                           className={`h-4 w-4 ${
@@ -205,6 +209,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                           }`}
                         />
                       </span>
+                      <Plus className="text-muted-foreground h-4 w-4" />
                     </div>
                   </button>
                 );
@@ -221,7 +226,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
             </div>
           </ScrollArea>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </SheetContent>
+    </Sheet>
   );
 }
