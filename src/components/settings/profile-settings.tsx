@@ -3,8 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ca
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Switch } from "@/src/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
 import { Camera, Check, Loader2 } from "lucide-react";
 import { useUpdateProfile, useUploadAvatar } from "@/src/lib/hooks/use-profile";
+import { useTheme } from "@/src/lib/theme";
 
 interface ProfileSettingsProps {
   name: string;
@@ -142,6 +150,40 @@ export function ProfileSettings({
           </div>
         </CardContent>
       </Card>
+
+      <ThemeCard />
     </>
+  );
+}
+
+const themeLabels = { system: "Системна", light: "Світла", dark: "Темна" } as const;
+
+function ThemeCard() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Зовнішній вигляд</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Тема</p>
+            <p className="text-muted-foreground text-xs">Оберіть кольорову схему</p>
+          </div>
+          <Select value={theme} onValueChange={(v) => setTheme(v as "light" | "dark" | "system")}>
+            <SelectTrigger className="w-35">
+              <SelectValue>{themeLabels[theme]}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="system">Системна</SelectItem>
+              <SelectItem value="light">Світла</SelectItem>
+              <SelectItem value="dark">Темна</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
