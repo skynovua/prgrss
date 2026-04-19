@@ -27,10 +27,7 @@ const rootRoute = createRootRoute({
   component: () => (
     <>
       <Outlet />
-      <Toaster
-        position="top-center"
-        style={{ top: "env(safe-area-inset-top, 0px)" }}
-      />
+      <Toaster position="top-center" style={{ top: "env(safe-area-inset-top, 0px)" }} />
     </>
   ),
 });
