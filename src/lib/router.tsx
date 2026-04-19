@@ -81,7 +81,7 @@ const appRoute = createRoute({
   },
   component: () => (
     <SyncProvider>
-      <div className="flex min-h-svh flex-col pb-[calc(5rem+env(safe-area-inset-bottom))]">
+      <div className="flex min-h-svh flex-col pt-[env(safe-area-inset-top)] pb-[calc(4rem+env(safe-area-inset-bottom))]">
         <Outlet />
       </div>
       <BottomNav />
