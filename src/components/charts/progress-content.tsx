@@ -6,6 +6,7 @@ import { ExerciseProgressChart } from "@/src/components/charts/one-rm-chart";
 import { MuscleDistributionChart } from "@/src/components/charts/muscle-distribution-chart";
 import { useGlobalStats, usePeriodProgress } from "@/src/lib/hooks/use-progress";
 import type { Period, LastWorkoutComparison, TopExercise } from "@/src/lib/api/stats";
+import { LoaderBar } from "@/src/components/ui/loader-bar";
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: "7d", label: "7 днів" },
@@ -20,11 +21,7 @@ export function ProgressContent() {
   const { data: periodData, isFetching, isLoading: periodLoading } = usePeriodProgress(period);
 
   if (globalLoading || periodLoading) {
-    return (
-      <div className="fixed inset-x-0 top-0 z-100">
-        <div className="bg-primary h-0.5 animate-pulse" />
-      </div>
-    );
+    return <LoaderBar />;
   }
 
   return (

@@ -4,6 +4,7 @@ import { ActiveWorkoutBanner } from "@/src/components/workout/active-workout-ban
 import { RecentWorkouts } from "@/src/components/workout/recent-workouts";
 import { WorkoutCalendar } from "@/src/components/workout/workout-calendar";
 import { useDashboard } from "@/src/lib/hooks/use-dashboard";
+import { LoaderBar } from "@/src/components/ui/loader-bar";
 
 function StatDiff({ current, previous }: { current: number; previous: number }) {
   if (previous === 0 && current === 0) return null;
@@ -31,11 +32,7 @@ export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
 
   if (isLoading || !data) {
-    return (
-      <div className="fixed inset-x-0 top-0 z-100">
-        <div className="bg-primary h-0.5 animate-pulse" />
-      </div>
-    );
+    return <LoaderBar />;
   }
 
   const { profile, recentWorkouts, weekStats, prevWeekStats, calendarWorkouts } = data;

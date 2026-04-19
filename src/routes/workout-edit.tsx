@@ -3,6 +3,7 @@ import { WorkoutEditor } from "@/src/components/workout/workout-editor";
 import { useWorkoutDetail, usePreviousSets } from "@/src/lib/hooks/use-workouts";
 import { useExercises } from "@/src/lib/hooks/use-exercises";
 import { isWorkoutEditable } from "@/src/lib/api/workouts";
+import { LoaderBar } from "@/src/components/ui/loader-bar";
 
 export default function WorkoutEditPage() {
   const { id } = useParams({ strict: false });
@@ -13,11 +14,7 @@ export default function WorkoutEditPage() {
   const { data: previousSets } = usePreviousSets();
 
   if (isLoading) {
-    return (
-      <div className="fixed inset-x-0 top-0 z-100">
-        <div className="bg-primary h-0.5 animate-pulse" />
-      </div>
-    );
+    return <LoaderBar />;
   }
 
   if (!data) {
@@ -32,11 +29,7 @@ export default function WorkoutEditPage() {
   }
 
   if (!allExercises) {
-    return (
-      <div className="fixed inset-x-0 top-0 z-100">
-        <div className="bg-primary h-0.5 animate-pulse" />
-      </div>
-    );
+    return <LoaderBar />;
   }
 
   return (

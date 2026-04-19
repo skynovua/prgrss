@@ -1,6 +1,7 @@
 import { WorkoutLogger } from "@/src/components/workout/workout-logger";
 import { useExercises } from "@/src/lib/hooks/use-exercises";
 import { usePreviousSets } from "@/src/lib/hooks/use-workouts";
+import { LoaderBar } from "@/src/components/ui/loader-bar";
 
 export default function WorkoutNewPage() {
   const { data: exercises, isLoading, isError } = useExercises();
@@ -8,11 +9,7 @@ export default function WorkoutNewPage() {
   const { data: previousSets } = usePreviousSets();
 
   if (isLoading) {
-    return (
-      <div className="fixed inset-x-0 top-0 z-100">
-        <div className="bg-primary h-0.5 animate-pulse" />
-      </div>
-    );
+    return <LoaderBar />;
   }
 
   if (isError || !exercises || exercises.length === 0) {

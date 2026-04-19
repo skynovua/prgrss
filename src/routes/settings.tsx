@@ -5,16 +5,13 @@ import { useProfile } from "@/src/lib/hooks/use-profile";
 import { Link } from "@tanstack/react-router";
 import { Download } from "lucide-react";
 import { isStandalone } from "@/src/lib/utils";
+import { LoaderBar } from "@/src/components/ui/loader-bar";
 
 export default function SettingsPage() {
   const { data: profile, isLoading } = useProfile();
 
   if (isLoading || !profile) {
-    return (
-      <div className="fixed inset-x-0 top-0 z-100">
-        <div className="bg-primary h-0.5 animate-pulse" />
-      </div>
-    );
+    return <LoaderBar data-testid="loader-bar" />;
   }
 
   return (
