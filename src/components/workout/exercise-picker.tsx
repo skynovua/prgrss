@@ -147,7 +147,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
             <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-3">
               <button
                 onClick={() => setActiveGroup("all")}
-                className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeGroup === "all"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground active:bg-accent"
@@ -159,7 +159,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                 <button
                   key={group}
                   onClick={() => setActiveGroup(group)}
-                  className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     activeGroup === group
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground active:bg-accent"
@@ -190,27 +190,24 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                         · {exercise.equipment && EQUIPMENT_LABELS[exercise.equipment]}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => handleToggleFavorite(e, exercise.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            handleToggleFavorite(e as unknown as React.MouseEvent, exercise.id);
-                          }
-                        }}
-                        className="rounded-full p-1.5 transition-colors active:scale-90"
-                      >
-                        <Heart
-                          className={`h-4 w-4 ${
-                            isFav ? "fill-red-500 text-red-500" : "text-muted-foreground"
-                          }`}
-                        />
-                      </span>
-                      <Plus className="text-muted-foreground h-4 w-4" />
-                    </div>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => handleToggleFavorite(e, exercise.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleToggleFavorite(e as unknown as React.MouseEvent, exercise.id);
+                        }
+                      }}
+                      className="rounded-full p-2 transition-colors active:scale-90"
+                    >
+                      <Heart
+                        className={`h-4.5 w-4.5 ${
+                          isFav ? "fill-red-500 text-red-500" : "text-muted-foreground"
+                        }`}
+                      />
+                    </span>
                   </button>
                 );
               })}
