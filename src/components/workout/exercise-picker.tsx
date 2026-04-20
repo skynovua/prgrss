@@ -16,6 +16,7 @@ import {
   MUSCLE_GROUP_LABELS,
   EQUIPMENT_LABELS,
 } from "@/src/lib/types";
+import { MuscleGroupIcon } from "@/src/components/ui/muscle-group-icon";
 import {
   useFavoriteExerciseIds,
   useToggleFavoriteExercise,
@@ -180,8 +181,11 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                   <button
                     key={exercise.id}
                     onClick={() => handleSelect(exercise)}
-                    className="hover:bg-accent flex items-center justify-between px-3 py-3 text-left transition-colors"
+                    className="hover:bg-accent flex items-center gap-3 px-3 py-3 text-left transition-colors"
                   >
+                    {exercise.muscle_group && (
+                      <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{exercise.name}</p>
                       <p className="text-muted-foreground text-sm">

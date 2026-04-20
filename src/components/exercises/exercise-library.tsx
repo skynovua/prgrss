@@ -23,6 +23,7 @@ import {
   MUSCLE_GROUP_LABELS,
   EQUIPMENT_LABELS,
 } from "@/src/lib/types";
+import { MuscleGroupIcon } from "@/src/components/ui/muscle-group-icon";
 import { useCreateExercise, useDeleteExercise } from "@/src/lib/hooks/use-exercises";
 
 interface ExerciseLibraryProps {
@@ -185,6 +186,9 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
           {exs.map((exercise) => (
             <Card key={exercise.id}>
               <CardContent className="flex items-center gap-3 p-3">
+                {exercise.muscle_group && (
+                  <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="sm" />
+                )}
                 <div className="flex-1">
                   <p className="text-sm font-medium">{exercise.name}</p>
                   <p className="text-muted-foreground text-xs">
