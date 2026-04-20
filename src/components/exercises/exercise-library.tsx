@@ -187,7 +187,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             <Card key={exercise.id}>
               <CardContent className="flex items-center gap-3 px-3">
                 {exercise.muscle_group && (
-                  <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="sm" />
+                  <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
                 )}
                 <div className="flex-1">
                   <p className="text-sm font-medium">{exercise.name}</p>
