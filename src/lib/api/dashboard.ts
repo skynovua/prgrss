@@ -1,4 +1,5 @@
 import { supabase } from "@/src/lib/supabase/client";
+import { fetchStreak } from "@/src/lib/api/stats";
 
 export async function fetchDashboardData() {
   const {
@@ -17,7 +18,7 @@ export async function fetchDashboardData() {
     1
   ).toISOString();
 
-  const [recentResult, weekResult, prevWeekResult, calendarResult, profileResult] =
+  const [recentResult, weekResult, prevWeekResult, calendarResult, profileResult, streak] =
     await Promise.all([
       supabase
         .from("workouts")
@@ -38,6 +39,7 @@ export async function fetchDashboardData() {
         .gte("started_at", threeMonthsAgo)
         .order("started_at", { ascending: false }),
       supabase.from("users").select("name, avatar_url").eq("id", user.id).single(),
+      fetchStreak(),
     ]);
 
   const recentWorkouts = recentResult.data ?? [];
@@ -110,5 +112,6 @@ export async function fetchDashboardData() {
       started_at: w.started_at!,
       setsCount: Array.isArray(w.sets) ? w.sets.length : 0,
     })),
+    streak,
   };
 }

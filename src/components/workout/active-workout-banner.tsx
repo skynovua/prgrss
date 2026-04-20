@@ -6,14 +6,16 @@ import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
 import { Dumbbell, Trash2 } from "lucide-react";
 import { db, type ActiveWorkout } from "@/src/lib/offline/db";
 
-export function ActiveWorkoutBanner() {
+export function ActiveWorkoutBanner({ fallback }: { fallback?: React.ReactNode }) {
   const [active, setActive] = useState<ActiveWorkout | null>(null);
+  const [checked, setChecked] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { pathname } = useLocation();
 
   const checkActiveWorkout = useCallback(() => {
     db.activeWorkout.get(1).then((workout) => {
       setActive(workout && workout.exercises.length > 0 ? workout : null);
+      setChecked(true);
     });
   }, []);
 
@@ -22,7 +24,8 @@ export function ActiveWorkoutBanner() {
     checkActiveWorkout();
   }, [pathname, checkActiveWorkout]);
 
-  if (!active) return null;
+  if (!checked) return null;
+  if (!active) return fallback ?? null;
 
   const exerciseNames = active.exercises
     .map((we) => we.exercise.name)

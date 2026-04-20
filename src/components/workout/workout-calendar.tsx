@@ -148,17 +148,12 @@ export function WorkoutCalendar({ workouts }: WorkoutCalendarProps) {
                   "relative flex h-9 w-full items-center justify-center rounded-lg text-sm transition-colors",
                   isToday && !isSelected && "ring-primary/50 ring-1",
                   isSelected && "bg-primary text-primary-foreground",
-                  !isSelected && hasWorkout && "bg-primary/15 font-medium",
+                  !isSelected && workoutCount >= 2 && "bg-primary/30 text-primary font-semibold",
+                  !isSelected && workoutCount === 1 && "bg-primary/15 text-primary font-medium",
                   !isSelected && !hasWorkout && "hover:bg-accent"
                 )}
               >
                 {day}
-                {hasWorkout && !isSelected && (
-                  <span className="bg-primary absolute bottom-1 h-1 w-1 rounded-full" />
-                )}
-                {hasWorkout && workoutCount > 1 && !isSelected && (
-                  <span className="bg-primary absolute right-0.5 bottom-1 h-1 w-1 rounded-full" />
-                )}
               </button>
             );
           })}

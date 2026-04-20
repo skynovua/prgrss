@@ -20,6 +20,7 @@ import WorkoutEditPage from "@/src/routes/workout-edit";
 import ProgressPage from "@/src/routes/progress";
 import SettingsPage from "@/src/routes/settings";
 import ProgramsPage from "@/src/routes/programs";
+import AchievementsPage from "@/src/routes/achievements";
 import InstallPage from "@/src/routes/install";
 
 // --- Root layout ---
@@ -27,7 +28,10 @@ const rootRoute = createRootRoute({
   component: () => (
     <>
       <Outlet />
-      <Toaster position="top-center" style={{ top: "env(safe-area-inset-top, 0px)" }} />
+      <Toaster
+        position="top-center"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
+      />
     </>
   ),
 });
@@ -138,6 +142,12 @@ const programsRoute = createRoute({
   component: ProgramsPage,
 });
 
+const achievementsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/achievements",
+  component: AchievementsPage,
+});
+
 const installRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/install",
@@ -160,6 +170,7 @@ const routeTree = rootRoute.addChildren([
     progressRoute,
     settingsRoute,
     programsRoute,
+    achievementsRoute,
   ]),
 ]);
 
