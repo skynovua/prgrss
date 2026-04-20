@@ -9,6 +9,24 @@
 				"build"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-router-auth-guard",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-router-context-auth",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
 		}
 	]
 }
