@@ -3,7 +3,8 @@ import { createClient } from "@/src/lib/supabase/client";
 import {
   buildSaveWorkoutPayload,
   buildWorkoutName,
-  isLikelyNetworkError,
+  toWorkoutOperationError,
+  WorkoutOperationError,
 } from "@/src/lib/api/workout-rpc";
 import type { WorkoutExercise } from "@/src/lib/types";
 import type { WorkoutState } from "./reducer";
@@ -90,13 +91,23 @@ export async function finishWorkout(
     const { error } = await supabase.rpc("save_workout_with_sets", { payload }).single();
 
     if (error) {
-      throw error;
+      throw toWorkoutOperationError(error, "save");
     }
 
     await clearActiveWorkout();
     return { success: true, offline: false, redirectTo: "/dashboard" };
   } catch (error) {
-    if (!isLikelyNetworkError(error)) {
+    const mappedError = toWorkoutOperationError(error, "save");
+
+    if (!(mappedError instanceof WorkoutOperationError) || mappedError.kind !== "network") {
+      throw mappedError;
+    }
+
+    if (!session?.user) {
+      throw mappedError;
+    }
+
+    if (mappedError.kind !== "network") {
       throw error;
     }
 

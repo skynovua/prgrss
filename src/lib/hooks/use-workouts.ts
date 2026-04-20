@@ -7,6 +7,7 @@ import {
   updateWorkout,
 } from "@/src/lib/api/workouts";
 import type { WorkoutExercise } from "@/src/lib/types";
+import { toWorkoutOperationError } from "@/src/lib/api/workout-rpc";
 import { toast } from "sonner";
 
 export function useWorkoutDetail(id: string | undefined) {
@@ -33,8 +34,9 @@ export function useDeleteWorkout() {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (err) => {
+      const mappedError = toWorkoutOperationError(err, "delete");
       toast.error("Не вдалося видалити тренування", {
-        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+        description: mappedError.message,
       });
     },
   });
@@ -76,8 +78,9 @@ export function useUpdateWorkout() {
       queryClient.invalidateQueries({ queryKey: ["progress"] });
     },
     onError: (err) => {
+      const mappedError = toWorkoutOperationError(err, "update");
       toast.error("Не вдалося оновити тренування", {
-        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+        description: mappedError.message,
       });
     },
   });

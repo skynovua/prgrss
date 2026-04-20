@@ -1,6 +1,6 @@
 import { supabase } from "@/src/lib/supabase/client";
 import type { WorkoutExercise } from "@/src/lib/types";
-import { buildSaveWorkoutPayload } from "@/src/lib/api/workout-rpc";
+import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/src/lib/api/workout-rpc";
 
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 години
 
@@ -41,7 +41,7 @@ export async function updateWorkout(
 
   const { error } = await supabase.rpc("save_workout_with_sets", { payload }).single();
 
-  if (error) throw error;
+  if (error) throw toWorkoutOperationError(error, "update");
 }
 
 export async function deleteWorkout(workoutId: string) {
@@ -49,7 +49,7 @@ export async function deleteWorkout(workoutId: string) {
     target_workout_id: workoutId,
   });
 
-  if (error) throw error;
+  if (error) throw toWorkoutOperationError(error, "delete");
 }
 
 export async function deleteSetFromWorkout(setId: string) {

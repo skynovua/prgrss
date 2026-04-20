@@ -1,6 +1,6 @@
 import { db } from "@/src/lib/offline/db";
 import { supabase } from "@/src/lib/supabase/client";
-import { isLikelyNetworkError } from "@/src/lib/api/workout-rpc";
+import { toWorkoutOperationError } from "@/src/lib/api/workout-rpc";
 
 export async function syncPendingWorkouts() {
   const {
@@ -41,7 +41,7 @@ export async function syncPendingWorkouts() {
       const { error } = await supabase.rpc("save_workout_with_sets", { payload }).single();
 
       if (error) {
-        throw error;
+        throw toWorkoutOperationError(error, "sync");
       }
 
       const now = new Date().toISOString();
@@ -50,9 +50,17 @@ export async function syncPendingWorkouts() {
         ...pendingSets.map((set) => db.pendingSets.update(set.id!, { syncedAt: now })),
       ]);
     } catch (error) {
-      if (isLikelyNetworkError(error)) {
+      const mappedError = toWorkoutOperationError(error, "sync");
+
+      if (mappedError.kind === "network") {
         continue;
       }
+
+      console.error("Workout sync failed", {
+        workoutId: workout.uuid,
+        kind: mappedError.kind,
+        message: mappedError.message,
+      });
     }
   }
 }
