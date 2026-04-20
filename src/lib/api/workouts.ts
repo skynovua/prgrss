@@ -1,5 +1,6 @@
 import { supabase } from "@/src/lib/supabase/client";
 import type { WorkoutExercise } from "@/src/lib/types";
+import { buildSaveWorkoutPayload } from "@/src/lib/api/workout-rpc";
 
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 години
 
@@ -16,7 +17,7 @@ export async function updateWorkout(
   // Перевіряємо 24-год вікно на клієнті (на сервері — RLS-політика)
   const { data: workout } = await supabase
     .from("workouts")
-    .select("started_at")
+    .select("started_at, finished_at, program_id")
     .eq("id", workoutId)
     .single();
 
@@ -24,47 +25,31 @@ export async function updateWorkout(
     throw new Error("Час редагування вичерпано (24 години)");
   }
 
-  // Видаляємо старі сети
-  await supabase.from("sets").delete().eq("workout_id", workoutId);
-
-  // Вставляємо нові
-  const setsToInsert = workoutExercises.flatMap((we) =>
-    we.sets
-      .filter((s) => s.completed)
-      .map((set) => ({
-        workout_id: workoutId,
-        exercise_id: we.exercise.id,
-        set_number: set.setNumber,
-        reps: set.reps,
-        weight: set.weight,
-        rpe: set.rpe,
-        duration_s: set.durationS,
-      }))
-  );
-
-  if (setsToInsert.length > 0) {
-    const { error } = await supabase.from("sets").insert(setsToInsert);
-    if (error) throw error;
+  if (!workout.started_at) {
+    throw new Error("У тренування відсутній час початку");
   }
 
-  // Оновлюємо назву
-  const workoutName = workoutExercises
-    .map((we) => we.exercise.name)
-    .slice(0, 3)
-    .join(", ");
+  const payload = buildSaveWorkoutPayload({
+    workoutId,
+    workoutExercises,
+    startedAt: workout.started_at,
+    finishedAt: workout.finished_at ?? workout.started_at,
+    notes,
+    programId: workout.program_id,
+    enforceEditWindow: true,
+  });
 
-  const { error } = await supabase
-    .from("workouts")
-    .update({ name: workoutName, notes: notes ?? null })
-    .eq("id", workoutId);
+  const { error } = await supabase.rpc("save_workout_with_sets", { payload }).single();
 
   if (error) throw error;
 }
 
 export async function deleteWorkout(workoutId: string) {
-  // RLS захищає — видалити можна тільки свої
-  await supabase.from("sets").delete().eq("workout_id", workoutId);
-  await supabase.from("workouts").delete().eq("id", workoutId);
+  const { error } = await supabase.rpc("delete_workout_cascade", {
+    target_workout_id: workoutId,
+  });
+
+  if (error) throw error;
 }
 
 export async function deleteSetFromWorkout(setId: string) {

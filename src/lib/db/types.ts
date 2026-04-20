@@ -359,11 +359,24 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      delete_workout_cascade: {
+        Args: { target_workout_id: string };
+        Returns: boolean;
+      };
+      get_achievement_metrics: { Args: never; Returns: Json };
       get_popular_exercises: {
         Args: { lim?: number };
         Returns: {
           exercise_id: string;
           usage_count: number;
+        }[];
+      };
+      save_workout_with_sets: {
+        Args: { payload: Json };
+        Returns: {
+          saved_at: string;
+          sets_count: number;
+          workout_id: string;
         }[];
       };
     };

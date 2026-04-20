@@ -1,5 +1,10 @@
 import { db } from "@/src/lib/offline/db";
 import { createClient } from "@/src/lib/supabase/client";
+import {
+  buildSaveWorkoutPayload,
+  buildWorkoutName,
+  isLikelyNetworkError,
+} from "@/src/lib/api/workout-rpc";
 import type { WorkoutExercise } from "@/src/lib/types";
 import type { WorkoutState } from "./reducer";
 import { generateId } from "./reducer";
@@ -43,10 +48,7 @@ export async function finishWorkout(
     // Офлайн і немає сесії — зберігаємо локально
     await db.pendingWorkouts.add({
       uuid: workoutId,
-      name: workoutExercises
-        .map((we) => we.exercise.name)
-        .slice(0, 3)
-        .join(", "),
+      name: buildWorkoutName(workoutExercises),
       startedAt,
       finishedAt,
       notes: null,
@@ -75,22 +77,29 @@ export async function finishWorkout(
     return { success: true, offline: true, redirectTo: "/dashboard" };
   }
 
-  const user = session.user;
+  const workoutName = buildWorkoutName(workoutExercises);
 
-  const workoutName = workoutExercises
-    .map((we) => we.exercise.name)
-    .slice(0, 3)
-    .join(", ");
+  try {
+    const payload = buildSaveWorkoutPayload({
+      workoutId,
+      workoutExercises,
+      startedAt,
+      finishedAt,
+    });
 
-  const { error: workoutError } = await supabase.from("workouts").insert({
-    id: workoutId,
-    user_id: user.id,
-    started_at: startedAt,
-    finished_at: finishedAt,
-    name: workoutName,
-  });
+    const { error } = await supabase.rpc("save_workout_with_sets", { payload }).single();
 
-  if (workoutError) {
+    if (error) {
+      throw error;
+    }
+
+    await clearActiveWorkout();
+    return { success: true, offline: false, redirectTo: "/dashboard" };
+  } catch (error) {
+    if (!isLikelyNetworkError(error)) {
+      throw error;
+    }
+
     // Offline — зберігаємо в Dexie
     await db.pendingWorkouts.add({
       uuid: workoutId,
@@ -122,26 +131,4 @@ export async function finishWorkout(
     await clearActiveWorkout();
     return { success: true, offline: true, redirectTo: "/dashboard" };
   }
-
-  // Online — зберігаємо сети
-  const setsToInsert = workoutExercises.flatMap((we) =>
-    we.sets
-      .filter((s) => s.completed)
-      .map((set) => ({
-        workout_id: workoutId,
-        exercise_id: we.exercise.id,
-        set_number: set.setNumber,
-        reps: set.reps,
-        weight: set.weight,
-        rpe: set.rpe,
-        duration_s: set.durationS,
-      }))
-  );
-
-  if (setsToInsert.length > 0) {
-    await supabase.from("sets").insert(setsToInsert);
-  }
-
-  await clearActiveWorkout();
-  return { success: true, offline: false, redirectTo: "/dashboard" };
 }
