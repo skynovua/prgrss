@@ -179,13 +179,13 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
       {/* Список вправ по групах */}
       {Array.from(grouped.entries()).map(([group, exs]) => (
-        <div key={group} className="flex flex-col gap-2">
+        <div key={group} className="flex flex-col gap-3">
           <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
             {MUSCLE_GROUP_LABELS[group as MuscleGroup] ?? group}
           </h2>
           {exs.map((exercise) => (
             <Card key={exercise.id}>
-              <CardContent className="flex items-center gap-3 p-3">
+              <CardContent className="flex items-center gap-3 px-3">
                 {exercise.muscle_group && (
                   <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="sm" />
                 )}
