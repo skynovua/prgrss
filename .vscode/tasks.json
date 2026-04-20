@@ -117,6 +117,15 @@
 				"build"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-after-indexes",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
 		}
 	]
 }
