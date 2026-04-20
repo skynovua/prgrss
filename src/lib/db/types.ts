@@ -364,12 +364,22 @@ export type Database = {
         Returns: boolean;
       };
       get_achievement_metrics: { Args: never; Returns: Json };
+      get_dashboard_data: { Args: never; Returns: Json };
       get_popular_exercises: {
         Args: { lim?: number };
         Returns: {
           exercise_id: string;
           usage_count: number;
         }[];
+      };
+      get_progress_exercise_progress: {
+        Args: { client_timezone?: string; period_since?: string };
+        Returns: Json;
+      };
+      get_progress_global_stats: { Args: never; Returns: Json };
+      get_progress_period_summary: {
+        Args: { period_since?: string };
+        Returns: Json;
       };
       save_workout_with_sets: {
         Args: { payload: Json };

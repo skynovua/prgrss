@@ -1,6 +1,4 @@
 import { supabase } from "@/src/lib/supabase/client";
-import { calc1RM } from "@/src/lib/utils/calc";
-import { toLocalDateKey } from "@/src/lib/utils";
 
 export type Period = "7d" | "30d" | "90d" | "all";
 
@@ -48,6 +46,17 @@ export interface PeriodStats {
   avgDuration: number | null;
 }
 
+export interface GlobalProgressStats {
+  streak: number;
+  lastComparison: LastWorkoutComparison | null;
+}
+
+export interface PeriodProgressSummary {
+  stats: PeriodStats;
+  muscleTonnage: MuscleGroupTonnage[];
+  topExercises: TopExercise[];
+}
+
 const MUSCLE_LABELS: Record<string, string> = {
   chest: "Груди",
   back: "Спина",
@@ -81,6 +90,40 @@ export async function fetchStreak(): Promise<number> {
 
   if (!workouts || workouts.length === 0) return 0;
   return calcWeekStreak(workouts.map((w) => w.started_at).filter(Boolean) as string[]);
+}
+
+export async function fetchGlobalStats(): Promise<GlobalProgressStats> {
+  const { data, error } = await supabase.rpc("get_progress_global_stats");
+
+  if (error) {
+    throw error;
+  }
+
+  const stats = (data ?? {}) as Partial<GlobalProgressStats>;
+
+  return {
+    streak: stats.streak ?? 0,
+    lastComparison: stats.lastComparison ?? null,
+  };
+}
+
+export async function fetchPeriodSummary(since: string | null): Promise<PeriodProgressSummary> {
+  const { data, error } = await supabase.rpc(
+    "get_progress_period_summary",
+    since ? { period_since: since } : {}
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  const summary = (data ?? {}) as Partial<PeriodProgressSummary>;
+
+  return {
+    stats: summary.stats ?? { totalWorkouts: 0, avgDuration: null },
+    muscleTonnage: summary.muscleTonnage ?? [],
+    topExercises: summary.topExercises ?? [],
+  };
 }
 
 // --- Статистика за період ---
@@ -262,69 +305,15 @@ export async function fetchTopExercises(since: string | null): Promise<TopExerci
 // --- Прогрес конкретної вправи ---
 
 export async function fetchExerciseProgress(since: string | null): Promise<ExerciseProgressData[]> {
-  let query = supabase
-    .from("sets")
-    .select("weight, reps, exercise_id, exercises(name), workouts!inner(started_at, user_id)")
-    .not("weight", "is", null)
-    .not("reps", "is", null)
-    .order("created_at", { ascending: true });
+  const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const { data, error } = await supabase.rpc("get_progress_exercise_progress", {
+    client_timezone: clientTimezone,
+    ...(since ? { period_since: since } : {}),
+  });
 
-  if (since) {
-    query = query.gte("workouts.started_at", since);
+  if (error) {
+    throw error;
   }
 
-  const { data: sets } = await query;
-  if (!sets || sets.length === 0) return [];
-
-  // Групуємо по вправі → по даті
-  const exerciseMap = new Map<
-    string,
-    {
-      name: string;
-      dates: Map<string, { bestWeight: number; totalVolume: number; best1RM: number }>;
-    }
-  >();
-
-  for (const s of sets) {
-    if (!s.weight || !s.reps) continue;
-
-    const exercises = s.exercises as unknown as { name: string }[] | { name: string } | null;
-    const name = Array.isArray(exercises)
-      ? (exercises[0]?.name ?? "Невідома")
-      : (exercises?.name ?? "Невідома");
-
-    const workouts = s.workouts as unknown as { started_at: string } | { started_at: string }[];
-    const startedAt = Array.isArray(workouts) ? workouts[0]?.started_at : workouts?.started_at;
-    if (!startedAt) continue;
-    const date = toLocalDateKey(startedAt);
-
-    if (!exerciseMap.has(s.exercise_id)) {
-      exerciseMap.set(s.exercise_id, { name, dates: new Map() });
-    }
-
-    const entry = exerciseMap.get(s.exercise_id)!;
-    const dayStats = entry.dates.get(date) ?? { bestWeight: 0, totalVolume: 0, best1RM: 0 };
-    dayStats.bestWeight = Math.max(dayStats.bestWeight, s.weight);
-    dayStats.totalVolume += s.weight * s.reps;
-    dayStats.best1RM = Math.max(dayStats.best1RM, calc1RM(s.weight, s.reps));
-    entry.dates.set(date, dayStats);
-  }
-
-  // Повертаємо топ-10 вправ з найбільшою кількістю тренувань
-  return [...exerciseMap.entries()]
-    .filter(([, v]) => v.dates.size >= 2)
-    .sort((a, b) => b[1].dates.size - a[1].dates.size)
-    .slice(0, 10)
-    .map(([exerciseId, { name, dates }]) => ({
-      exerciseId,
-      exerciseName: name,
-      data: [...dates.entries()]
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([date, stats]) => ({
-          date,
-          bestWeight: stats.bestWeight,
-          totalVolume: Math.round(stats.totalVolume),
-          estimated1RM: Math.round(stats.best1RM * 10) / 10,
-        })),
-    }));
+  return (data ?? []) as unknown as ExerciseProgressData[];
 }
