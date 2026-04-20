@@ -2,9 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { Separator } from "@/src/components/ui/separator";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
-import { ArrowLeft, Trash2, Clock, Dumbbell, TrendingUp, Pencil } from "lucide-react";
+import { ChevronLeft, Trash2, Pencil } from "lucide-react";
 import {
   MUSCLE_GROUP_LABELS,
   type MuscleGroup,
@@ -54,72 +53,77 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      {/* Хедер */}
-      <div className="flex items-center gap-3">
-        <Link to="/dashboard">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold">{workout.name ?? "Тренування"}</h1>
-          <p className="text-muted-foreground text-sm">
-            {workout.started_at &&
-              new Date(workout.started_at).toLocaleDateString("uk-UA", {
-                weekday: "short",
-                day: "numeric",
-                month: "long",
-              })}
-          </p>
+    <div className="flex flex-1 flex-col gap-6 p-4">
+      {/* Навігація */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/dashboard"
+            className="text-muted-foreground hover:text-foreground -ml-1 flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <span className="text-2xl font-bold">Тренування</span>
         </div>
         {canEdit && (
-          <Link to="/workout/$id/edit" params={{ id: workout.id }}>
-            <Button variant="ghost" size="icon">
-              <Pencil className="h-5 w-5" />
+          <div className="flex items-center gap-1">
+            <Link to="/workout/$id/edit" params={{ id: workout.id }}>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive h-8 w-8"
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
-          </Link>
+          </div>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive"
-          onClick={() => setDeleteDialogOpen(true)}
-        >
-          <Trash2 className="h-5 w-5" />
-        </Button>
+      </div>
+
+      {/* Назва та дата */}
+      <div className="space-y-1">
+        <p className="text-muted-foreground text-sm">
+          {workout.started_at &&
+            new Date(workout.started_at).toLocaleDateString("uk-UA", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+        </p>
+        <h1 className="text-lg leading-tight font-bold tracking-tight">
+          {workout.name ?? "Тренування"}
+        </h1>
       </div>
 
       {/* Статистика */}
       <div className="grid grid-cols-3 gap-3">
         {duration !== null && (
-          <Card>
-            <CardContent className="flex flex-col items-center p-3">
-              <Clock className="text-muted-foreground mb-1 h-5 w-5" />
-              <span className="text-lg font-bold">{duration}</span>
+          <Card className="p-0">
+            <CardContent className="flex flex-col items-center px-3 py-4">
+              <span className="text-xl font-bold tabular-nums">{duration}</span>
               <span className="text-muted-foreground text-xs">хв</span>
             </CardContent>
           </Card>
         )}
-        <Card>
-          <CardContent className="flex flex-col items-center p-3">
-            <Dumbbell className="text-muted-foreground mb-1 h-5 w-5" />
-            <span className="text-lg font-bold">{totalSets}</span>
+        <Card className="p-0">
+          <CardContent className="flex flex-col items-center px-3 py-4">
+            <span className="text-xl font-bold tabular-nums">{totalSets}</span>
             <span className="text-muted-foreground text-xs">підходів</span>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex flex-col items-center p-3">
-            <TrendingUp className="text-muted-foreground mb-1 h-5 w-5" />
-            <span className="text-lg font-bold">
-              {totalVolume > 1000 ? `${(totalVolume / 1000).toFixed(1)}т` : Math.round(totalVolume)}
+        <Card className="p-0">
+          <CardContent className="flex flex-col items-center px-3 py-4">
+            <span className="text-xl font-bold tabular-nums">
+              {totalVolume > 1000 ? `${(totalVolume / 1000).toFixed(1)}` : Math.round(totalVolume)}
             </span>
-            <span className="text-muted-foreground text-xs">кг</span>
+            <span className="text-muted-foreground text-xs">{totalVolume > 1000 ? "т" : "кг"}</span>
           </CardContent>
         </Card>
       </div>
-
-      <Separator />
 
       {/* Вправи з підходами */}
       {Array.from(grouped.entries()).map(([exerciseId, sets]) => {
@@ -183,13 +187,6 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
                   </div>
                 );
               })}
-
-              {/* Best set підсвічення */}
-              {bestSet.rm > 0 && (
-                <p className="text-muted-foreground mt-2 text-xs">
-                  Найкращий підхід: оц. 1RM ≈ {Math.round(bestSet.rm)} кг
-                </p>
-              )}
             </CardContent>
           </Card>
         );
