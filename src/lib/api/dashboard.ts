@@ -1,7 +1,4 @@
 import { supabase } from "@/src/lib/supabase/client";
-import type { Database } from "@/src/lib/db/types";
-
-type DashboardRpcResponse = Database["public"]["Functions"]["get_dashboard_data"]["Returns"];
 
 export async function fetchDashboardData() {
   const {
@@ -10,13 +7,12 @@ export async function fetchDashboardData() {
   if (!session) return null;
 
   const user = session.user;
-  const { data, error } = await supabase.rpc("get_dashboard_data");
+  const { data: dashboard, error } = await supabase.rpc("get_dashboard_data");
 
   if (error) {
     throw error;
   }
 
-  const dashboard: DashboardRpcResponse | null = data;
   const profile = dashboard?.profile;
 
   return {

@@ -7,8 +7,6 @@ type ProgressGlobalStatsRpc =
   Database["public"]["Functions"]["get_progress_global_stats"]["Returns"];
 type ProgressPeriodSummaryRpc =
   Database["public"]["Functions"]["get_progress_period_summary"]["Returns"];
-type ProgressExerciseProgressRpc =
-  Database["public"]["Functions"]["get_progress_exercise_progress"]["Returns"];
 type ProgressLastWorkoutComparisonRpc =
   Database["public"]["CompositeTypes"]["progress_last_workout_comparison"];
 type ProgressPeriodStatsRpc = Database["public"]["CompositeTypes"]["progress_period_stats"];

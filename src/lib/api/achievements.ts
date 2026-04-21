@@ -1,5 +1,4 @@
 import { supabase } from "@/src/lib/supabase/client";
-import type { Database } from "@/src/lib/db/types";
 
 // --- Типи ---
 
@@ -97,16 +96,13 @@ function formatDescription(template: string, target: number): string {
   return template.replace("{target}", formatted);
 }
 
-type AchievementMetrics = Database["public"]["Functions"]["get_achievement_metrics"]["Returns"];
-
 // --- Основна функція ---
 
 export async function fetchAchievements(): Promise<Achievement[]> {
-  const { data, error } = await supabase.rpc("get_achievement_metrics");
+  const { data: metrics, error } = await supabase.rpc("get_achievement_metrics");
 
   if (error) throw error;
 
-  const metrics: AchievementMetrics | null = data;
   const streak = calcWeekStreak(metrics?.workout_dates ?? []);
 
   const values: Record<string, number> = {
