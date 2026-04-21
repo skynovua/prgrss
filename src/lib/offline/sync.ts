@@ -6,7 +6,9 @@ export async function syncPendingWorkouts() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session?.user) return;
+  if (!session?.user) return 0;
+
+  let syncedCount = 0;
 
   // Синхронізуємо тренування
   const pendingWorkouts = await db.pendingWorkouts.filter((w) => !w.syncedAt).toArray();
@@ -49,6 +51,7 @@ export async function syncPendingWorkouts() {
         db.pendingWorkouts.update(workout.id!, { syncedAt: now }),
         ...pendingSets.map((set) => db.pendingSets.update(set.id!, { syncedAt: now })),
       ]);
+      syncedCount += 1;
     } catch (error) {
       const mappedError = toWorkoutOperationError(error, "sync");
 
@@ -63,4 +66,6 @@ export async function syncPendingWorkouts() {
       });
     }
   }
+
+  return syncedCount;
 }

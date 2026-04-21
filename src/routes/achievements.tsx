@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAchievements } from "@/src/lib/hooks/use-achievements";
+import { useAchievements, useMarkAchievementsSeen } from "@/src/lib/hooks/use-achievements";
 import { LoaderBar } from "@/src/components/ui/loader-bar";
 import { Sheet, SheetContent } from "@/src/components/ui/sheet";
 import { Link } from "@tanstack/react-router";
@@ -49,8 +49,8 @@ type AchievementTier = Achievement["tier"];
 
 interface AchievementGroup {
   key: string;
+  slug: string;
   title: string;
-  icon: string;
   tiers: Record<AchievementTier, Achievement | undefined>;
 }
 
@@ -107,8 +107,7 @@ function groupAchievements(achievements: Achievement[]): AchievementGroup[] {
   const grouped = new Map<string, AchievementGroup>();
 
   for (const achievement of achievements) {
-    const separatorIndex = achievement.id.lastIndexOf("_");
-    const key = separatorIndex === -1 ? achievement.id : achievement.id.slice(0, separatorIndex);
+    const key = achievement.familyKey;
     const existing = grouped.get(key);
 
     if (existing) {
@@ -118,8 +117,8 @@ function groupAchievements(achievements: Achievement[]): AchievementGroup[] {
 
     grouped.set(key, {
       key,
+      slug: achievement.slug,
       title: achievement.title,
-      icon: achievement.icon,
       tiers: {
         bronze: achievement.tier === "bronze" ? achievement : undefined,
         silver: achievement.tier === "silver" ? achievement : undefined,
@@ -142,11 +141,6 @@ function getEnterStyle(order: number) {
   };
 }
 
-function getTierStatusLabel(tier: Achievement): string {
-  if (tier.unlocked) return "Відкрито";
-  return "Закрито";
-}
-
 function AchievementTile({ group }: { group: AchievementGroup; order: number }) {
   const tiers = getAchievementTiers(group);
   const unlockedCount = tiers.filter((tier) => tier.unlocked).length;
@@ -166,10 +160,14 @@ function AchievementTile({ group }: { group: AchievementGroup; order: number }) 
 function AchievementTileButton({
   group,
   order,
+  isNew,
+  isHighlighted,
   onSelect,
 }: {
   group: AchievementGroup;
   order: number;
+  isNew: boolean;
+  isHighlighted: boolean;
   onSelect: (group: AchievementGroup) => void;
 }) {
   const { tiers, style, ringStyle } = AchievementTile({ group, order });
@@ -179,9 +177,14 @@ function AchievementTileButton({
       type="button"
       onClick={() => onSelect(group)}
       style={getEnterStyle(order)}
-      className="animate-in fade-in-0 slide-in-from-bottom-3 flex flex-col items-center gap-2 text-center duration-500"
+      className={`animate-in fade-in-0 slide-in-from-bottom-3 flex flex-col items-center gap-2 rounded-[1.75rem] px-2 py-2 text-center transition-colors duration-500 ${
+        isHighlighted ? "bg-foreground/[0.035]" : "bg-transparent"
+      }`}
     >
       <div className="group relative flex aspect-square w-full items-center justify-center">
+        {isHighlighted && (
+          <span className="border-foreground/12 pointer-events-none absolute inset-0 animate-pulse rounded-full border" />
+        )}
         <div
           className="absolute inset-[8%] rounded-full bg-[conic-gradient(var(--achievement-ring-color)_0deg_var(--achievement-ring-progress),color-mix(in_oklab,var(--border)_78%,transparent)_var(--achievement-ring-progress)_360deg)] transition-transform duration-500 group-hover:scale-[1.02]"
           style={ringStyle}
@@ -198,7 +201,14 @@ function AchievementTileButton({
         </div>
       </div>
 
-      <p className="truncate text-sm font-semibold tracking-tight">{group.title}</p>
+      <div className="flex items-center gap-1.5">
+        <p className="truncate text-sm font-semibold tracking-tight">{group.title}</p>
+        {isNew && (
+          <span className="bg-foreground/8 text-foreground/75 rounded-full px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.08em] uppercase">
+            New
+          </span>
+        )}
+      </div>
 
       <div className="flex flex-wrap justify-center gap-1">
         {tiers.map((tier) => {
@@ -272,12 +282,8 @@ function AchievementDetailContent({ group }: { group: AchievementGroup }) {
                 )}
               </span>
               <div className={`min-w-0 flex-1 ${isLocked ? "opacity-55" : "opacity-100"}`}>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">{TIER_STYLES[tier.tier].label}</span>
-                  <span className="text-muted-foreground text-[11px]">
-                    {getTierStatusLabel(tier)}
-                  </span>
-                </div>
+                <span className="text-sm font-semibold">{TIER_STYLES[tier.tier].label}</span>
+
                 <p
                   className={`text-muted-foreground mt-1 text-xs leading-5 tracking-tight ${
                     isLocked ? "opacity-80" : ""
@@ -296,11 +302,27 @@ function AchievementDetailContent({ group }: { group: AchievementGroup }) {
 
 export default function AchievementsPage() {
   const { data: achievements, isLoading } = useAchievements();
-  const [selectedAchievementKey, setSelectedAchievementKey] = useState<string | null>(null);
+  const [selectedAchievementSlug, setSelectedAchievementSlug] = useState<string | null>(null);
+  const [hasDismissedAutoOpen, setHasDismissedAutoOpen] = useState(false);
+  const markAchievementsSeen = useMarkAchievementsSeen();
+
+  const currentNewSlugs = Array.from(
+    new Set(
+      (achievements ?? [])
+        .filter(
+          (achievement) => achievement.unlocked && achievement.unlockedAt && !achievement.seenAt
+        )
+        .map((achievement) => achievement.slug)
+    )
+  );
+  const currentNewIds = (achievements ?? [])
+    .filter((achievement) => achievement.unlocked && achievement.unlockedAt && !achievement.seenAt)
+    .map((achievement) => achievement.id);
 
   if (isLoading) return <LoaderBar />;
 
   const groups = groupAchievements(achievements ?? []);
+  const highlightedSlugSet = new Set(currentNewSlugs);
   const completed = groups.filter(isCompleted);
   const inProgress = groups.filter((group) => !isCompleted(group));
   const sortedInProgress = [...inProgress].sort((left, right) => {
@@ -310,17 +332,28 @@ export default function AchievementsPage() {
 
     return getRemainingProgress(left) - getRemainingProgress(right);
   });
-  const orderedGroups = [...sortedInProgress, ...completed];
+  const baseOrderedGroups = [...sortedInProgress, ...completed];
+  const orderedGroups = [
+    ...baseOrderedGroups.filter((group) => highlightedSlugSet.has(group.slug)),
+    ...baseOrderedGroups.filter((group) => !highlightedSlugSet.has(group.slug)),
+  ];
+  const effectiveSelectedAchievementSlug =
+    selectedAchievementSlug ??
+    (!hasDismissedAutoOpen && currentNewSlugs.length > 0 ? currentNewSlugs[0] : null);
   const selectedGroup =
-    selectedAchievementKey === null
+    effectiveSelectedAchievementSlug === null
       ? null
-      : (orderedGroups.find((group) => group.key === selectedAchievementKey) ?? null);
+      : (orderedGroups.find((group) => group.slug === effectiveSelectedAchievementSlug) ?? null);
 
   return (
     <Sheet
       open={selectedGroup !== null}
       onOpenChange={(open) => {
-        if (!open) setSelectedAchievementKey(null);
+        if (!open) {
+          setHasDismissedAutoOpen(true);
+          setSelectedAchievementSlug(null);
+          void markAchievementsSeen(currentNewIds);
+        }
       }}
     >
       <div className="relative flex flex-1 flex-col gap-5 overflow-hidden p-4">
@@ -348,10 +381,15 @@ export default function AchievementsPage() {
             <div className="grid grid-cols-3 gap-x-3 gap-y-5">
               {orderedGroups.map((group, index) => (
                 <AchievementTileButton
-                  key={group.key}
+                  key={group.slug}
                   group={group}
                   order={index + 3}
-                  onSelect={(selectedGroup) => setSelectedAchievementKey(selectedGroup.key)}
+                  isNew={highlightedSlugSet.has(group.slug)}
+                  isHighlighted={highlightedSlugSet.has(group.slug)}
+                  onSelect={(selectedGroup) => {
+                    setHasDismissedAutoOpen(true);
+                    setSelectedAchievementSlug(selectedGroup.slug);
+                  }}
                 />
               ))}
             </div>

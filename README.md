@@ -24,14 +24,15 @@ pnpm dev
 
 ## Скрипти
 
-| Команда             | Опис                     |
-| ------------------- | ------------------------ |
-| `pnpm dev`          | Запуск dev-сервера       |
-| `pnpm build`        | Збірка для продакшену    |
-| `pnpm preview`      | Превʼю production-збірки |
-| `pnpm lint`         | Перевірка ESLint         |
-| `pnpm format`       | Форматування Prettier    |
-| `pnpm format:check` | Перевірка форматування   |
+| Команда                     | Опис                                     |
+| --------------------------- | ---------------------------------------- |
+| `pnpm dev`                  | Запуск dev-сервера                       |
+| `pnpm build`                | Збірка для продакшену                    |
+| `pnpm preview`              | Превʼю production-збірки                 |
+| `pnpm lint`                 | Перевірка ESLint                         |
+| `pnpm format`               | Форматування Prettier                    |
+| `pnpm format:check`         | Перевірка форматування                   |
+| `pnpm db:sync-achievements` | Синхронізація каталогу ачівок у Supabase |
 
 ## Змінні середовища
 
@@ -46,3 +47,7 @@ NEXT_PUBLIC_VAPID_PUBLIC_KEY=
 ## Деплой
 
 Деплоїться на [Vercel](https://vercel.com). Supabase Edge Functions — окремо.
+
+## Achievement Catalog
+
+Каталог ачівок редагується через [docs/achievement-config.md](/Users/skynov/projects/prgrss/docs/achievement-config.md), а не через нові migration-файли для кожної зміни контенту.

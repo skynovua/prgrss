@@ -79,6 +79,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       }
 
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      await queryClient.invalidateQueries({ queryKey: ["achievements"] });
       await queryClient.invalidateQueries({ queryKey: ["previousSets"] });
       await queryClient.invalidateQueries({ queryKey: ["progress"] });
 

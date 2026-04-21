@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_definitions: {
+        Row: {
+          created_at: string
+          description_i18n_key: string
+          description_template: string
+          family_key: string
+          id: string
+          is_active: boolean
+          metric_key: string
+          target: number
+          tier: string
+          tier_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_i18n_key: string
+          description_template: string
+          family_key: string
+          id: string
+          is_active?: boolean
+          metric_key: string
+          target: number
+          tier: string
+          tier_order: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_i18n_key?: string
+          description_template?: string
+          family_key?: string
+          id?: string
+          is_active?: boolean
+          metric_key?: string
+          target?: number
+          tier?: string
+          tier_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievement_definitions_family_key_fkey"
+            columns: ["family_key"]
+            isOneToOne: false
+            referencedRelation: "achievement_families"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      achievement_families: {
+        Row: {
+          created_at: string
+          is_active: boolean
+          key: string
+          slug: string
+          sort_order: number
+          title: string
+          title_i18n_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          is_active?: boolean
+          key: string
+          slug: string
+          sort_order: number
+          title: string
+          title_i18n_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          is_active?: boolean
+          key?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          title_i18n_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       body_measurements: {
         Row: {
           arms: number | null
@@ -288,6 +371,35 @@ export type Database = {
           },
         ]
       }
+      user_achievement_states: {
+        Row: {
+          achievement_id: string
+          seen_at: string | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          seen_at?: string | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Update: {
+          achievement_id?: string
+          seen_at?: string | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievement_states_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           auto_rest_timer: boolean
@@ -379,6 +491,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_achievement_states: {
+        Args: { achievement_ids?: string[] }
+        Returns: {
+          achievement_id: string
+          seen_at: string
+          unlocked_at: string
+        }[]
+      }
+      get_achievements: {
+        Args: never
+        Returns: {
+          current: number
+          description: string
+          family_key: string
+          id: string
+          progress: number
+          seen_at: string
+          slug: string
+          target: number
+          tier: string
+          title: string
+          unlocked: boolean
+          unlocked_at: string
+        }[]
+      }
       get_dashboard_data: {
         Args: never
         Returns: Database["public"]["CompositeTypes"]["dashboard_data"]
@@ -420,6 +557,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      mark_achievement_states_seen: {
+        Args: { achievement_ids: string[] }
+        Returns: string
+      }
       save_workout_with_sets: {
         Args: { payload: Json }
         Returns: {
@@ -427,6 +568,10 @@ export type Database = {
           sets_count: number
           workout_id: string
         }[]
+      }
+      sync_unlocked_achievement_states: {
+        Args: { achievement_ids: string[] }
+        Returns: undefined
       }
     }
     Enums: {
@@ -436,9 +581,12 @@ export type Database = {
       achievement_metrics: {
         total_workouts: number | null
         total_sets: number | null
+        total_reps: number | null
         total_volume: number | null
         unique_exercises: number | null
+        distinct_muscle_groups: number | null
         best_1rm: number | null
+        total_duration_hours: number | null
         workout_dates: string[] | null
       }
       dashboard_calendar_workout: {

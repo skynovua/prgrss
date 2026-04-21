@@ -14,6 +14,7 @@ import { ActiveWorkoutBanner } from "@/src/components/workout/active-workout-ban
 import { RecentWorkouts } from "@/src/components/workout/recent-workouts";
 import { WorkoutCalendar } from "@/src/components/workout/workout-calendar";
 import { useDashboard } from "@/src/lib/hooks/use-dashboard";
+import { useAchievements } from "@/src/lib/hooks/use-achievements";
 import { LoaderBar } from "@/src/components/ui/loader-bar";
 import { Card, CardContent } from "@/src/components/ui/card";
 
@@ -41,12 +42,17 @@ function StatDiff({ current, previous }: { current: number; previous: number }) 
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
+  const { data: achievements } = useAchievements();
 
   if (isLoading || !data) {
     return <LoaderBar />;
   }
 
   const { profile, recentWorkouts, weekStats, prevWeekStats, calendarWorkouts, streak } = data;
+  const hasNewAchievements =
+    achievements?.some(
+      (achievement) => achievement.unlocked && achievement.unlockedAt && !achievement.seenAt
+    ) ?? false;
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4">
@@ -68,9 +74,16 @@ export default function DashboardPage() {
         <span className="text-lg font-bold tracking-tight uppercase">prgrss</span>
         <Link
           to="/achievements"
-          className="border-border text-muted-foreground hover:text-foreground hover:bg-accent flex h-10 w-10 items-center justify-center rounded-full border transition-colors"
+          className={`group relative flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur-sm transition-all ${
+            hasNewAchievements
+              ? "border-foreground/10 bg-foreground/4 text-foreground hover:border-foreground/14 hover:bg-foreground/5.5 shadow-sm"
+              : "border-border/70 bg-background/80 text-muted-foreground hover:border-border hover:bg-accent/70 hover:text-foreground shadow-sm"
+          }`}
         >
-          <Trophy className="h-5 w-5" />
+          {hasNewAchievements && (
+            <span className="border-foreground/12 pointer-events-none absolute -inset-1 animate-pulse rounded-full border" />
+          )}
+          <Trophy className="h-4.5 w-4.5 transition-transform group-hover:scale-[1.03]" />
         </Link>
       </div>
 

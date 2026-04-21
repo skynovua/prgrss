@@ -1,0 +1,1 @@
+alter function public.get_achievements() volatile;
