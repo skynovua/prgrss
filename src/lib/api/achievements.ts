@@ -22,6 +22,18 @@ interface AchievementDef {
   tiers: { tier: "bronze" | "silver" | "gold"; target: number }[];
 }
 
+interface AchievementMetrics {
+  total_workouts?: number | null;
+  total_sets?: number | null;
+  total_reps?: number | null;
+  total_volume?: number | null;
+  unique_exercises?: number | null;
+  distinct_muscle_groups?: number | null;
+  best_1rm?: number | null;
+  total_duration_hours?: number | null;
+  workout_dates?: Array<string | null> | null;
+}
+
 const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: "workouts",
@@ -29,9 +41,9 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     description: "Завершіть {target} тренувань",
     icon: "🏋️",
     tiers: [
-      { tier: "bronze", target: 10 },
-      { tier: "silver", target: 50 },
-      { tier: "gold", target: 100 },
+      { tier: "bronze", target: 15 },
+      { tier: "silver", target: 40 },
+      { tier: "gold", target: 140 },
     ],
   },
   {
@@ -40,9 +52,9 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     description: "{target} тижнів поспіль",
     icon: "🔥",
     tiers: [
-      { tier: "bronze", target: 2 },
-      { tier: "silver", target: 4 },
-      { tier: "gold", target: 8 },
+      { tier: "bronze", target: 5 },
+      { tier: "silver", target: 10 },
+      { tier: "gold", target: 20 },
     ],
   },
   {
@@ -51,9 +63,9 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     description: "Підніміть {target} кг загалом",
     icon: "⚡",
     tiers: [
-      { tier: "bronze", target: 10000 },
+      { tier: "bronze", target: 20000 },
       { tier: "silver", target: 50000 },
-      { tier: "gold", target: 100000 },
+      { tier: "gold", target: 180000 },
     ],
   },
   {
@@ -62,9 +74,9 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     description: "Виконайте {target} підходів",
     icon: "💪",
     tiers: [
-      { tier: "bronze", target: 100 },
-      { tier: "silver", target: 500 },
-      { tier: "gold", target: 1000 },
+      { tier: "bronze", target: 125 },
+      { tier: "silver", target: 320 },
+      { tier: "gold", target: 1200 },
     ],
   },
   {
@@ -73,9 +85,9 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     description: "Спробуйте {target} різних вправ",
     icon: "🎯",
     tiers: [
-      { tier: "bronze", target: 10 },
-      { tier: "silver", target: 25 },
-      { tier: "gold", target: 40 },
+      { tier: "bronze", target: 15 },
+      { tier: "silver", target: 28 },
+      { tier: "gold", target: 45 },
     ],
   },
   {
@@ -85,8 +97,41 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     icon: "🏆",
     tiers: [
       { tier: "bronze", target: 100 },
-      { tier: "silver", target: 150 },
-      { tier: "gold", target: 200 },
+      { tier: "silver", target: 130 },
+      { tier: "gold", target: 180 },
+    ],
+  },
+  {
+    id: "reps",
+    title: "Повторення",
+    description: "Зробіть {target} повторень",
+    icon: "🔁",
+    tiers: [
+      { tier: "bronze", target: 1500 },
+      { tier: "silver", target: 4500 },
+      { tier: "gold", target: 16000 },
+    ],
+  },
+  {
+    id: "duration",
+    title: "Час у залі",
+    description: "Проведіть {target} годин у тренуваннях",
+    icon: "⏱️",
+    tiers: [
+      { tier: "bronze", target: 12 },
+      { tier: "silver", target: 32 },
+      { tier: "gold", target: 110 },
+    ],
+  },
+  {
+    id: "balance",
+    title: "Баланс",
+    description: "Охопіть {target} груп м'язів",
+    icon: "🧩",
+    tiers: [
+      { tier: "bronze", target: 4 },
+      { tier: "silver", target: 5 },
+      { tier: "gold", target: 6 },
     ],
   },
 ];
@@ -103,15 +148,20 @@ export async function fetchAchievements(): Promise<Achievement[]> {
 
   if (error) throw error;
 
-  const streak = calcWeekStreak(metrics?.workout_dates ?? []);
+  const typedMetrics = metrics as AchievementMetrics | null;
+
+  const streak = calcWeekStreak(typedMetrics?.workout_dates ?? []);
 
   const values: Record<string, number> = {
-    workouts: metrics?.total_workouts ?? 0,
+    workouts: typedMetrics?.total_workouts ?? 0,
     streak,
-    volume: metrics?.total_volume ?? 0,
-    sets: metrics?.total_sets ?? 0,
-    exercises: metrics?.unique_exercises ?? 0,
-    "1rm": Math.round(metrics?.best_1rm ?? 0),
+    volume: typedMetrics?.total_volume ?? 0,
+    sets: typedMetrics?.total_sets ?? 0,
+    exercises: typedMetrics?.unique_exercises ?? 0,
+    "1rm": Math.round(typedMetrics?.best_1rm ?? 0),
+    reps: typedMetrics?.total_reps ?? 0,
+    duration: Math.floor(typedMetrics?.total_duration_hours ?? 0),
+    balance: typedMetrics?.distinct_muscle_groups ?? 0,
   };
 
   const achievements: Achievement[] = [];

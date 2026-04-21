@@ -5,12 +5,15 @@ import { Sheet, SheetContent } from "@/src/components/ui/sheet";
 import { Link } from "@tanstack/react-router";
 import type { Achievement } from "@/src/lib/api/achievements";
 import {
+  Clock3,
   BarChart3,
   ChevronLeft,
   Dumbbell,
   Flame,
   Layers3,
   Lock,
+  Repeat2,
+  Shapes,
   Target,
   Trophy,
   type LucideIcon,
@@ -58,6 +61,9 @@ const ACHIEVEMENT_ICONS: Record<string, LucideIcon> = {
   sets: Layers3,
   exercises: Target,
   "1rm": Trophy,
+  reps: Repeat2,
+  duration: Clock3,
+  balance: Shapes,
 };
 
 function getAchievementTiers(group: AchievementGroup): Achievement[] {
