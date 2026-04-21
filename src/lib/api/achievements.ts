@@ -1,4 +1,5 @@
 import { supabase } from "@/src/lib/supabase/client";
+import type { Database } from "@/src/lib/db/types";
 
 // --- Типи ---
 
@@ -96,35 +97,25 @@ function formatDescription(template: string, target: number): string {
   return template.replace("{target}", formatted);
 }
 
-// --- Типи RPC відповіді ---
-
-interface AchievementMetrics {
-  total_workouts: number;
-  total_sets: number;
-  total_volume: number;
-  unique_exercises: number;
-  best_1rm: number;
-  workout_dates: string[];
-}
+type AchievementMetrics = Database["public"]["Functions"]["get_achievement_metrics"]["Returns"];
 
 // --- Основна функція ---
 
 export async function fetchAchievements(): Promise<Achievement[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.rpc as any)("get_achievement_metrics");
+  const { data, error } = await supabase.rpc("get_achievement_metrics");
 
   if (error) throw error;
 
-  const metrics = data as unknown as AchievementMetrics;
-  const streak = calcWeekStreak(metrics.workout_dates ?? []);
+  const metrics: AchievementMetrics | null = data;
+  const streak = calcWeekStreak(metrics?.workout_dates ?? []);
 
   const values: Record<string, number> = {
-    workouts: metrics.total_workouts,
+    workouts: metrics?.total_workouts ?? 0,
     streak,
-    volume: metrics.total_volume,
-    sets: metrics.total_sets,
-    exercises: metrics.unique_exercises,
-    "1rm": Math.round(metrics.best_1rm),
+    volume: metrics?.total_volume ?? 0,
+    sets: metrics?.total_sets ?? 0,
+    exercises: metrics?.unique_exercises ?? 0,
+    "1rm": Math.round(metrics?.best_1rm ?? 0),
   };
 
   const achievements: Achievement[] = [];
@@ -151,7 +142,7 @@ export async function fetchAchievements(): Promise<Achievement[]> {
   return achievements;
 }
 
-function calcWeekStreak(dates: string[]): number {
+function calcWeekStreak(dates: Array<string | null>): number {
   if (dates.length === 0) return 0;
 
   const getWeekKey = (d: Date) => {
@@ -162,7 +153,9 @@ function calcWeekStreak(dates: string[]): number {
     return start.getTime();
   };
 
-  const weeks = new Set(dates.map((d) => getWeekKey(new Date(d))));
+  const weeks = new Set(
+    dates.filter((date): date is string => date !== null).map((d) => getWeekKey(new Date(d)))
+  );
   const now = new Date();
   let streakCount = 0;
   let current = getWeekKey(now);

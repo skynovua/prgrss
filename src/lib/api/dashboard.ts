@@ -1,37 +1,7 @@
 import { supabase } from "@/src/lib/supabase/client";
+import type { Database } from "@/src/lib/db/types";
 
-interface DashboardRpcResponse {
-  profile?: {
-    avatarUrl?: string | null;
-    displayName?: string | null;
-  } | null;
-  recentWorkouts?: Array<{
-    id: string;
-    name: string | null;
-    started_at: string | null;
-    setsCount: number;
-    volume: number;
-    muscleGroups: string[];
-    duration: number | null;
-  }>;
-  weekStats?: {
-    workouts: number;
-    sets: number;
-    volume: number;
-  } | null;
-  prevWeekStats?: {
-    workouts: number;
-    sets: number;
-    volume: number;
-  } | null;
-  calendarWorkouts?: Array<{
-    id: string;
-    name: string | null;
-    started_at: string;
-    setsCount: number;
-  }>;
-  streak?: number;
-}
+type DashboardRpcResponse = Database["public"]["Functions"]["get_dashboard_data"]["Returns"];
 
 export async function fetchDashboardData() {
   const {
@@ -46,19 +16,42 @@ export async function fetchDashboardData() {
     throw error;
   }
 
-  const dashboard = (data ?? {}) as DashboardRpcResponse;
-  const profile = dashboard.profile;
+  const dashboard: DashboardRpcResponse | null = data;
+  const profile = dashboard?.profile;
 
   return {
     user,
     profile: {
-      avatarUrl: profile?.avatarUrl ?? user.user_metadata?.avatar_url ?? null,
-      displayName: profile?.displayName ?? user.user_metadata?.name ?? "атлет",
+      avatarUrl: profile?.avatar_url ?? user.user_metadata?.avatar_url ?? null,
+      displayName: profile?.display_name ?? user.user_metadata?.name ?? "атлет",
     },
-    recentWorkouts: dashboard.recentWorkouts ?? [],
-    weekStats: dashboard.weekStats ?? { workouts: 0, sets: 0, volume: 0 },
-    prevWeekStats: dashboard.prevWeekStats ?? { workouts: 0, sets: 0, volume: 0 },
-    calendarWorkouts: dashboard.calendarWorkouts ?? [],
-    streak: dashboard.streak ?? 0,
+    recentWorkouts:
+      dashboard?.recent_workouts?.map((workout) => ({
+        id: workout.id ?? "",
+        name: workout.name,
+        started_at: workout.started_at,
+        setsCount: workout.sets_count ?? 0,
+        volume: workout.volume ?? 0,
+        muscleGroups: workout.muscle_groups ?? [],
+        duration: workout.duration,
+      })) ?? [],
+    weekStats: {
+      workouts: dashboard?.week_stats?.workouts ?? 0,
+      sets: dashboard?.week_stats?.sets ?? 0,
+      volume: dashboard?.week_stats?.volume ?? 0,
+    },
+    prevWeekStats: {
+      workouts: dashboard?.prev_week_stats?.workouts ?? 0,
+      sets: dashboard?.prev_week_stats?.sets ?? 0,
+      volume: dashboard?.prev_week_stats?.volume ?? 0,
+    },
+    calendarWorkouts:
+      dashboard?.calendar_workouts?.map((workout) => ({
+        id: workout.id ?? "",
+        name: workout.name,
+        started_at: workout.started_at ?? "",
+        setsCount: workout.sets_count ?? 0,
+      })) ?? [],
+    streak: dashboard?.streak ?? 0,
   };
 }

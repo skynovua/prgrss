@@ -126,6 +126,60 @@
 				"build"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-typed-dashboard",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-typed-dashboard-fixed",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-typed-progress",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-typed-achievements",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-rpc-casts-cleanup",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "build-prgrss-workouts-casts-cleanup",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"isBackground": false
 		}
 	]
 }

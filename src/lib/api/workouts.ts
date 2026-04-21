@@ -4,6 +4,37 @@ import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/src/lib/api/
 
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 години
 
+type ExerciseSummary = {
+  id: string;
+  name: string;
+  muscle_group: string | null;
+  equipment: string | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function readExerciseSummary(value: unknown): ExerciseSummary | null {
+  if (!isRecord(value)) return null;
+
+  return {
+    id: typeof value.id === "string" ? value.id : "",
+    name: typeof value.name === "string" ? value.name : "",
+    muscle_group: typeof value.muscle_group === "string" ? value.muscle_group : null,
+    equipment: typeof value.equipment === "string" ? value.equipment : null,
+  };
+}
+
+function readStartedAt(value: unknown): string | null {
+  if (Array.isArray(value)) {
+    return readStartedAt(value[0]);
+  }
+
+  if (!isRecord(value)) return null;
+  return typeof value.started_at === "string" ? value.started_at : null;
+}
+
 export function isWorkoutEditable(startedAt: string | null): boolean {
   if (!startedAt) return false;
   return Date.now() - new Date(startedAt).getTime() < EDIT_WINDOW_MS;
@@ -73,14 +104,9 @@ export async function fetchWorkoutDetail(id: string) {
   >();
 
   const sets = (workout.sets ?? []).map((set) => {
-    const exerciseArr = set.exercises as unknown as {
-      id: string;
-      name: string;
-      muscle_group: string | null;
-      equipment: string | null;
-    } | null;
-    if (exerciseArr && !exerciseMap.has(exerciseArr.id)) {
-      exerciseMap.set(exerciseArr.id, exerciseArr);
+    const exercise = readExerciseSummary(set.exercises);
+    if (exercise?.id && !exerciseMap.has(exercise.id)) {
+      exerciseMap.set(exercise.id, exercise);
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { exercises: _, ...setData } = set;
@@ -108,8 +134,7 @@ export async function fetchPreviousSets() {
   if (lastSets) {
     const exerciseLatestDate = new Map<string, string>();
     for (const s of lastSets) {
-      const workouts = s.workouts as unknown as { started_at: string } | { started_at: string }[];
-      const startedAt = Array.isArray(workouts) ? workouts[0]?.started_at : workouts?.started_at;
+      const startedAt = readStartedAt(s.workouts);
       if (!startedAt) continue;
       const current = exerciseLatestDate.get(s.exercise_id);
       if (!current || startedAt > current) {
@@ -118,8 +143,7 @@ export async function fetchPreviousSets() {
     }
 
     for (const s of lastSets) {
-      const workouts = s.workouts as unknown as { started_at: string } | { started_at: string }[];
-      const startedAt = Array.isArray(workouts) ? workouts[0]?.started_at : workouts?.started_at;
+      const startedAt = readStartedAt(s.workouts);
       if (startedAt !== exerciseLatestDate.get(s.exercise_id)) continue;
 
       if (!previousSetsMap[s.exercise_id]) {
