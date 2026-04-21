@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Exercise, PreviousSetsMap } from "@/src/lib/types";
+import { toWorkoutOperationError } from "@/src/lib/api/workout-rpc";
 import { workoutReducer, createInitialState } from "./reducer";
 import {
   saveActiveWorkout,
@@ -82,8 +83,11 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       await queryClient.invalidateQueries({ queryKey: ["progress"] });
 
       navigate({ to: result.redirectTo });
-    } catch {
-      toast.error("Не вдалося зберегти тренування");
+    } catch (error) {
+      const mappedError = toWorkoutOperationError(error, "save");
+      toast.error("Не вдалося зберегти тренування", {
+        description: mappedError.message,
+      });
     } finally {
       dispatch({ type: "SET_SAVING", saving: false });
     }

@@ -2,6 +2,7 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
+import { useAuth } from "@/src/lib/auth";
 import { createClient } from "@/src/lib/supabase/client";
 import { Loader2, Download, X } from "lucide-react";
 import { isStandalone } from "@/src/lib/utils";
@@ -32,6 +33,7 @@ function GoogleIcon({ className }: { className?: string }) {
 export default function LoginPage() {
   const supabase = createClient();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState<"google" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showInstall, setShowInstall] = useState(false);
@@ -43,10 +45,11 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Якщо вже залогінений — перенаправляємо
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    if (user) navigate({ to: "/dashboard" });
-  });
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [authLoading, navigate, user]);
 
   const handleLogin = async (provider: "google") => {
     try {

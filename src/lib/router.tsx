@@ -1,14 +1,13 @@
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
   Outlet,
   redirect,
 } from "@tanstack/react-router";
 import { Toaster } from "@/src/components/ui/sonner";
-import { SyncProvider } from "@/src/components/sync-provider";
-import { BottomNav } from "@/src/components/bottom-nav";
-import { supabase } from "@/src/lib/supabase/client";
+import { AppLayout } from "@/src/components/app-layout";
+import type { AuthContextType } from "@/src/lib/auth";
 import LoginPage from "@/src/routes/login";
 import AuthCallbackPage from "@/src/routes/auth-callback";
 import OfflinePage from "@/src/routes/offline";
@@ -23,8 +22,12 @@ import ProgramsPage from "@/src/routes/programs";
 import AchievementsPage from "@/src/routes/achievements";
 import InstallPage from "@/src/routes/install";
 
+interface RouterContext {
+  auth: AuthContextType;
+}
+
 // --- Root layout ---
-const rootRoute = createRootRoute({
+const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: () => (
     <>
       <Outlet />
@@ -70,27 +73,22 @@ const offlineRoute = createRoute({
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "app",
-  beforeLoad: async () => {
-    let session = null;
-    try {
-      const result = await supabase.auth.getSession();
-      session = result.data.session;
-    } catch {
-      // Мережева помилка — дозволяємо доступ (офлайн режим)
+  beforeLoad: ({ context }) => {
+    if (context.auth.loading) {
       return;
     }
-    if (!session) {
-      throw redirect({ to: "/login" });
+
+    if (context.auth.user) {
+      return;
     }
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      return;
+    }
+
+    throw redirect({ to: "/login" });
   },
-  component: () => (
-    <SyncProvider>
-      <div className="flex min-h-screen flex-col pt-[env(safe-area-inset-top)] pb-[calc(4rem+env(safe-area-inset-bottom))]">
-        <Outlet />
-      </div>
-      <BottomNav />
-    </SyncProvider>
-  ),
+  component: AppLayout,
 });
 
 // --- App child routes ---
@@ -174,7 +172,12 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-export const router = createRouter({ routeTree });
+export const router = createRouter({
+  routeTree,
+  context: {
+    auth: undefined!,
+  },
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
