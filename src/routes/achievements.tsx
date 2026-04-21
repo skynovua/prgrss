@@ -146,7 +146,7 @@ function AchievementCard({ group, order }: { group: AchievementGroup; order: num
     <Card
       size="sm"
       style={getEnterStyle(order)}
-      className={`animate-in fade-in-0 slide-in-from-bottom-3 gap-0 rounded-3xl border border-transparent py-0 shadow-none ring-1 transition-all duration-500 hover:-translate-y-0.5 ${
+      className={`animate-in fade-in-0 slide-in-from-bottom-3 gap-0 rounded-3xl py-0 shadow-none ring-1 transition-all duration-500 hover:-translate-y-0.5 ${
         isComplete
           ? "from-primary/12 via-background to-primary/5 ring-primary/15 bg-linear-to-br"
           : "bg-card/85 ring-foreground/6"

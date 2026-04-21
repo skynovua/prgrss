@@ -84,9 +84,9 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     description: "Досягніть 1RM {target} кг в будь-якій вправі",
     icon: "🏆",
     tiers: [
-      { tier: "bronze", target: 60 },
-      { tier: "silver", target: 100 },
-      { tier: "gold", target: 140 },
+      { tier: "bronze", target: 100 },
+      { tier: "silver", target: 150 },
+      { tier: "gold", target: 200 },
     ],
   },
 ];
