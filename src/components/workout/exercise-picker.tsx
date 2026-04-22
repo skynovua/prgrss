@@ -105,7 +105,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
           }
         />
       )}
-      <SheetContent side="bottom" className="h-[85vh]">
+      <SheetContent side="bottom" className="h-[85vh] rounded-t-[2rem]">
         <SheetHeader>
           <SheetTitle>Вибрати вправу</SheetTitle>
         </SheetHeader>

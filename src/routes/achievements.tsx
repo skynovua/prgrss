@@ -134,13 +134,6 @@ function isCompleted(group: AchievementGroup): boolean {
   return TIER_ORDER.every((tier) => group.tiers[tier]?.unlocked);
 }
 
-function getEnterStyle(order: number) {
-  return {
-    animationDelay: `${order * 70}ms`,
-    animationFillMode: "both" as const,
-  };
-}
-
 function AchievementTile({ group }: { group: AchievementGroup; order: number }) {
   const tiers = getAchievementTiers(group);
   const unlockedCount = tiers.filter((tier) => tier.unlocked).length;
@@ -176,14 +169,13 @@ function AchievementTileButton({
     <button
       type="button"
       onClick={() => onSelect(group)}
-      style={getEnterStyle(order)}
-      className={`animate-in fade-in-0 slide-in-from-bottom-3 flex flex-col items-center gap-2 rounded-[1.75rem] px-2 py-2 text-center transition-colors duration-500 ${
+      className={`flex flex-col items-center gap-2 rounded-[1.75rem] px-2 py-2 text-center transition-colors duration-500 ${
         isHighlighted ? "bg-foreground/[0.035]" : "bg-transparent"
       }`}
     >
       <div className="group relative flex aspect-square w-full items-center justify-center">
         {isHighlighted && (
-          <span className="border-foreground/12 pointer-events-none absolute inset-0 animate-pulse rounded-full border" />
+          <span className="border-foreground/12 pointer-events-none absolute inset-0 rounded-full border" />
         )}
         <div
           className="absolute inset-[8%] rounded-full bg-[conic-gradient(var(--achievement-ring-color)_0deg_var(--achievement-ring-progress),color-mix(in_oklab,var(--border)_78%,transparent)_var(--achievement-ring-progress)_360deg)] transition-transform duration-500 group-hover:scale-[1.02]"
@@ -357,10 +349,7 @@ export default function AchievementsPage() {
       }}
     >
       <div className="relative flex flex-1 flex-col gap-5 overflow-hidden p-4">
-        <div
-          style={getEnterStyle(0)}
-          className="animate-in fade-in-0 slide-in-from-top-2 flex items-center gap-3 duration-300"
-        >
+        <div className="flex items-center gap-3">
           <Link
             to="/dashboard"
             className="text-muted-foreground hover:text-foreground bg-background/80 ring-foreground/8 -ml-1 flex h-9 w-9 items-center justify-center rounded-2xl ring-1 backdrop-blur-sm transition-colors"
@@ -374,10 +363,7 @@ export default function AchievementsPage() {
         </div>
 
         {orderedGroups.length > 0 && (
-          <section
-            style={getEnterStyle(2)}
-            className="animate-in fade-in-0 slide-in-from-bottom-2 flex flex-col gap-3 duration-500"
-          >
+          <section className="flex flex-col gap-3">
             <div className="grid grid-cols-3 gap-x-3 gap-y-5">
               {orderedGroups.map((group, index) => (
                 <AchievementTileButton
