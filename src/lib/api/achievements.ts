@@ -1,64 +1,45 @@
 import { supabase } from "@/src/lib/supabase/client";
+import type { Database } from "@/src/lib/db/types";
 
-// --- Типи ---
+type AchievementTier = "bronze" | "silver" | "gold";
+export type AchievementRow = Database["public"]["Functions"]["get_achievements"]["Returns"][number];
 
-export interface Achievement {
-  id: string;
-  familyKey: string;
-  slug: string;
-  title: string;
-  description: string;
-  tier: "bronze" | "silver" | "gold";
-  progress: number; // 0–1
-  current: number;
-  target: number;
-  unlocked: boolean;
-  unlockedAt: string | null;
-  seenAt: string | null;
-}
-
-interface AchievementRow {
-  id: string;
-  family_key: string;
-  slug: string;
-  title: string;
-  description: string;
-  tier: Achievement["tier"];
-  progress: number;
-  current: number;
-  target: number;
-  unlocked: boolean;
-  unlocked_at: string | null;
-  seen_at: string | null;
-}
+export type Achievement = Omit<
+  AchievementRow,
+  "family_key" | "unlocked_at" | "seen_at" | "tier"
+> & {
+  familyKey: AchievementRow["family_key"];
+  unlockedAt: AchievementRow["unlocked_at"] | null;
+  seenAt: AchievementRow["seen_at"] | null;
+  tier: AchievementTier;
+};
 
 export async function markAchievementStatesSeen(achievementIds: string[]) {
   if (achievementIds.length === 0) return null;
 
-  const { data, error } = await supabase.rpc(
-    "mark_achievement_states_seen" as never,
-    { achievement_ids: achievementIds } as never
-  );
+  const { data, error } = await supabase.rpc("mark_achievement_states_seen", {
+    achievement_ids: achievementIds,
+  });
 
   if (error) throw error;
 
-  return (data as string | null) ?? new Date().toISOString();
+  return data ?? new Date().toISOString();
 }
 
 // --- Основна функція ---
 
 export async function fetchAchievements(): Promise<Achievement[]> {
-  const { data, error } = await supabase.rpc("get_achievements" as never);
+  const { data, error } = await supabase.rpc("get_achievements");
 
   if (error) throw error;
 
-  return ((data ?? []) as AchievementRow[]).map((achievement) => ({
+  return (data ?? []).map((achievement) => ({
     id: achievement.id,
     familyKey: achievement.family_key,
     slug: achievement.slug,
     title: achievement.title,
     description: achievement.description,
-    tier: achievement.tier,
+    tier: achievement.tier as AchievementTier,
     progress: achievement.progress,
     current: achievement.current,
     target: achievement.target,
