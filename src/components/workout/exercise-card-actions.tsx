@@ -63,7 +63,7 @@ export function ExerciseCardActions({
           {onDelete && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={handleDelete} disabled>
+              <DropdownMenuItem variant="destructive" onClick={handleDelete}>
                 Видалити
               </DropdownMenuItem>
             </>
