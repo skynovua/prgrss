@@ -3,7 +3,7 @@ import { useLocation, Link } from "@tanstack/react-router";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
-import { Dumbbell, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { db, type ActiveWorkout } from "@/src/lib/offline/db";
 
 export function ActiveWorkoutBanner({ fallback }: { fallback?: React.ReactNode }) {
@@ -45,27 +45,43 @@ export function ActiveWorkoutBanner({ fallback }: { fallback?: React.ReactNode }
 
   return (
     <>
-      <Card className="border-primary/30 bg-primary/5">
-        <CardContent className="flex items-center gap-3 p-4">
-          <Link to="/workout/new" className="flex flex-1 items-center gap-3">
-            <Dumbbell className="text-primary h-5 w-5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-medium">Незавершене тренування</p>
-              <p className="text-muted-foreground text-xs">
-                {exerciseNames} · {totalSets} підходів
-              </p>
-            </div>
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-destructive h-8 w-8 shrink-0"
-            onClick={() => setConfirmOpen(true)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 px-3">
+        <div className="mx-auto max-w-lg">
+          <Card className="border-primary/20 bg-background/92 supports-backdrop-filter:bg-background/78 py-5 shadow-xl backdrop-blur-xl">
+            <CardContent className="relative flex items-center gap-2 px-2.5 py-0">
+              <div className="bg-primary/10 pointer-events-none absolute inset-y-2 left-4 w-1 rounded-full" />
+
+              <Link
+                to="/workout/new"
+                className="group flex min-w-0 flex-1 items-center gap-3 rounded-3xl px-2 py-1 transition-colors active:opacity-90"
+              >
+                <div className="min-w-0 flex-1 pl-4">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] uppercase">
+                      В роботі
+                    </span>
+                    <span className="text-muted-foreground text-[11px]">{totalSets} підходів</span>
+                  </div>
+
+                  <p className="text-sm font-semibold">Незавершене тренування</p>
+                  <p className="text-muted-foreground truncate text-xs leading-relaxed">
+                    {exerciseNames}
+                  </p>
+                </div>
+              </Link>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-9 w-9 shrink-0 rounded-2xl"
+                onClick={() => setConfirmOpen(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <ConfirmDialog
         open={confirmOpen}
