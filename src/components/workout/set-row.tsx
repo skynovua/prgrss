@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
+import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
 import { Check, Trash2 } from "lucide-react";
 import { type LocalSet } from "@/src/lib/types";
 import { cn } from "@/src/lib/utils";
@@ -23,6 +25,7 @@ export function SetRow({
 }: SetRowProps) {
   const setGridClassName =
     "grid grid-cols-[2rem_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_2.75rem_2.75rem] items-center gap-2";
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleRepsBlur = () => {
     if (set.reps == null) {
@@ -115,10 +118,23 @@ export function SetRow({
         variant="ghost"
         size="icon"
         className="text-muted-foreground h-11 w-11 shrink-0"
-        onClick={() => onDelete(set.id)}
+        onClick={() => setConfirmOpen(true)}
       >
         <Trash2 className="h-4 w-4" />
       </Button>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Видалити сет?"
+        description={`Сет ${set.setNumber} буде видалений.`}
+        confirmText="Видалити"
+        isDestructive
+        onConfirm={() => {
+          onDelete(set.id);
+          setConfirmOpen(false);
+        }}
+      />
     </div>
   );
 }
