@@ -208,7 +208,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   const toggleCollapse = (cardId: string) => {
     setCollapsedCards((current) => ({
       ...current,
-      [cardId]: !current[cardId],
+      [cardId]: !(current[cardId] ?? defaultCollapsedCards[cardId] ?? false),
     }));
   };
 
