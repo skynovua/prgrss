@@ -5,6 +5,7 @@ import { Separator } from "@/src/components/ui/separator";
 import { ExercisePicker } from "@/src/components/workout/exercise-picker";
 import { SetRow } from "@/src/components/workout/set-row";
 import { RestTimer } from "@/src/components/workout/rest-timer";
+import { WeightUnitLabel } from "@/src/components/workout/weight-display";
 import { Timer, Plus, Check, Dumbbell } from "lucide-react";
 import {
   type Exercise,
@@ -17,6 +18,7 @@ import {
 import type { WorkoutAction } from "@/src/lib/workout/reducer";
 import { useWorkout } from "@/src/lib/workout/use-workout";
 import { useProfile } from "@/src/lib/hooks/use-profile";
+import { usesDoubleWeight } from "@/src/lib/workout/metrics";
 
 // --- Memoized Exercise Card ---
 
@@ -35,6 +37,9 @@ const ExerciseCard = memo(function ExerciseCard({
   autoRestTimer,
   dispatch,
 }: ExerciseCardProps) {
+  const setGridClassName =
+    "grid grid-cols-[2rem_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_2.75rem_2.75rem] items-center gap-2";
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -57,15 +62,18 @@ const ExerciseCard = memo(function ExerciseCard({
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-1">
-        <div className="text-muted-foreground flex items-center gap-2 px-2 pb-1 text-xs font-medium">
-          <span className="w-8 text-center">#</span>
-          <span className="w-20 text-center">Вага</span>
-          <span className="w-16 text-center">Повт</span>
-          <span className="w-16 text-center" title="Складність підходу від 6 до 10">
+        <div className={`${setGridClassName} text-muted-foreground px-2 pb-1 text-xs font-medium`}>
+          <span className="text-center">Сет</span>
+          <WeightUnitLabel
+            isDoubleWeight={usesDoubleWeight(we.exercise)}
+            className="text-center text-xs font-medium"
+          />
+          <span className="text-center">Повт.</span>
+          <span className="text-center" title="Складність підходу від 6 до 10">
             Зусилля
           </span>
-          <span className="w-11" />
-          <span className="w-11" />
+          <span />
+          <span />
         </div>
 
         {we.sets.map((set) => {

@@ -21,13 +21,33 @@ export function SetRow({
   onComplete,
   onDelete,
 }: SetRowProps) {
+  const setGridClassName =
+    "grid grid-cols-[2rem_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_2.75rem_2.75rem] items-center gap-2";
+
+  const handleRepsBlur = () => {
+    if (set.reps == null) {
+      onUpdate({ ...set, reps: previousReps ?? 1 });
+    }
+  };
+
   const handleChange = (field: keyof LocalSet, value: string) => {
     if (value === "") {
+      if (field === "reps") {
+        onUpdate({ ...set, reps: null });
+        return;
+      }
+
       onUpdate({ ...set, [field]: null });
       return;
     }
     const parsed = Number(value);
     if (isNaN(parsed)) return;
+    if (field === "reps") {
+      if (!Number.isInteger(parsed) || parsed > 999) return;
+
+      onUpdate({ ...set, reps: Math.max(parsed, 1) });
+      return;
+    }
     if (field === "rpe" && (parsed < 1 || parsed > 10)) return;
     onUpdate({ ...set, [field]: parsed });
   };
@@ -35,13 +55,11 @@ export function SetRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-lg px-2 py-2 transition-colors",
+        `${setGridClassName} rounded-lg px-2 py-2 transition-colors`,
         set.completed && "bg-accent/50"
       )}
     >
-      <span className="text-muted-foreground w-8 text-center text-sm font-medium">
-        {set.setNumber}
-      </span>
+      <span className="text-muted-foreground text-center text-sm font-medium">{set.setNumber}</span>
 
       <Input
         type="number"
@@ -49,7 +67,7 @@ export function SetRow({
         placeholder={previousWeight != null ? `${previousWeight}` : "кг"}
         value={set.weight ?? ""}
         onChange={(e) => handleChange("weight", e.target.value)}
-        className="h-11 w-20 text-center text-base font-medium"
+        className="h-11 w-full text-center text-base font-medium"
         disabled={set.completed}
       />
 
@@ -59,7 +77,11 @@ export function SetRow({
         placeholder={previousReps != null ? `${previousReps}` : "повт"}
         value={set.reps ?? ""}
         onChange={(e) => handleChange("reps", e.target.value)}
-        className="h-11 w-16 text-center text-base font-medium"
+        onBlur={handleRepsBlur}
+        className="h-11 w-full text-center text-base font-medium"
+        min={1}
+        max={999}
+        step={1}
         disabled={set.completed}
       />
 
@@ -70,7 +92,7 @@ export function SetRow({
         title="RPE — складність підходу від 1 до 10"
         value={set.rpe ?? ""}
         onChange={(e) => handleChange("rpe", e.target.value)}
-        className="h-11 w-16 text-center text-base font-medium"
+        className="h-11 w-full text-center text-base font-medium"
         min={1}
         max={10}
         step={0.5}
@@ -81,7 +103,7 @@ export function SetRow({
         variant={set.completed ? "default" : "outline"}
         size="icon"
         className={cn(
-          "h-11 w-11 shrink-0",
+          "h-11 w-full shrink-0",
           set.completed && "border-green-600 bg-green-600 hover:bg-green-700"
         )}
         onClick={() => onComplete({ ...set, completed: !set.completed })}

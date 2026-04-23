@@ -24,6 +24,8 @@ export type WorkoutAction =
 
 // --- Reducer ---
 
+const DEFAULT_REPS = 8;
+
 function generateId() {
   return crypto.randomUUID();
 }
@@ -38,7 +40,7 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
               id: generateId(),
               setNumber: i + 1,
               weight: ps.weight,
-              reps: ps.reps,
+              reps: ps.reps ?? DEFAULT_REPS,
               rpe: null,
               durationS: null,
               completed: false,
@@ -48,7 +50,7 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
                 id: generateId(),
                 setNumber: 1,
                 weight: null,
-                reps: null,
+                reps: DEFAULT_REPS,
                 rpe: null,
                 durationS: null,
                 completed: false,
@@ -87,7 +89,7 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
                 id: generateId(),
                 setNumber: we.sets.length + 1,
                 weight: lastSet?.weight ?? null,
-                reps: lastSet?.reps ?? null,
+                reps: lastSet?.reps ?? DEFAULT_REPS,
                 rpe: null,
                 durationS: null,
                 completed: false,

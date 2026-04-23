@@ -14,6 +14,8 @@ import {
 import { useDeleteWorkout } from "@/src/lib/hooks/use-workouts";
 import { isWorkoutEditable } from "@/src/lib/api/workouts";
 import { calc1RM } from "@/src/lib/utils/calc";
+import { getSetVolume, usesDoubleWeight } from "@/src/lib/workout/metrics";
+import { WeightUnitLabel, WeightValue } from "@/src/components/workout/weight-display";
 
 interface WorkoutDetailProps {
   workout: WorkoutWithSets;
@@ -37,7 +39,10 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
 
   // Статистика
   const totalSets = workout.sets.length;
-  const totalVolume = workout.sets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0);
+  const totalVolume = workout.sets.reduce((acc, set) => {
+    const exercise = exerciseMap.get(set.exercise_id);
+    return acc + getSetVolume(set, exercise);
+  }, 0);
 
   const duration =
     workout.started_at && workout.finished_at
@@ -150,9 +155,14 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
             <CardContent>
               {/* Заголовки */}
               <div className="text-muted-foreground flex items-center gap-2 px-1 pb-2 text-xs font-medium">
-                <span className="w-8 text-center">#</span>
-                <span className="w-16 text-center">Вага</span>
-                <span className="w-12 text-center">Повт</span>
+                <span className="w-8 text-center">Сет</span>
+                <span className="w-16 text-center">
+                  <WeightUnitLabel
+                    isDoubleWeight={usesDoubleWeight(exercise)}
+                    className="text-xs font-medium"
+                  />
+                </span>
+                <span className="w-12 text-center">Повт.</span>
                 <span className="w-12 text-center" title="Складність підходу від 1 до 10">
                   Зусилля
                 </span>
@@ -175,7 +185,11 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
                       {set.set_number}
                     </span>
                     <span className="w-16 text-center text-sm font-medium">
-                      {set.weight ?? "—"}
+                      <WeightValue
+                        weight={set.weight}
+                        isDoubleWeight={usesDoubleWeight(exercise)}
+                        className="text-sm font-medium"
+                      />
                     </span>
                     <span className="w-12 text-center text-sm">{set.reps ?? "—"}</span>
                     <span className="text-muted-foreground w-12 text-center text-sm">

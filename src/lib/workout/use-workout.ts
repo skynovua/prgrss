@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import type { Exercise, PreviousSetsMap } from "@/src/lib/types";
 import { toWorkoutOperationError } from "@/src/lib/api/workout-rpc";
 import { workoutReducer, createInitialState } from "./reducer";
+import { getWorkoutVolume } from "./metrics";
 import {
   saveActiveWorkout,
   clearActiveWorkout,
@@ -99,12 +100,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
     0
   );
 
-  const totalVolume = workoutExercises.reduce(
-    (acc, we) =>
-      acc +
-      we.sets.filter((s) => s.completed).reduce((a, s) => a + (s.weight ?? 0) * (s.reps ?? 0), 0),
-    0
-  );
+  const totalVolume = getWorkoutVolume(workoutExercises);
 
   return {
     state,
