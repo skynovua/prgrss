@@ -3,6 +3,7 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
+import { ExerciseCardActions } from "@/src/components/workout/exercise-card-actions";
 import { ChevronLeft, Trash2, Pencil } from "lucide-react";
 import { type SetData, type ExerciseData, type WorkoutWithSets } from "@/src/lib/types";
 import { useDeleteWorkout } from "@/src/lib/hooks/use-workouts";
@@ -141,7 +142,15 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
         return (
           <Card key={exerciseId} size="sm" className="py-4">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">{exercise?.name ?? "Невідома вправа"}</CardTitle>
+              <div className="flex items-start justify-between gap-3">
+                <CardTitle className="truncate text-base">
+                  {exercise?.name ?? "Невідома вправа"}
+                </CardTitle>
+                <ExerciseCardActions
+                  exerciseId={exerciseId}
+                  exerciseName={exercise?.name ?? "Невідома вправа"}
+                />
+              </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-1">
               {/* Заголовки */}

@@ -17,6 +17,7 @@ import WorkoutNewPage from "@/src/routes/workout-new";
 import WorkoutDetailPage from "@/src/routes/workout-detail";
 import WorkoutEditPage from "@/src/routes/workout-edit";
 import ProgressPage from "@/src/routes/progress";
+import ExerciseProgressPage from "@/src/routes/progress-exercise";
 import SettingsPage from "@/src/routes/settings";
 import ProgramsPage from "@/src/routes/programs";
 import AchievementsPage from "@/src/routes/achievements";
@@ -128,6 +129,15 @@ const progressRoute = createRoute({
   component: ProgressPage,
 });
 
+const exerciseProgressRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/progress/exercise/$exerciseId",
+  validateSearch: (search: Record<string, unknown>) => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
+  component: ExerciseProgressPage,
+});
+
 const settingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/settings",
@@ -166,6 +176,7 @@ const routeTree = rootRoute.addChildren([
     workoutDetailRoute,
     workoutEditRoute,
     progressRoute,
+    exerciseProgressRoute,
     settingsRoute,
     programsRoute,
     achievementsRoute,

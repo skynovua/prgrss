@@ -3,6 +3,7 @@ import {
   fetchGlobalStats,
   fetchPeriodSummary,
   fetchExerciseProgress,
+  fetchExerciseProgressById,
   periodToDate,
   type Period,
 } from "@/src/lib/api/stats";
@@ -28,6 +29,15 @@ export function usePeriodProgress(period: Period) {
       ]);
       return { ...summary, exerciseProgress };
     },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useExerciseProgress(exerciseId: string, period: Period) {
+  return useQuery({
+    queryKey: ["progress", "exercise", exerciseId, period],
+    queryFn: () => fetchExerciseProgressById(exerciseId, periodToDate(period)),
+    enabled: Boolean(exerciseId),
     placeholderData: keepPreviousData,
   });
 }

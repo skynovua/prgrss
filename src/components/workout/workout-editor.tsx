@@ -4,12 +4,13 @@ import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
 import { Separator } from "@/src/components/ui/separator";
+import { ExerciseCardActions } from "@/src/components/workout/exercise-card-actions";
 import { ExercisePicker } from "@/src/components/workout/exercise-picker";
 import { ExerciseSetIndicators } from "@/src/components/workout/exercise-set-indicators";
 import { SetRow } from "@/src/components/workout/set-row";
 import { RestTimer } from "@/src/components/workout/rest-timer";
 import { WeightUnitLabel } from "@/src/components/workout/weight-display";
-import { ArrowLeft, Timer, Plus, Check, Trash2 } from "lucide-react";
+import { ArrowLeft, Timer, Plus, Check } from "lucide-react";
 import {
   type Exercise,
   type WorkoutExercise,
@@ -94,18 +95,11 @@ const ExerciseCard = memo(function ExerciseCard({
               </div>
             </button>
           )}
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground"
-            aria-label={`Видалити вправу ${we.exercise.name}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              setConfirmOpen(true);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <ExerciseCardActions
+            exerciseId={we.exercise.id}
+            exerciseName={we.exercise.name}
+            onDelete={() => setConfirmOpen(true)}
+          />
         </div>
       </CardHeader>
       {!isCollapsed && (

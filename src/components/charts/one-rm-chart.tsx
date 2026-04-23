@@ -29,7 +29,7 @@ export function ExerciseProgressChart({ data }: Props) {
 
   if (data.length === 0) {
     return (
-      <Card>
+      <Card className="p-0">
         <CardContent className="flex h-48 items-center justify-center p-6">
           <p className="text-muted-foreground text-sm">
             Потрібно хоча б 2 тренування з однією вправою
@@ -46,26 +46,28 @@ export function ExerciseProgressChart({ data }: Props) {
   }));
 
   return (
-    <Card>
+    <Card className="p-0">
       <CardContent className="p-4">
         <h3 className="mb-3 text-sm font-medium">Прогрес вправи</h3>
 
         {/* Вибір вправи */}
-        <div className="mb-3 flex flex-wrap gap-1.5">
-          {data.map((ex, i) => (
-            <button
-              key={ex.exerciseId}
-              onClick={() => setSelectedExercise(i)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                i === selectedExercise
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              {ex.exerciseName}
-            </button>
-          ))}
-        </div>
+        {data.length > 1 && (
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {data.map((ex, i) => (
+              <button
+                key={ex.exerciseId}
+                onClick={() => setSelectedExercise(i)}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                  i === selectedExercise
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                {ex.exerciseName}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Вибір метрики */}
         <div className="mb-4 flex gap-1.5">

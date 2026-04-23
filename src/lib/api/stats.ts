@@ -156,3 +156,12 @@ export async function fetchExerciseProgress(since: string | null): Promise<Exerc
 
   return (data ?? []).map(mapExerciseProgressEntry);
 }
+
+export async function fetchExerciseProgressById(
+  exerciseId: string,
+  since: string | null
+): Promise<ExerciseProgressData | null> {
+  const allExerciseProgress = await fetchExerciseProgress(since);
+
+  return allExerciseProgress.find((entry) => entry.exerciseId === exerciseId) ?? null;
+}
