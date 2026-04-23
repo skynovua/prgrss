@@ -4,13 +4,7 @@ import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
 import { ChevronLeft, Trash2, Pencil } from "lucide-react";
-import {
-  MUSCLE_GROUP_LABELS,
-  type MuscleGroup,
-  type SetData,
-  type ExerciseData,
-  type WorkoutWithSets,
-} from "@/src/lib/types";
+import { type SetData, type ExerciseData, type WorkoutWithSets } from "@/src/lib/types";
 import { useDeleteWorkout } from "@/src/lib/hooks/use-workouts";
 import { isWorkoutEditable } from "@/src/lib/api/workouts";
 import { calc1RM } from "@/src/lib/utils/calc";
@@ -27,6 +21,8 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
   const deleteWorkoutMutation = useDeleteWorkout();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const canEdit = isWorkoutEditable(workout.started_at);
+  const setGridClassName =
+    "grid grid-cols-[2rem_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.1fr)] items-center gap-2";
 
   // Групуємо сети по вправах
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
@@ -143,30 +139,27 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
         );
 
         return (
-          <Card key={exerciseId}>
-            <CardHeader className="pb-2">
+          <Card key={exerciseId} size="sm" className="py-4">
+            <CardHeader className="pb-3">
               <CardTitle className="text-base">{exercise?.name ?? "Невідома вправа"}</CardTitle>
-              {exercise?.muscle_group && (
-                <p className="text-muted-foreground text-xs">
-                  {MUSCLE_GROUP_LABELS[exercise.muscle_group as MuscleGroup]}
-                </p>
-              )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-1">
               {/* Заголовки */}
-              <div className="text-muted-foreground flex items-center gap-2 px-1 pb-2 text-xs font-medium">
-                <span className="w-8 text-center">Сет</span>
-                <span className="w-16 text-center">
+              <div
+                className={`${setGridClassName} text-muted-foreground px-2 pb-1 text-xs font-medium`}
+              >
+                <span className="text-center">Сет</span>
+                <span className="text-center">
                   <WeightUnitLabel
                     isDoubleWeight={usesDoubleWeight(exercise)}
-                    className="text-xs font-medium"
+                    className="text-center text-xs font-medium"
                   />
                 </span>
-                <span className="w-12 text-center">Повт.</span>
-                <span className="w-12 text-center" title="Складність підходу від 1 до 10">
+                <span className="text-center">Повт.</span>
+                <span className="text-center" title="Складність підходу від 1 до 10">
                   Зусилля
                 </span>
-                <span className="flex-1 text-center">Оц. 1RM</span>
+                <span className="text-center">Оц. 1RM</span>
               </div>
 
               {sortedSets.map((set) => {
@@ -177,25 +170,25 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
                 return (
                   <div
                     key={set.id}
-                    className={`flex items-center gap-2 rounded-lg px-1 py-1.5 ${
+                    className={`${setGridClassName} rounded-lg px-2 py-1.5 ${
                       isBest ? "bg-accent/50" : ""
                     }`}
                   >
-                    <span className="text-muted-foreground w-8 text-center text-sm">
+                    <span className="text-muted-foreground text-center text-sm">
                       {set.set_number}
                     </span>
-                    <span className="w-16 text-center text-sm font-medium">
+                    <span className="text-center text-sm font-medium">
                       <WeightValue
                         weight={set.weight}
                         isDoubleWeight={usesDoubleWeight(exercise)}
                         className="text-sm font-medium"
                       />
                     </span>
-                    <span className="w-12 text-center text-sm">{set.reps ?? "—"}</span>
-                    <span className="text-muted-foreground w-12 text-center text-sm">
+                    <span className="text-center text-sm">{set.reps ?? "—"}</span>
+                    <span className="text-muted-foreground text-center text-sm">
                       {set.rpe ?? "—"}
                     </span>
-                    <span className="text-muted-foreground flex-1 text-center text-sm">
+                    <span className="text-muted-foreground text-center text-sm">
                       {estimated1RM ?? "—"}
                     </span>
                   </div>
@@ -208,8 +201,8 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
 
       {/* Нотатки */}
       {workout.notes && (
-        <Card>
-          <CardContent className="p-4">
+        <Card size="sm" className="py-4">
+          <CardContent className="px-4">
             <p className="text-muted-foreground text-sm">{workout.notes}</p>
           </CardContent>
         </Card>
