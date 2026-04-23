@@ -30,7 +30,6 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
           exercises: active.exercises,
           startedAt: active.startedAt,
         });
-        toast.info("Відновлено незавершене тренування");
       }
       setRestored(true);
     });
