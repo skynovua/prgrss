@@ -6,7 +6,13 @@ import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
 import { Trash2 } from "lucide-react";
 import { db, type ActiveWorkout } from "@/src/lib/offline/db";
 
-export function ActiveWorkoutBanner({ fallback }: { fallback?: React.ReactNode }) {
+export function ActiveWorkoutBanner({
+  fallback,
+  onVisibilityChange,
+}: {
+  fallback?: React.ReactNode;
+  onVisibilityChange?: (visible: boolean) => void;
+}) {
   const [active, setActive] = useState<ActiveWorkout | null>(null);
   const [checked, setChecked] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -23,6 +29,12 @@ export function ActiveWorkoutBanner({ fallback }: { fallback?: React.ReactNode }
   useEffect(() => {
     checkActiveWorkout();
   }, [pathname, checkActiveWorkout]);
+
+  useEffect(() => {
+    if (!checked) return;
+
+    onVisibilityChange?.(Boolean(active));
+  }, [active, checked, onVisibilityChange]);
 
   if (!checked) return null;
   if (!active) return fallback ?? null;

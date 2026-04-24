@@ -12,6 +12,7 @@ import LoginPage from "@/src/routes/login";
 import AuthCallbackPage from "@/src/routes/auth-callback";
 import OfflinePage from "@/src/routes/offline";
 import DashboardPage from "@/src/routes/dashboard";
+import CalendarPage from "@/src/routes/calendar";
 import ExercisesPage from "@/src/routes/exercises";
 import WorkoutNewPage from "@/src/routes/workout-new";
 import WorkoutDetailPage from "@/src/routes/workout-detail";
@@ -99,6 +100,12 @@ const dashboardRoute = createRoute({
   component: DashboardPage,
 });
 
+const calendarRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/calendar",
+  component: CalendarPage,
+});
+
 const exercisesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/exercises",
@@ -171,6 +178,7 @@ const routeTree = rootRoute.addChildren([
   installRoute,
   appRoute.addChildren([
     dashboardRoute,
+    calendarRoute,
     exercisesRoute,
     workoutNewRoute,
     workoutDetailRoute,

@@ -231,7 +231,7 @@ function DiffBadge({ diff, unit = "" }: { diff: number | null; unit?: string }) 
 
   return (
     <span
-      className={`mt-1 flex items-center gap-0.5 text-xs font-medium ${
+      className={`mt-1 flex justify-center gap-0.5 text-xs font-medium ${
         isZero ? "text-muted-foreground" : isPositive ? "text-green-500" : "text-red-500"
       }`}
     >

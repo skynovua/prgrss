@@ -9,6 +9,7 @@ import {
   Flame,
   Plus,
 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ActiveWorkoutBanner } from "@/src/components/workout/active-workout-banner";
 import { RecentWorkouts } from "@/src/components/workout/recent-workouts";
@@ -40,13 +41,10 @@ function StatDiff({ current, previous }: { current: number; previous: number }) 
   );
 }
 
-function formatVolumeLabel(volume: number) {
-  return volume > 1000 ? `${(volume / 1000).toFixed(1)}т` : `${Math.round(volume)} кг`;
-}
-
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
   const { data: achievements } = useAchievements();
+  const [hasActiveWorkoutBanner, setHasActiveWorkoutBanner] = useState(false);
 
   if (isLoading || !data) {
     return <LoaderBar />;
@@ -64,10 +62,9 @@ export default function DashboardPage() {
       )
       .map((achievement) => achievement.familyKey)
   ).size;
-  const weekVolumeLabel = formatVolumeLabel(weekStats.volume);
 
   return (
-    <div className="flex flex-1 flex-col gap-5 p-4">
+    <div className={`flex flex-1 flex-col gap-5 p-4 ${hasActiveWorkoutBanner ? "pb-34" : ""}`}>
       <div className="flex items-center justify-between">
         <Link to="/settings">
           {profile.avatarUrl ? (
@@ -108,10 +105,6 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h1 className="text-2xl font-bold tracking-tight">Привіт, {profile.displayName}</h1>
-                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  За цей тиждень у тебе {weekStats.workouts} тренувань, {weekStats.sets} підходів і{" "}
-                  {weekVolumeLabel.toLowerCase()} загального об&apos;єму.
-                </p>
               </div>
 
               {streak > 0 && (
@@ -154,6 +147,7 @@ export default function DashboardPage() {
       </Card>
 
       <ActiveWorkoutBanner
+        onVisibilityChange={setHasActiveWorkoutBanner}
         fallback={
           <Link
             to="/workout/new"
@@ -167,7 +161,7 @@ export default function DashboardPage() {
 
       {recentWorkouts.length > 0 && <RecentWorkouts workouts={recentWorkouts} />}
 
-      <WorkoutCalendar workouts={calendarWorkouts} />
+      <WorkoutCalendar workouts={calendarWorkouts} variant="week" showCalendarLink />
     </div>
   );
 }
