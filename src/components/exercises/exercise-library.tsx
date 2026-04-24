@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { Search, Plus, Trash2 } from "lucide-react";
+import { LibraryBig, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import {
   type Exercise,
   type MuscleGroup,
@@ -93,89 +93,104 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   const equipmentKeys = Object.keys(EQUIPMENT_LABELS);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      {/* Заголовок */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Бібліотека вправ</h1>
-        <Button size="sm" className="gap-1" onClick={() => setAddDialogOpen(true)}>
-          <Plus className="h-3 w-3" />
-          Додати
-        </Button>
-      </div>
-
-      {/* Пошук */}
-      <div className="relative">
-        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-        <Input
-          placeholder="Пошук вправ..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
-      </div>
-
-      {/* Фільтри: м'язові групи */}
-      <div className="relative">
-        <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
-          <button
-            onClick={() => setActiveGroup("all")}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeGroup === "all"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground active:bg-accent"
-            }`}
-          >
-            Всі
-          </button>
-          {muscleGroups.map((group) => (
-            <button
-              key={group}
-              onClick={() => setActiveGroup(group)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeGroup === group
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground active:bg-accent"
-              }`}
-            >
-              {MUSCLE_GROUP_LABELS[group]}
-            </button>
-          ))}
+    <div className="flex flex-1 flex-col gap-6 p-4">
+      <div className="flex items-start justify-between gap-3 px-1">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight">Бібліотека вправ</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+            Знаходь вправи за м&apos;язовою групою та обладнанням або додавай власні варіанти.
+          </p>
         </div>
-        <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
-      </div>
 
-      {/* Фільтри: обладнання */}
-      <div className="relative">
-        <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
-          <button
-            onClick={() => setActiveEquipment("all")}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeEquipment === "all"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground active:bg-accent"
-            }`}
-          >
-            Все обладнання
-          </button>
-          {equipmentKeys.map((eq) => (
-            <button
-              key={eq}
-              onClick={() => setActiveEquipment(eq)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeEquipment === eq
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground active:bg-accent"
-              }`}
-            >
-              {EQUIPMENT_LABELS[eq]}
-            </button>
-          ))}
+        <div className="bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
+          <LibraryBig className="h-5 w-5" />
         </div>
-        <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
       </div>
 
-      {/* Кількість результатів */}
-      <p className="text-muted-foreground text-sm">{filtered.length} вправ</p>
+      {/* Пошук і фільтри */}
+      <Card className="p-0">
+        <CardContent className="flex flex-col gap-4 p-4">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <SlidersHorizontal className="text-muted-foreground h-4 w-4" />
+            Пошук і фільтри
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                placeholder="Пошук вправ..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button size="sm" className="gap-1.5" onClick={() => setAddDialogOpen(true)}>
+              <Plus className="h-3.5 w-3.5" />
+              Додати
+            </Button>
+          </div>
+
+          <div className="relative">
+            <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+              <button
+                onClick={() => setActiveGroup("all")}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  activeGroup === "all"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground active:bg-accent"
+                }`}
+              >
+                Всі
+              </button>
+              {muscleGroups.map((group) => (
+                <button
+                  key={group}
+                  onClick={() => setActiveGroup(group)}
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                    activeGroup === group
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground active:bg-accent"
+                  }`}
+                >
+                  {MUSCLE_GROUP_LABELS[group]}
+                </button>
+              ))}
+            </div>
+            <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
+          </div>
+
+          <div className="relative">
+            <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+              <button
+                onClick={() => setActiveEquipment("all")}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  activeEquipment === "all"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground active:bg-accent"
+                }`}
+              >
+                Все обладнання
+              </button>
+              {equipmentKeys.map((eq) => (
+                <button
+                  key={eq}
+                  onClick={() => setActiveEquipment(eq)}
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                    activeEquipment === eq
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground active:bg-accent"
+                  }`}
+                >
+                  {EQUIPMENT_LABELS[eq]}
+                </button>
+              ))}
+            </div>
+            <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
+          </div>
+          <p className="text-muted-foreground text-sm">{filtered.length} вправ після фільтрації</p>
+        </CardContent>
+      </Card>
 
       {/* Список вправ по групах */}
       {Array.from(grouped.entries()).map(([group, exs]) => (
@@ -184,7 +199,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             {MUSCLE_GROUP_LABELS[group as MuscleGroup] ?? group}
           </h2>
           {exs.map((exercise) => (
-            <Card key={exercise.id}>
+            <Card key={exercise.id} size="sm" className="py-4">
               <CardContent className="flex items-center gap-3 px-3">
                 {exercise.muscle_group && (
                   <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
@@ -213,9 +228,19 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       ))}
 
       {filtered.length === 0 && (
-        <div className="flex flex-1 items-center justify-center py-12">
-          <p className="text-muted-foreground">Нічого не знайдено</p>
-        </div>
+        <Card className="p-0">
+          <CardContent className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">
+            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-2xl">
+              <Search className="text-muted-foreground h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Нічого не знайдено</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Спробуй змінити фільтри або додай власну вправу до бібліотеки.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Діалог створення вправи */}

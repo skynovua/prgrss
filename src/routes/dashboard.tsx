@@ -40,6 +40,10 @@ function StatDiff({ current, previous }: { current: number; previous: number }) 
   );
 }
 
+function formatVolumeLabel(volume: number) {
+  return volume > 1000 ? `${(volume / 1000).toFixed(1)}т` : `${Math.round(volume)} кг`;
+}
+
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
   const { data: achievements } = useAchievements();
@@ -53,10 +57,10 @@ export default function DashboardPage() {
     achievements?.some(
       (achievement) => achievement.unlocked && achievement.unlockedAt && !achievement.seenAt
     ) ?? false;
+  const weekVolumeLabel = formatVolumeLabel(weekStats.volume);
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4">
-      {/* Хедер */}
       <div className="flex items-center justify-between">
         <Link to="/settings">
           {profile.avatarUrl ? (
@@ -87,21 +91,57 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Привітання + стрік */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Привіт, {profile.displayName}</h2>
-        {streak > 0 && (
-          <div className="flex items-center gap-1.5">
-            <Flame className="h-5 w-5 text-orange-500" />
-            <span className="text-sm font-bold">{streak}</span>
-            <span className="text-muted-foreground text-xs">
-              {streak === 1 ? "тиждень" : streak < 5 ? "тижні" : "тижнів"}
-            </span>
-          </div>
-        )}
-      </div>
+      <Card className="overflow-hidden p-0">
+        <CardContent className="px-4 py-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold tracking-tight">Привіт, {profile.displayName}</h1>
+                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                  За цей тиждень у тебе {weekStats.workouts} тренувань, {weekStats.sets} підходів і{" "}
+                  {weekVolumeLabel.toLowerCase()} загального об&apos;єму.
+                </p>
+              </div>
 
-      {/* Банер активного тренування або CTA */}
+              {streak > 0 && (
+                <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-orange-500/10 px-3 py-1.5 text-orange-600 dark:text-orange-400">
+                  <Flame className="h-4 w-4" />
+                  <span className="text-sm font-semibold">{streak}</span>
+                  <span className="text-xs">
+                    {streak === 1 ? "тиждень" : streak < 5 ? "тижні" : "тижнів"}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <WeekStatCard
+                icon={<Calendar className="text-muted-foreground h-4.5 w-4.5" />}
+                value={`${weekStats.workouts}`}
+                label="тренувань"
+                diff={<StatDiff current={weekStats.workouts} previous={prevWeekStats.workouts} />}
+              />
+              <WeekStatCard
+                icon={<Dumbbell className="text-muted-foreground h-4.5 w-4.5" />}
+                value={`${weekStats.sets}`}
+                label="підходів"
+                diff={<StatDiff current={weekStats.sets} previous={prevWeekStats.sets} />}
+              />
+              <WeekStatCard
+                icon={<TrendingUp className="text-muted-foreground h-4.5 w-4.5" />}
+                value={
+                  weekStats.volume > 1000
+                    ? `${(weekStats.volume / 1000).toFixed(1)}т`
+                    : `${Math.round(weekStats.volume)}`
+                }
+                label="об'єм кг"
+                diff={<StatDiff current={weekStats.volume} previous={prevWeekStats.volume} />}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <ActiveWorkoutBanner
         fallback={
           <Link
@@ -114,48 +154,34 @@ export default function DashboardPage() {
         }
       />
 
-      {/* Тижнева статистика */}
-      <div>
-        <h3 className="text-muted-foreground mb-2 text-xs font-medium tracking-wider uppercase">
-          Цей тиждень
-        </h3>
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="p-0">
-            <CardContent className="flex flex-col items-center px-3 py-6">
-              <Calendar className="text-muted-foreground mb-1 h-5 w-5" />
-              <span className="text-2xl font-bold">{weekStats.workouts}</span>
-              <span className="text-muted-foreground text-xs">тренувань</span>
-              <StatDiff current={weekStats.workouts} previous={prevWeekStats.workouts} />
-            </CardContent>
-          </Card>
-          <Card className="p-0">
-            <CardContent className="flex flex-col items-center px-3 py-6">
-              <Dumbbell className="text-muted-foreground mb-1 h-5 w-5" />
-              <span className="text-2xl font-bold">{weekStats.sets}</span>
-              <span className="text-muted-foreground text-xs">підходів</span>
-              <StatDiff current={weekStats.sets} previous={prevWeekStats.sets} />
-            </CardContent>
-          </Card>
-          <Card className="p-0">
-            <CardContent className="flex flex-col items-center px-3 py-6">
-              <TrendingUp className="text-muted-foreground mb-1 h-5 w-5" />
-              <span className="text-2xl font-bold">
-                {weekStats.volume > 1000
-                  ? `${(weekStats.volume / 1000).toFixed(1)}т`
-                  : `${Math.round(weekStats.volume)}`}
-              </span>
-              <span className="text-muted-foreground text-xs">об&#39;єм кг</span>
-              <StatDiff current={weekStats.volume} previous={prevWeekStats.volume} />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Останні тренування */}
       {recentWorkouts.length > 0 && <RecentWorkouts workouts={recentWorkouts} />}
 
-      {/* Календар */}
       <WorkoutCalendar workouts={calendarWorkouts} />
+    </div>
+  );
+}
+
+function WeekStatCard({
+  icon,
+  value,
+  label,
+  diff,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  diff: React.ReactNode;
+}) {
+  return (
+    <div className="bg-background/70 rounded-2xl border px-3 py-3 backdrop-blur-sm">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        {icon}
+        {diff}
+      </div>
+      <div className="min-w-0">
+        <p className="text-lg font-semibold tabular-nums">{value}</p>
+        <p className="text-muted-foreground text-xs">{label}</p>
+      </div>
     </div>
   );
 }

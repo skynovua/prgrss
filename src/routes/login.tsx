@@ -4,7 +4,7 @@ import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { useAuth } from "@/src/lib/auth";
 import { createClient } from "@/src/lib/supabase/client";
-import { Loader2, Download, X } from "lucide-react";
+import { Activity, Download, Flame, Loader2, ShieldCheck, X } from "lucide-react";
 import { isStandalone } from "@/src/lib/utils";
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -75,19 +75,47 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="flex w-full max-w-sm flex-col items-center gap-8">
-        <div className="flex flex-col items-center gap-3">
-          <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-2xl">
-            <span className="text-2xl font-black">P</span>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">PRGRSS</h1>
-            <p className="text-muted-foreground text-sm">Відстежуй тренування. Бач прогрес.</p>
-          </div>
-        </div>
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <Card className="overflow-hidden p-0">
+          <CardContent className="relative px-5 py-6 text-center">
+            <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
+            <div className="relative flex flex-col items-center gap-4">
+              <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm">
+                <span className="text-2xl font-black">P</span>
+              </div>
 
-        <Card className="w-full">
-          <CardContent className="flex flex-col gap-3 p-6">
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                    Workout PWA
+                  </span>
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight">PRGRSS</h1>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Логуй тренування, стеж за прогресом і продовжуй сесію навіть після
+                  перезавантаження.
+                </p>
+              </div>
+
+              <div className="grid w-full grid-cols-3 gap-2 text-center">
+                <HeroPill icon={<Activity className="h-4 w-4" />} label="Логер" />
+                <HeroPill icon={<Flame className="h-4 w-4" />} label="Прогрес" />
+                <HeroPill icon={<ShieldCheck className="h-4 w-4" />} label="Офлайн" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-full p-0">
+          <CardContent className="flex flex-col gap-3 p-4">
+            <div>
+              <p className="text-sm font-medium">Увійти в акаунт</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Авторизація потрібна для синхронізації тренувань, профілю та статистики між
+                пристроями.
+              </p>
+            </div>
+
             <Button
               variant="outline"
               size="lg"
@@ -134,6 +162,15 @@ export default function LoginPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function HeroPill({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="bg-background/70 rounded-2xl border px-3 py-3 backdrop-blur-sm">
+      <div className="text-primary mb-2 flex justify-center">{icon}</div>
+      <p className="text-xs font-medium">{label}</p>
     </div>
   );
 }

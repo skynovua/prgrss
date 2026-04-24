@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
-import { Share, Plus, MoreVertical, Download, Monitor, Smartphone } from "lucide-react";
+import {
+  Share,
+  Plus,
+  MoreVertical,
+  Download,
+  Monitor,
+  Smartphone,
+  Sparkles,
+  Zap,
+  WifiOff,
+} from "lucide-react";
 import { type Platform, detectPlatform, isStandalone } from "@/src/lib/utils";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -38,38 +48,69 @@ export default function InstallPage() {
 
   if (installed) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4 text-center">
-        <div className="bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full">
-          <Download className="h-8 w-8" />
-        </div>
-        <h1 className="text-2xl font-bold">Вже встановлено!</h1>
-        <p className="text-muted-foreground max-w-sm">
-          PRGRSS вже працює як додаток на твоєму пристрої.
-        </p>
+      <div className="flex min-h-screen flex-col justify-center gap-6 p-4">
+        <Card className="overflow-hidden p-0">
+          <CardContent className="relative px-4 py-5 text-center">
+            <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
+            <div className="relative flex flex-col items-center gap-3">
+              <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-2xl">
+                <Download className="h-6 w-6" />
+              </div>
+              <div className="space-y-1.5">
+                <h1 className="text-2xl font-bold tracking-tight">PRGRSS already installed</h1>
+                <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed">
+                  Застосунок уже працює на цьому пристрої як окремий app experience.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      <div className="flex flex-col items-center gap-3 py-6 text-center">
-        <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-2xl">
-          <span className="text-2xl font-black">P</span>
-        </div>
-        <h1 className="text-2xl font-bold">Встанови PRGRSS</h1>
-        <p className="text-muted-foreground max-w-sm text-sm">
-          Додай на головний екран для швидкого доступу, роботи офлайн та повноекранного режиму.
-        </p>
-      </div>
+    <div className="flex flex-1 flex-col gap-6 p-4">
+      <Card className="overflow-hidden p-0">
+        <CardContent className="relative px-4 py-5 text-center">
+          <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
+          <div className="relative flex flex-col items-center gap-4">
+            <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm">
+              <span className="text-2xl font-black">P</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-center gap-2">
+                <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                  PWA Install
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight">Встанови PRGRSS</h1>
+              <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed">
+                Додай застосунок на головний екран, щоб запускати його миттєво, працювати офлайн і
+                користуватись ним як окремим тренувальним app.
+              </p>
+            </div>
+
+            <div className="grid w-full grid-cols-3 gap-3">
+              <BenefitPill icon={<Zap className="h-4 w-4" />} label="Швидкий старт" />
+              <BenefitPill icon={<WifiOff className="h-4 w-4" />} label="Офлайн" />
+              <BenefitPill icon={<Sparkles className="h-4 w-4" />} label="App mode" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Нативний prompt (Chrome / Edge / Samsung) */}
       {deferredPrompt && (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="flex flex-col items-center gap-3 p-6">
-            <Button onClick={handleInstallClick} size="lg" className="w-full">
+        <Card className="border-primary/30 bg-primary/5 p-0">
+          <CardContent className="flex flex-col items-center gap-3 p-4">
+            <Button onClick={handleInstallClick} size="lg" className="w-full justify-center gap-2">
               <Download className="mr-2 h-5 w-5" />
               Встановити додаток
             </Button>
+            <p className="text-muted-foreground text-center text-sm">
+              Браузер уже готовий показати native install prompt.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -159,7 +200,7 @@ export default function InstallPage() {
       )}
 
       {/* Переваги */}
-      <Card>
+      <Card className="p-0">
         <CardHeader>
           <CardTitle className="text-base">Що ти отримаєш</CardTitle>
         </CardHeader>
@@ -184,6 +225,15 @@ export default function InstallPage() {
           </ul>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function BenefitPill({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="bg-background/70 rounded-2xl border px-3 py-3 text-center backdrop-blur-sm">
+      <div className="text-primary mb-2 flex justify-center">{icon}</div>
+      <p className="text-xs font-medium">{label}</p>
     </div>
   );
 }
