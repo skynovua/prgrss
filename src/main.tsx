@@ -5,6 +5,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { AuthProvider, useAuth } from "@/src/lib/auth";
 import { ThemeProvider } from "@/src/lib/theme";
 import { router } from "@/src/lib/router";
+import { PwaUpdateNotifier } from "@/src/components/pwa/pwa-update-notifier";
 import "./globals.css";
 
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
+          <PwaUpdateNotifier />
           <AppRouter />
         </AuthProvider>
       </QueryClientProvider>
