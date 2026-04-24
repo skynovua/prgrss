@@ -13,10 +13,24 @@ import {
   finishWorkout,
 } from "./persistence";
 
+function getInitialCollapsedCards(
+  exercises: NonNullable<ReturnType<typeof createInitialState>["exercises"]>
+) {
+  return Object.fromEntries(
+    exercises
+      .map((exercise, index) => [
+        `${exercise.exercise.id}-${index}`,
+        exercise.sets.length > 0 && exercise.sets.every((set) => set.completed),
+      ])
+      .filter(([, shouldCollapse]) => shouldCollapse)
+  ) as Record<string, boolean>;
+}
+
 export function useWorkout(previousSets?: PreviousSetsMap) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
+  const [initialCollapsedCards, setInitialCollapsedCards] = useState<Record<string, boolean>>({});
   const [restored, setRestored] = useState(false);
   const isFinishing = useRef(false);
   const { exercises: workoutExercises, startedAt, timerOpen, saving } = state;
@@ -25,6 +39,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
   useEffect(() => {
     restoreActiveWorkout().then((active) => {
       if (active && active.exercises.length > 0) {
+        setInitialCollapsedCards(getInitialCollapsedCards(active.exercises));
         dispatch({
           type: "RESTORE",
           exercises: active.exercises,
@@ -104,6 +119,8 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
   return {
     state,
     dispatch,
+    initialCollapsedCards,
+    restored,
     workoutExercises,
     timerOpen,
     saving,

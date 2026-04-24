@@ -1,4 +1,4 @@
-import { memo, useReducer, useCallback, useMemo, useState } from "react";
+import { memo, useReducer, useCallback, useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
@@ -220,6 +220,17 @@ interface WorkoutEditorProps {
   previousSets?: PreviousSetsMap;
 }
 
+function getInitialCollapsedCards(workoutExercises: WorkoutExercise[]) {
+  return Object.fromEntries(
+    workoutExercises
+      .map((exercise, index) => [
+        `${exercise.exercise.id}-${index}`,
+        exercise.sets.length > 0 && exercise.sets.every((set) => set.completed),
+      ])
+      .filter(([, shouldCollapse]) => shouldCollapse)
+  ) as Record<string, boolean>;
+}
+
 export function WorkoutEditor({
   workout,
   exercises,
@@ -237,20 +248,9 @@ export function WorkoutEditor({
     timerOpen: false,
     saving: false,
   });
-  const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>({});
-
   const { exercises: workoutExercises, timerOpen } = state;
-  const defaultCollapsedCards = useMemo(
-    () =>
-      Object.fromEntries(
-        workoutExercises
-          .map((exercise, index) => [
-            `${exercise.exercise.id}-${index}`,
-            exercise.sets.length > 0 && exercise.sets.every((set) => set.completed),
-          ])
-          .filter(([, shouldCollapse]) => shouldCollapse)
-      ) as Record<string, boolean>,
-    [workoutExercises]
+  const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>(() =>
+    getInitialCollapsedCards(workoutToEditorState(workout, exercises))
   );
 
   const addExercise = useCallback(
@@ -281,7 +281,7 @@ export function WorkoutEditor({
   const toggleCollapse = (cardId: string) => {
     setCollapsedCards((current) => ({
       ...current,
-      [cardId]: !(current[cardId] ?? defaultCollapsedCards[cardId] ?? false),
+      [cardId]: !(current[cardId] ?? false),
     }));
   };
 
@@ -346,11 +346,7 @@ export function WorkoutEditor({
           exerciseIndex={exerciseIndex}
           previousSets={previousSets?.[we.exercise.id]}
           autoRestTimer={autoRestTimer}
-          isCollapsed={
-            collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ??
-            defaultCollapsedCards[`${we.exercise.id}-${exerciseIndex}`] ??
-            false
-          }
+          isCollapsed={collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ?? false}
           onToggleCollapse={toggleCollapse}
           dispatch={dispatch}
         />

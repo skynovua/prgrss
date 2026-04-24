@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { EllipsisVertical } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
-import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +22,6 @@ export function ExerciseCardActions({
 }: ExerciseCardActionsProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleOpenStats = () => {
     navigate({
@@ -35,56 +32,39 @@ export function ExerciseCardActions({
   };
 
   const handleDelete = () => {
-    setConfirmOpen(true);
+    onDelete?.();
   };
 
   return (
-    <>
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground"
-              aria-label={`Дії для вправи ${exerciseName}`}
-            />
-          }
-          onClick={(event) => {
-            event.stopPropagation();
-          }}
-        >
-          <EllipsisVertical className="h-4 w-4" />
-        </DropdownMenuTrigger>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground"
+            aria-label={`Дії для вправи ${exerciseName}`}
+          />
+        }
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
+      >
+        <EllipsisVertical className="h-4 w-4" />
+      </DropdownMenuTrigger>
 
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={handleOpenStats}>Статистика</DropdownMenuItem>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={handleOpenStats}>Статистика</DropdownMenuItem>
 
-          {onDelete && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-                Видалити
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {onDelete && (
-        <ConfirmDialog
-          open={confirmOpen}
-          onOpenChange={setConfirmOpen}
-          title="Видалити вправу?"
-          description={`Вправа "${exerciseName}" буде видалена разом з усіма її сетами.`}
-          confirmText="Видалити"
-          isDestructive
-          onConfirm={() => {
-            onDelete();
-            setConfirmOpen(false);
-          }}
-        />
-      )}
-    </>
+        {onDelete && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={handleDelete}>
+              Видалити
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

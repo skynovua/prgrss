@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { ConfirmDialog } from "@/src/components/ui/confirm-dialog";
@@ -177,6 +177,8 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   const autoRestTimer = profile?.autoRestTimer ?? true;
   const {
     dispatch,
+    initialCollapsedCards,
+    restored,
     workoutExercises,
     timerOpen,
     saving,
@@ -186,23 +188,11 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
     handleFinish,
   } = useWorkout(previousSets);
   const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>({});
-  const defaultCollapsedCards = useMemo(
-    () =>
-      Object.fromEntries(
-        workoutExercises
-          .map((exercise, index) => [
-            `${exercise.exercise.id}-${index}`,
-            exercise.sets.length > 0 && exercise.sets.every((set) => set.completed),
-          ])
-          .filter(([, shouldCollapse]) => shouldCollapse)
-      ) as Record<string, boolean>,
-    [workoutExercises]
-  );
 
   const toggleCollapse = (cardId: string) => {
     setCollapsedCards((current) => ({
       ...current,
-      [cardId]: !(current[cardId] ?? defaultCollapsedCards[cardId] ?? false),
+      [cardId]: !(current[cardId] ?? false),
     }));
   };
 
@@ -246,7 +236,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
       <Separator />
 
       {/* Вправи */}
-      {workoutExercises.length === 0 ? (
+      {!restored ? null : workoutExercises.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
           <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
             <Dumbbell className="text-muted-foreground h-8 w-8" />
@@ -278,7 +268,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
               autoRestTimer={autoRestTimer}
               isCollapsed={
                 collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ??
-                defaultCollapsedCards[`${we.exercise.id}-${exerciseIndex}`] ??
+                initialCollapsedCards[`${we.exercise.id}-${exerciseIndex}`] ??
                 false
               }
               onToggleCollapse={toggleCollapse}
