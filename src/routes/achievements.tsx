@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useAchievements, useMarkAchievementsSeen } from "@/src/lib/hooks/use-achievements";
 import { LoaderBar } from "@/src/components/ui/loader-bar";
+import { Card, CardContent } from "@/src/components/ui/card";
 import { Sheet, SheetContent } from "@/src/components/ui/sheet";
 import { Link } from "@tanstack/react-router";
 import type { Achievement } from "@/src/lib/api/achievements";
 import {
+  Award,
   Clock3,
   BarChart3,
   ChevronLeft,
@@ -22,21 +24,21 @@ import {
 const TIER_STYLES = {
   bronze: {
     bg: "achievement-tier-bronze",
-    text: "text-[var(--achievement-bronze-fg)]",
+    text: "text-(--achievement-bronze-fg)",
     bar: "achievement-ring-bronze",
     ring: "var(--achievement-bronze-ring)",
     label: "Бронза",
   },
   silver: {
     bg: "achievement-tier-silver",
-    text: "text-[var(--achievement-silver-fg)]",
+    text: "text-(--achievement-silver-fg)",
     bar: "achievement-ring-silver",
     ring: "var(--achievement-silver-ring)",
     label: "Срібло",
   },
   gold: {
     bg: "achievement-tier-gold",
-    text: "text-[var(--achievement-gold-fg)]",
+    text: "text-(--achievement-gold-fg)",
     bar: "achievement-ring-gold",
     ring: "var(--achievement-gold-ring)",
     label: "Золото",
@@ -152,18 +154,16 @@ function AchievementTile({ group }: { group: AchievementGroup; order: number }) 
 
 function AchievementTileButton({
   group,
-  order,
   isNew,
   isHighlighted,
   onSelect,
 }: {
   group: AchievementGroup;
-  order: number;
   isNew: boolean;
   isHighlighted: boolean;
   onSelect: (group: AchievementGroup) => void;
 }) {
-  const { tiers, style, ringStyle } = AchievementTile({ group, order });
+  const { tiers, style, ringStyle } = AchievementTile({ group, order: 0 });
 
   return (
     <button
@@ -250,7 +250,7 @@ function AchievementDetailContent({ group }: { group: AchievementGroup }) {
 
         <h2 className="text-xl font-semibold tracking-tight">{group.title}</h2>
 
-        <p className="max-w-[22rem] text-sm leading-6 tracking-tight">{nextTier.description}</p>
+        <p className="max-w-88 text-sm leading-6 tracking-tight">{nextTier.description}</p>
       </div>
 
       <div className="grid gap-2">
@@ -329,6 +329,13 @@ export default function AchievementsPage() {
     ...baseOrderedGroups.filter((group) => highlightedSlugSet.has(group.slug)),
     ...baseOrderedGroups.filter((group) => !highlightedSlugSet.has(group.slug)),
   ];
+  const highlightedGroups = orderedGroups.filter((group) => highlightedSlugSet.has(group.slug));
+  const visibleInProgress = orderedGroups.filter(
+    (group) => !highlightedSlugSet.has(group.slug) && !isCompleted(group)
+  );
+  const visibleCompleted = orderedGroups.filter(
+    (group) => !highlightedSlugSet.has(group.slug) && isCompleted(group)
+  );
   const effectiveSelectedAchievementSlug =
     selectedAchievementSlug ??
     (!hasDismissedAutoOpen && currentNewSlugs.length > 0 ? currentNewSlugs[0] : null);
@@ -336,6 +343,9 @@ export default function AchievementsPage() {
     effectiveSelectedAchievementSlug === null
       ? null
       : (orderedGroups.find((group) => group.slug === effectiveSelectedAchievementSlug) ?? null);
+  const unlockedTiers = (achievements ?? []).filter((achievement) => achievement.unlocked).length;
+  const totalTiers = achievements?.length ?? 0;
+  const completionPercent = totalTiers === 0 ? 0 : Math.round((unlockedTiers / totalTiers) * 100);
 
   return (
     <Sheet
@@ -359,33 +369,118 @@ export default function AchievementsPage() {
 
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-semibold tracking-tight">Ачівки</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Відстежуй прогрес, відкривай нові рівні та дивись, що залишилось до наступної цілі.
+            </p>
           </div>
         </div>
 
         {orderedGroups.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <div className="grid grid-cols-3 gap-x-3 gap-y-5">
-              {orderedGroups.map((group, index) => (
-                <AchievementTileButton
-                  key={group.slug}
-                  group={group}
-                  order={index + 3}
-                  isNew={highlightedSlugSet.has(group.slug)}
-                  isHighlighted={highlightedSlugSet.has(group.slug)}
-                  onSelect={(selectedGroup) => {
-                    setHasDismissedAutoOpen(true);
-                    setSelectedAchievementSlug(selectedGroup.slug);
-                  }}
-                />
-              ))}
-            </div>
-          </section>
+          <Card className="overflow-hidden p-0">
+            <CardContent className="px-4 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="bg-primary/10 text-primary inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                    Progress
+                  </div>
+                  <h2 className="mt-2 text-lg font-semibold tracking-tight">
+                    Твоя полиця досягнень
+                  </h2>
+                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                    {unlockedTiers} з {totalTiers} рівнів відкрито, {completed.length} сімейств
+                    завершено повністю.
+                  </p>
+                </div>
+
+                <div className="bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
+                  <Award className="h-5 w-5" />
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                <SummaryTile label="Відкрито" value={`${unlockedTiers}`} helper="рівнів" />
+                <SummaryTile label="Нові" value={`${highlightedGroups.length}`} helper="сімейств" />
+                <SummaryTile label="Готовність" value={`${completionPercent}%`} helper="колекції" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {highlightedGroups.length > 0 && (
+          <AchievementSection
+            title="Нові ачівки"
+            description="Щойно відкриті або оновлені сімейства."
+          >
+            {highlightedGroups.map((group) => (
+              <AchievementTileButton
+                key={group.slug}
+                group={group}
+                isNew
+                isHighlighted
+                onSelect={(selectedGroup) => {
+                  setHasDismissedAutoOpen(true);
+                  setSelectedAchievementSlug(selectedGroup.slug);
+                }}
+              />
+            ))}
+          </AchievementSection>
+        )}
+
+        {visibleInProgress.length > 0 && (
+          <AchievementSection
+            title="У процесі"
+            description="Найближчі цілі, які можна добити наступними тренуваннями."
+          >
+            {visibleInProgress.map((group) => (
+              <AchievementTileButton
+                key={group.slug}
+                group={group}
+                isNew={false}
+                isHighlighted={false}
+                onSelect={(selectedGroup) => {
+                  setHasDismissedAutoOpen(true);
+                  setSelectedAchievementSlug(selectedGroup.slug);
+                }}
+              />
+            ))}
+          </AchievementSection>
+        )}
+
+        {visibleCompleted.length > 0 && (
+          <AchievementSection
+            title="Завершені"
+            description="Сімейства, в яких вже відкрито всі рівні."
+          >
+            {visibleCompleted.map((group) => (
+              <AchievementTileButton
+                key={group.slug}
+                group={group}
+                isNew={false}
+                isHighlighted={false}
+                onSelect={(selectedGroup) => {
+                  setHasDismissedAutoOpen(true);
+                  setSelectedAchievementSlug(selectedGroup.slug);
+                }}
+              />
+            ))}
+          </AchievementSection>
         )}
 
         {(!achievements || achievements.length === 0) && (
-          <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
-            Починай тренуватися, щоб отримати ачівки!
-          </div>
+          <Card className="p-0">
+            <CardContent className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">
+              <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-2xl">
+                <Award className="text-muted-foreground h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Починай тренуватися, щоб отримати ачівки</p>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Завершуй тренування, тримай streak і нарощуй об&apos;єм, щоб відкривати нові
+                  рівні.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
@@ -396,5 +491,37 @@ export default function AchievementsPage() {
         {selectedGroup && <AchievementDetailContent group={selectedGroup} />}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function AchievementSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div>
+        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+        <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-x-3 gap-y-5">{children}</div>
+    </section>
+  );
+}
+
+function SummaryTile({ label, value, helper }: { label: string; value: string; helper: string }) {
+  return (
+    <div className="bg-background/70 rounded-2xl border px-3 py-3 backdrop-blur-sm">
+      <p className="text-muted-foreground text-xs">{label}</p>
+      <div className="mt-2 flex items-end gap-1">
+        <span className="text-lg font-semibold tabular-nums">{value}</span>
+        <span className="text-muted-foreground pb-0.5 text-xs">{helper}</span>
+      </div>
+    </div>
   );
 }

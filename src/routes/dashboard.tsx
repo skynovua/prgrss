@@ -5,7 +5,7 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
-  Trophy,
+  Award,
   Flame,
   Plus,
 } from "lucide-react";
@@ -57,6 +57,13 @@ export default function DashboardPage() {
     achievements?.some(
       (achievement) => achievement.unlocked && achievement.unlockedAt && !achievement.seenAt
     ) ?? false;
+  const newAchievementsCount = new Set(
+    (achievements ?? [])
+      .filter(
+        (achievement) => achievement.unlocked && achievement.unlockedAt && !achievement.seenAt
+      )
+      .map((achievement) => achievement.familyKey)
+  ).size;
   const weekVolumeLabel = formatVolumeLabel(weekStats.volume);
 
   return (
@@ -78,16 +85,20 @@ export default function DashboardPage() {
         <span className="text-lg font-bold tracking-tight uppercase">prgrss</span>
         <Link
           to="/achievements"
-          className={`group relative flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur-sm transition-all ${
+          aria-label="Ачівки"
+          className={`group relative flex size-10 items-center justify-center gap-1.5 rounded-full border px-3 backdrop-blur-sm transition-all ${
             hasNewAchievements
-              ? "border-foreground/10 bg-foreground/4 text-foreground hover:border-foreground/14 hover:bg-foreground/5.5 shadow-sm"
+              ? "border-amber-500/20 bg-amber-500/10 text-amber-700 shadow-sm hover:border-amber-500/30 hover:bg-amber-500/14 dark:text-amber-300"
               : "border-border/70 bg-background/80 text-muted-foreground hover:border-border hover:bg-accent/70 hover:text-foreground shadow-sm"
           }`}
         >
           {hasNewAchievements && (
-            <span className="border-foreground/12 pointer-events-none absolute -inset-1 animate-pulse rounded-full border" />
+            <span className="pointer-events-none absolute -top-1 -right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-semibold text-white shadow-sm">
+              {newAchievementsCount}
+            </span>
           )}
-          <Trophy className="h-4.5 w-4.5 transition-transform group-hover:scale-[1.03]" />
+          <Award className="h-4.5 w-4.5 shrink-0 transition-transform group-hover:scale-[1.03]" />
+          <span className="sr-only md:not-sr-only md:text-xs md:font-medium">Ачівки</span>
         </Link>
       </div>
 
