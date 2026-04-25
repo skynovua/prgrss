@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { LogoutButton } from "@/src/components/auth/logout-button";
 import { ProfileSettings } from "@/src/components/settings/profile-settings";
+import { PushNotificationsCard } from "@/src/components/notifications/push-notifications-card";
 import { useProfile } from "@/src/lib/hooks/use-profile";
 import { Link } from "@tanstack/react-router";
 import { Download, Settings2 } from "lucide-react";
@@ -52,6 +53,8 @@ export default function SettingsPage() {
         avatarUrl={profile.avatarUrl}
         autoRestTimer={profile.autoRestTimer}
       />
+
+      <PushNotificationsCard />
 
       <Card>
         <CardHeader>
