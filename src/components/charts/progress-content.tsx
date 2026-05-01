@@ -66,7 +66,6 @@ export function ProgressContent() {
 
       <Card className="overflow-hidden p-0">
         <CardContent className="relative px-4 py-4">
-          <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent" />
           <div className="relative flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

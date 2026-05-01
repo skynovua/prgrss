@@ -145,7 +145,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
 
           {/* Фільтр по групі м'язів */}
           <div className="relative">
-            <div className="scrollbar-none flex gap-1.5 overflow-x-auto px-3">
+            <div className="scrollbar-none mr-3 flex gap-1.5 overflow-x-auto px-3">
               <button
                 onClick={() => setActiveGroup("all")}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${

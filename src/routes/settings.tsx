@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { LogoutButton } from "@/src/components/auth/logout-button";
 import { ProfileSettings } from "@/src/components/settings/profile-settings";
-import { PushNotificationsCard } from "@/src/components/notifications/push-notifications-card";
+// import { PushNotificationsCard } from "@/src/components/notifications/push-notifications-card";
 import { useProfile } from "@/src/lib/hooks/use-profile";
 import { Link } from "@tanstack/react-router";
-import { Download, Settings2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { isStandalone } from "@/src/lib/utils";
 import { LoaderBar } from "@/src/components/ui/loader-bar";
 
@@ -23,10 +23,6 @@ export default function SettingsPage() {
           <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
             Профіль, вигляд застосунку та тренувальні звички.
           </p>
-        </div>
-
-        <div className="bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
-          <Settings2 className="h-5 w-5" />
         </div>
       </div>
 
@@ -54,7 +50,7 @@ export default function SettingsPage() {
         autoRestTimer={profile.autoRestTimer}
       />
 
-      <PushNotificationsCard />
+      {/* <PushNotificationsCard /> */}
 
       <Card>
         <CardHeader>

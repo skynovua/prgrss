@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { LibraryBig, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import {
   type Exercise,
   type MuscleGroup,
@@ -97,13 +97,6 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       <div className="flex items-start justify-between gap-3 px-1">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight">Бібліотека вправ</h1>
-          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-            Знаходь вправи за м&apos;язовою групою та обладнанням або додавай власні варіанти.
-          </p>
-        </div>
-
-        <div className="bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
-          <LibraryBig className="h-5 w-5" />
         </div>
       </div>
 
@@ -132,7 +125,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
           </div>
 
           <div className="relative">
-            <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+            <div className="scrollbar-none mr-3 flex gap-1.5 overflow-x-auto">
               <button
                 onClick={() => setActiveGroup("all")}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -157,11 +150,11 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
                 </button>
               ))}
             </div>
-            <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
+            <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
           </div>
 
           <div className="relative">
-            <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+            <div className="scrollbar-none mr-3 flex gap-1.5 overflow-x-auto">
               <button
                 onClick={() => setActiveEquipment("all")}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -186,7 +179,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
                 </button>
               ))}
             </div>
-            <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
+            <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
           </div>
           <p className="text-muted-foreground text-sm">{filtered.length} вправ після фільтрації</p>
         </CardContent>

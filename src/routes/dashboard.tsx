@@ -95,7 +95,6 @@ export default function DashboardPage() {
             </span>
           )}
           <Award className="h-4.5 w-4.5 shrink-0 transition-transform group-hover:scale-[1.03]" />
-          <span className="sr-only md:not-sr-only md:text-xs md:font-medium">Ачівки</span>
         </Link>
       </div>
 
