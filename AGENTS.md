@@ -31,7 +31,7 @@
 - Google OAuth (`provider: 'google'`)
 - Sign in with Apple (`provider: 'apple'`)
 
-Логіка auth живе в `src/lib/auth.tsx`. Це Vite SPA: сесія читається Supabase client-ом з browser storage, а захист маршрутів виконується в `src/lib/router.tsx` через TanStack Router `beforeLoad`.
+Логіка auth живе в `src/shared/auth/auth.tsx`. Це Vite SPA: сесія читається Supabase client-ом з browser storage, а захист маршрутів виконується в `src/app/router.tsx` через TanStack Router `beforeLoad`.
 
 ```ts
 // Приклад виклику
@@ -44,37 +44,38 @@ const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
 
 ```
 /src
-  /routes           — сторінки (SPA routing)
-    /login          — сторінка входу (Google)
-    /dashboard      — головний екран, статистика
-    /workout-new    — новий workout logger
-    /workout-detail — деталі тренування
-    /workout-edit   — редагування тренування
-    /exercises      — бібліотека вправ
-    /programs       — шаблони програм
-    /progress       — графіки, 1RM
-    /settings       — профіль, налаштування
-    /offline        — offline fallback
+  /app              — app shell, providers, router, global styles
+  /pages            — route-level FSD page slices
+    /login
+    /dashboard
+    /workout-new
+    /workout-detail
+    /workout-edit
+    /exercises
+    /programs
+    /progress
+    /settings
+    /offline
 
-  /components
-    /ui             — базові UI-компоненти (shadcn/ui)
-    /workout        — логер, таймер відпочинку, set row, exercise picker
-    /charts         — графіки прогресії
-    /notifications  — налаштування push
-    /auth           — logout button
-    /exercises      — бібліотека вправ
-    /settings       — профіль
+  /entities         — reusable domain slices
+    /workout        — workout model, API, offline sync, reusable workout UI
+    /exercise       — exercise API/hooks/library UI
+    /progress       — stats API/hooks/charts
+    /profile        — profile API/hooks/settings UI
+    /notification   — push reminder API/hooks/UI
+    /achievement    — achievements API/hooks
+    /auth           — auth-related reusable UI
 
-  /lib
-    /supabase       — клієнт Supabase
-    /auth.tsx       — auth helpers
-    /router.tsx     — SPA router
-    /api            — API функції (dashboard, exercises, workouts, stats, profile)
-    /db             — типи БД
-    /offline        — Dexie schema + sync logic
-    /hooks          — React hooks
-    /utils          — утиліти (calc, etc.)
-    /workout        — reducer, persistence, use-workout hook
+  /shared           — infrastructure without feature workflows
+    /ui             — базові UI-компоненти
+    /api            — Supabase client
+    /db             — generated DB types
+    /auth           — auth provider/session helpers
+    /theme          — theme provider
+    /lib            — утиліти
+
+  /features         — reusable user actions, only when extracted
+  /widgets          — reusable page blocks, only when extracted
 
 /supabase
   /functions        — Edge Functions (reminder-push, cron)
@@ -263,11 +264,13 @@ export const calc1RM = (weight: number, reps: number) =>
 
 - Це Vite SPA — всі компоненти клієнтські
 - Supabase запити через `createClient` з `@supabase/supabase-js`
-- Роутинг — кастомний SPA router (`lib/router.tsx`)
+- Роутинг — TanStack Router конфіг у `src/app/router.tsx`
+- Архітектура — Feature-Sliced Design v2.1: імпорти йдуть тільки вниз (`app → pages → widgets → features → entities → shared`)
+- Імпорти використовують alias `@/*`, який вказує на `src/*`
 
 **Типи**
 
-- Генерувати типи БД командою: `supabase gen types typescript --local > lib/db/types.ts`
+- Генерувати типи БД командою: `npm run db:types`
 - Не писати типи вручну — тільки з генератора
 
 **Стилі**

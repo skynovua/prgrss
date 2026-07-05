@@ -11,7 +11,7 @@
     "ci": "npm run typecheck && npm run lint && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:types": "supabase gen types --lang=typescript --project-id dggyqxvnyynusykobmiq > src/lib/db/types.ts",
+    "db:types": "supabase gen types --lang=typescript --project-id dggyqxvnyynusykobmiq > src/shared/db/generated/types.ts",
     "db:sync-achievements": "node scripts/sync-achievement-config.mjs"
   },
   "dependencies": {

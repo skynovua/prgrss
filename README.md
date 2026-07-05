@@ -71,19 +71,12 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ```text
 src/
-	components/
-		workout/       logger UI, detail/edit, timer, active workout banner
-		charts/        progress and analytics charts
-		exercises/     exercise library
-		settings/      profile and user settings
-		ui/            base UI primitives
-	lib/
-		api/           Supabase queries and RPC calls
-		hooks/         React hooks for features and data
-		offline/       Dexie schema + sync logic
-		supabase/      Supabase client
-		workout/       reducer, metrics, persistence, use-workout
-	routes/          application pages
+	app/             app shell, providers, router, global styles
+	pages/           route-level FSD page slices
+	entities/        workout, exercise, progress, profile, notification domains
+	shared/          UI kit, Supabase client, generated DB types, common libs
+	features/        reusable user actions when they are extracted
+	widgets/         reusable page blocks when they are extracted
 supabase/
 	migrations/      SQL migrations and RPC functions
 docs/

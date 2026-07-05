@@ -2,11 +2,11 @@ import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
-import { AuthProvider, useAuth } from "@/src/lib/auth";
-import { ThemeProvider } from "@/src/lib/theme";
-import { router } from "@/src/lib/router";
-import { PwaUpdateNotifier } from "@/src/components/pwa/pwa-update-notifier";
-import "./globals.css";
+import { AuthProvider, useAuth } from "@/shared/auth";
+import { ThemeProvider } from "@/shared/theme";
+import { router } from "@/app";
+import { PwaUpdateNotifier } from "@/app/providers/pwa/pwa-update-notifier";
+import "./app/styles/globals.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -64,20 +64,20 @@
 ### Database / SQL
 
 - `supabase/migrations/<new>_transactional_workout_rpc.sql`
-- `src/lib/db/types.ts`
+- `src/shared/db/generated/types.ts`
 
 ### Client write paths
 
-- `src/lib/workout/persistence.ts`
-- `src/lib/offline/sync.ts`
-- `src/lib/api/workouts.ts`
-- `src/lib/hooks/use-workouts.ts`
-- `src/lib/workout/use-workout.ts`
+- `src/entities/workout/model/persistence.ts`
+- `src/entities/workout/offline/sync.ts`
+- `src/entities/workout/api/workouts.ts`
+- `src/entities/workout/hooks/use-workouts.ts`
+- `src/entities/workout/model/use-workout.ts`
 
 ### Optional follow-up if needed
 
-- `src/lib/types.ts`
-- `src/lib/api/dashboard.ts`
+- `src/entities/workout/model/types.ts`
+- `src/pages/dashboard/api/dashboard.ts`
 
 ## Work Items
 
@@ -138,7 +138,7 @@ Payload має покривати:
 
 ### 3. Move online finish flow to RPC
 
-У `src/lib/workout/persistence.ts`:
+У `src/entities/workout/model/persistence.ts`:
 
 Замінити логіку:
 
@@ -158,7 +158,7 @@ Payload має покривати:
 
 ### 4. Move offline sync to the same RPC
 
-У `src/lib/offline/sync.ts`:
+У `src/entities/workout/offline/sync.ts`:
 
 Замінити поточний flow на:
 
@@ -186,7 +186,7 @@ Payload має покривати:
 
 ### 5. Move workout update to RPC
 
-У `src/lib/api/workouts.ts`:
+У `src/entities/workout/api/workouts.ts`:
 
 Замість:
 
@@ -204,7 +204,7 @@ Payload має покривати:
 
 ### 6. Move delete workout to RPC
 
-У `src/lib/api/workouts.ts`:
+У `src/entities/workout/api/workouts.ts`:
 
 Замість двох delete-запитів використовувати `delete_workout_cascade`.
 
@@ -215,7 +215,7 @@ Payload має покривати:
 
 ### 7. Regenerate DB types
 
-Після міграції оновити `src/lib/db/types.ts`.
+Після міграції оновити `src/shared/db/generated/types.ts`.
 
 Очікуваний результат:
 
