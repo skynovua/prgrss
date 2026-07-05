@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint",
+    "ci": "npm run typecheck && npm run lint && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:types": "supabase gen types --lang=typescript --project-id dggyqxvnyynusykobmiq > src/lib/db/types.ts",

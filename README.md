@@ -41,6 +41,7 @@ pnpm install
 ```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+VITE_VAPID_PUBLIC_KEY=
 ```
 
 3. Start the dev server:
@@ -49,16 +50,18 @@ VITE_SUPABASE_ANON_KEY=
 pnpm dev
 ```
 
-The app will be available at [http://localhost:5173](http://localhost:5173).
+The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
 | Command                     | Description                                |
 | --------------------------- | ------------------------------------------ |
 | `pnpm dev`                  | Run the local dev server                   |
+| `pnpm typecheck`            | Run TypeScript checks without building     |
 | `pnpm build`                | Run TypeScript checks and production build |
 | `pnpm preview`              | Preview the production build locally       |
 | `pnpm lint`                 | Run ESLint                                 |
+| `pnpm ci`                   | Run typecheck, lint, and build             |
 | `pnpm format`               | Format the project with Prettier           |
 | `pnpm format:check`         | Check formatting                           |
 | `pnpm db:types`             | Generate Supabase TypeScript types         |
@@ -89,9 +92,9 @@ docs/
 
 ## Feature Status
 
-- **Done**: auth, workout logger, offline restore/save, dashboard, progress, achievements, workout detail/edit, exercise library, profile settings, rest timer, PWA
+- **Done**: auth, workout logger, offline restore/save, dashboard, progress, achievements, workout detail/edit, exercise library, profile settings, rest timer, push reminders, PWA
 - **Partial / skeleton**: programs/templates
-- **Not implemented yet**: push reminders, body measurements, Apple sign-in, photo progress, export
+- **Not implemented yet**: body measurements, Apple sign-in, photo progress, export
 
 ## Deployment
 

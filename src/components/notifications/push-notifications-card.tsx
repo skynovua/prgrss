@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bell, BellOff, Loader2, Send } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
@@ -12,6 +12,7 @@ import {
   useSaveReminderSettings,
   useSendTestReminder,
 } from "@/src/lib/hooks/use-notifications";
+import type { ReminderSettings } from "@/src/lib/api/notifications";
 import { cn, detectPlatform, isStandalone } from "@/src/lib/utils";
 import { toast } from "sonner";
 
@@ -50,39 +51,49 @@ function isPushSupported() {
 export function PushNotificationsCard() {
   const remindersQuery = useReminderSettings();
   const subscriptionQuery = usePushSubscriptionStatus();
+  const reminders = remindersQuery.data;
+  const formKey = reminders
+    ? [reminders.id ?? "new", reminders.enabled, reminders.days.join("-"), reminders.time].join(":")
+    : "loading";
+
+  return (
+    <PushNotificationsForm
+      key={formKey}
+      reminders={reminders}
+      subscriptionActive={subscriptionQuery.data ?? false}
+    />
+  );
+}
+
+function PushNotificationsForm({
+  reminders,
+  subscriptionActive,
+}: {
+  reminders?: ReminderSettings;
+  subscriptionActive: boolean;
+}) {
   const saveReminderMutation = useSaveReminderSettings();
   const saveSubscriptionMutation = useSavePushSubscription();
   const deleteSubscriptionMutation = useDeletePushSubscription();
   const testReminderMutation = useSendTestReminder();
 
-  const [enabled, setEnabled] = useState(false);
-  const [days, setDays] = useState<number[]>([1, 3, 5]);
-  const [time, setTime] = useState("09:00");
+  const [enabled, setEnabled] = useState(reminders?.enabled ?? false);
+  const [days, setDays] = useState<number[]>(reminders?.days ?? [1, 3, 5]);
+  const [time, setTime] = useState(reminders?.time ?? "09:00");
   const [message, setMessage] = useState(
-    "Час на тренування. Зайди в PRGRSS і зафіксуй сьогоднішню сесію."
+    reminders?.message ?? "Час на тренування. Зайди в PRGRSS і зафіксуй сьогоднішню сесію."
   );
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
     isPushSupported() ? Notification.permission : "unsupported"
   );
 
-  useEffect(() => {
-    if (!remindersQuery.data) return;
-
-    setEnabled(remindersQuery.data.enabled);
-    setDays(remindersQuery.data.days);
-    setTime(remindersQuery.data.time);
-    setMessage(remindersQuery.data.message);
-  }, [remindersQuery.data]);
-
-  const remindersLoaded = remindersQuery.data;
   const isDirty =
-    !!remindersLoaded &&
-    (enabled !== remindersLoaded.enabled ||
-      time !== remindersLoaded.time ||
-      message !== remindersLoaded.message ||
-      JSON.stringify([...days].sort()) !== JSON.stringify([...remindersLoaded.days].sort()));
+    !!reminders &&
+    (enabled !== reminders.enabled ||
+      time !== reminders.time ||
+      message !== reminders.message ||
+      JSON.stringify([...days].sort()) !== JSON.stringify([...reminders.days].sort()));
 
-  const subscriptionActive = subscriptionQuery.data ?? false;
   const unsupported = permission === "unsupported" || !import.meta.env.VITE_VAPID_PUBLIC_KEY;
   const showIosHint = detectPlatform() === "ios" && !isStandalone();
 

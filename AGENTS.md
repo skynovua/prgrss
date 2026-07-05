@@ -31,7 +31,7 @@
 - Google OAuth (`provider: 'google'`)
 - Sign in with Apple (`provider: 'apple'`)
 
-Логіка auth живе в `lib/auth.ts`. Сесія зберігається через Supabase SSR cookies (`@supabase/ssr`). Middleware (`middleware.ts`) захищає всі маршрути крім `/login`.
+Логіка auth живе в `src/lib/auth.tsx`. Це Vite SPA: сесія читається Supabase client-ом з browser storage, а захист маршрутів виконується в `src/lib/router.tsx` через TanStack Router `beforeLoad`.
 
 ```ts
 // Приклад виклику
@@ -228,7 +228,7 @@ db.version(1).stores({
 ## Push-нагадування
 
 1. Клієнт підписується на Web Push (VAPID) і зберігає підписку в таблиці `push_subscriptions`
-2. Supabase Edge Function `reminder-push` запускається через `pg_cron` щогодини
+2. Supabase Edge Function `reminder-push` запускається через cron/ручний виклик для тестового нагадування
 3. Функція знаходить нагадування на поточний час і відправляє push через Web Push Protocol
 
 ```ts
@@ -293,12 +293,15 @@ export const calc1RM = (weight: number, reps: number) =>
 ## Змінні середовища
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_VAPID_PUBLIC_KEY=
 
 # Тільки на сервері
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
 ```
 
@@ -313,7 +316,7 @@ VAPID_PRIVATE_KEY=
 - [x] Workout logger (offline-first) — Dexie.js, auto-save, sync on reconnect
 - [x] Exercise library — 60+ вправ (UA), пошук, фільтри, кастомні вправи
 - [x] Базова статистика (обсяг, підходи) — dashboard з тижневою статистикою
-- [ ] Push-нагадування — не розпочато (Edge Functions, VAPID, Web Push)
+- [x] Push-нагадування — UI, Web Push subscription, Edge Function, test reminder
 
 ### Phase 2
 

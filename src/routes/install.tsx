@@ -20,14 +20,11 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function InstallPage() {
-  const [platform, setPlatform] = useState<Platform>("unknown");
-  const [installed, setInstalled] = useState(false);
+  const [platform] = useState<Platform>(() => detectPlatform());
+  const [installed, setInstalled] = useState(() => isStandalone());
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    setPlatform(detectPlatform());
-    setInstalled(isStandalone());
-
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
