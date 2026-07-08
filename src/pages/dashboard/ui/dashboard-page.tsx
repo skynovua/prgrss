@@ -70,8 +70,8 @@ export default function DashboardPage() {
       : `${Math.round(weekStats.volume)}`;
 
   return (
-    <div className="flex flex-1 flex-col gap-10 px-4 pt-3 pb-6">
-      <div className="border-border/40 bg-background/85 sticky top-[env(safe-area-inset-top)] z-30 -mx-4 flex items-center justify-between border-b px-4 py-3 backdrop-blur-xl">
+    <div className="flex flex-1 flex-col gap-10 px-4 pb-6">
+      <div className="sticky top-0 z-30 -mx-4 flex items-center justify-between bg-transparent px-4 py-3">
         <Link to="/settings">
           {profile.avatarUrl ? (
             <img

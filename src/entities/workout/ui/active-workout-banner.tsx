@@ -51,7 +51,10 @@ export function ActiveWorkoutBanner({
   const visible = Boolean(draft?.exercises.length) && !hiddenOnCurrentRoute;
 
   useEffect(() => {
-    const syncDraft = () => setDraft(restoreActiveWorkoutDraft());
+    const syncDraft = () => {
+      setDraft(restoreActiveWorkoutDraft());
+      setNow(Date.now());
+    };
 
     window.addEventListener(ACTIVE_WORKOUT_DRAFT_EVENT, syncDraft);
     window.addEventListener("storage", syncDraft);
@@ -89,7 +92,7 @@ export function ActiveWorkoutBanner({
           className="border-border/80 bg-card/94 supports-backdrop-filter:bg-card/86 flex h-16 items-center gap-3 rounded-full border px-4 shadow-[0_12px_42px_rgb(0_0_0/0.22)] backdrop-blur-xl transition-transform active:scale-[0.99]"
           aria-label="Повернутися до активного тренування"
         >
-          <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-2xl">
+          <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
             <Dumbbell className="h-5 w-5" />
           </div>
 
@@ -98,7 +101,7 @@ export function ActiveWorkoutBanner({
             <p className="text-muted-foreground truncate text-sm">{content.subtitle}</p>
           </div>
 
-          <span className="shrink-0 text-2xl font-bold tabular-nums text-orange-500">
+          <span className="shrink-0 text-2xl font-bold text-orange-500 tabular-nums">
             {formatDuration(draft.startedAt, now)}
           </span>
         </Link>

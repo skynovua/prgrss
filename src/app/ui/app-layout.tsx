@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useLocation } from "@tanstack/react-router";
 import { BottomNav } from "@/app/ui/bottom-nav";
 import { ActiveWorkoutBanner } from "@/entities/workout";
 import { LoaderBar } from "@/shared/ui";
@@ -7,6 +7,7 @@ import { useAuth } from "@/shared/auth";
 
 export function AppLayout() {
   const auth = useAuth();
+  const { pathname } = useLocation();
   const [hasActiveWorkoutBanner, setHasActiveWorkoutBanner] = useState(false);
 
   if (auth.loading) {
@@ -24,7 +25,7 @@ export function AppLayout() {
       >
         <Outlet />
       </div>
-      <ActiveWorkoutBanner onVisibilityChange={setHasActiveWorkoutBanner} />
+      <ActiveWorkoutBanner key={pathname} onVisibilityChange={setHasActiveWorkoutBanner} />
       <BottomNav />
     </>
   );
