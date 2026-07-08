@@ -6,6 +6,7 @@ export * from "./model/persistence";
 export * from "./model/reducer";
 export * from "./model/types";
 export * from "./model/use-workout";
+export * from "./ui/active-workout-banner";
 export * from "./ui/delete-workout-button";
 export * from "./ui/exercise-card-actions";
 export * from "./ui/exercise-picker";

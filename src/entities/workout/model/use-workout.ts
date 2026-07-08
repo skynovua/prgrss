@@ -1,4 +1,4 @@
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -6,13 +6,40 @@ import type { Exercise, PreviousSetsMap } from "@/entities/workout";
 import { toWorkoutOperationError } from "@/entities/workout";
 import { workoutReducer, createInitialState } from "./reducer";
 import { getWorkoutVolume } from "./metrics";
-import { finishWorkout } from "./persistence";
+import {
+  clearActiveWorkoutDraft,
+  finishWorkout,
+  restoreActiveWorkoutDraft,
+  saveActiveWorkoutDraft,
+} from "./persistence";
 
 export function useWorkout(previousSets?: PreviousSetsMap) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
+  const [state, dispatch] = useReducer(workoutReducer, undefined, () => {
+    const initialState = createInitialState();
+    const draft = restoreActiveWorkoutDraft();
+
+    if (!draft?.exercises.length) {
+      return initialState;
+    }
+
+    return {
+      ...initialState,
+      exercises: draft.exercises,
+      startedAt: draft.startedAt,
+    };
+  });
   const { exercises: workoutExercises, startedAt, timerOpen, saving } = state;
+
+  useEffect(() => {
+    if (workoutExercises.length === 0) {
+      clearActiveWorkoutDraft();
+      return;
+    }
+
+    saveActiveWorkoutDraft({ exercises: workoutExercises, startedAt });
+  }, [startedAt, workoutExercises]);
 
   const addExercise = useCallback(
     (exercise: Exercise) => {
