@@ -228,8 +228,53 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
   body {
     @apply bg-background text-foreground antialiased;
+    overscroll-behavior-y: none;
+  }
+  :where(*):not(input, textarea, select, [contenteditable="true"], [data-allow-selection="true"]) {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  :where(input, textarea, select, [contenteditable="true"], [data-allow-selection="true"]) {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  :where(img, svg, a, button) {
+    -webkit-user-drag: none;
+  }
+  @media (hover: none), (pointer: coarse) {
+    :where(
+      a,
+      button,
+      [role="button"],
+      [role="tab"],
+      [role="menuitem"],
+      [data-slot="button"],
+      [data-slot="switch"],
+      [data-slot="tabs-trigger"],
+      [data-slot="select-trigger"]
+    ):focus,
+    :where(
+      a,
+      button,
+      [role="button"],
+      [role="tab"],
+      [role="menuitem"],
+      [data-slot="button"],
+      [data-slot="switch"],
+      [data-slot="tabs-trigger"],
+      [data-slot="select-trigger"]
+    ):focus-visible {
+      border-color: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
   }
   html {
     @apply font-sans;

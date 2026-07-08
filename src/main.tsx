@@ -5,6 +5,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { AuthProvider, useAuth } from "@/shared/auth";
 import { ThemeProvider } from "@/shared/theme";
 import { router } from "@/app";
+import { useMobileGestureGuard } from "@/app/use-mobile-gesture-guard";
 import "./app/styles/globals.css";
 
 const queryClient = new QueryClient({
@@ -19,6 +20,8 @@ const queryClient = new QueryClient({
 
 function AppRouter() {
   const auth = useAuth();
+
+  useMobileGestureGuard();
 
   useEffect(() => {
     router.invalidate();
