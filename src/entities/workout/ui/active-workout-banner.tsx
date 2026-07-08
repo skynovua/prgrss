@@ -87,7 +87,8 @@ export function ActiveWorkoutBanner({
   const [draft, setDraft] = useState<ActiveWorkoutDraft | null>(() => restoreActiveWorkoutDraft());
   const [now, setNow] = useState(() => Date.now());
   const hiddenOnCurrentRoute = pathname === "/workout/new";
-  const visible = Boolean(draft?.exercises.length) && !hiddenOnCurrentRoute;
+  const hasActiveDraft = Boolean(draft?.exercises.length);
+  const visible = hasActiveDraft && !hiddenOnCurrentRoute;
 
   useEffect(() => {
     const syncDraft = () => {
@@ -107,11 +108,11 @@ export function ActiveWorkoutBanner({
   }, []);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!hasActiveDraft) return;
 
     const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(intervalId);
-  }, [visible]);
+  }, [hasActiveDraft]);
 
   useEffect(() => {
     onVisibilityChange?.(visible);
