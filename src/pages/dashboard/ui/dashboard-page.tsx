@@ -43,6 +43,14 @@ function StatDiff({ current, previous }: { current: number; previous: number }) 
   );
 }
 
+function getTrainingPaceLabel(stats: { workouts: number; sets: number; volume: number }) {
+  if (stats.workouts === 0) return "старт тижня";
+  if (stats.workouts >= 5 || stats.sets >= 45 || stats.volume >= 15000) return "піковий темп";
+  if (stats.workouts >= 3 || stats.sets >= 28 || stats.volume >= 9000) return "високий темп";
+  if (stats.workouts >= 2 || stats.sets >= 14 || stats.volume >= 4000) return "активний темп";
+  return "легкий темп";
+}
+
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
   const { data: achievements } = useAchievements();
@@ -68,6 +76,7 @@ export default function DashboardPage() {
     weekStats.volume > 1000
       ? `${(weekStats.volume / 1000).toFixed(1)}k`
       : `${Math.round(weekStats.volume)}`;
+  const trainingPaceLabel = getTrainingPaceLabel(weekStats);
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4">
@@ -152,7 +161,7 @@ export default function DashboardPage() {
               {streak > 0 ? `${streak} тиж.` : "сьогодні"}
             </span>
             <span className="rounded bg-white/12 px-2 py-1 text-xs font-bold tracking-[0.06em] uppercase backdrop-blur-md">
-              висока
+              {trainingPaceLabel}
             </span>
           </div>
           <div className="flex flex-col gap-2">
