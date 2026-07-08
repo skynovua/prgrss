@@ -1,15 +1,15 @@
 import { useNavigate, Link } from "@tanstack/react-router";
+import type { ComponentProps } from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@/shared/ui";
-import { Card, CardContent } from "@/shared/ui";
 import { useAuth } from "@/shared/auth";
 import { createClient } from "@/shared/api";
-import { Activity, Download, Flame, Loader2, ShieldCheck, X } from "lucide-react";
+import { Download, Loader2, X } from "lucide-react";
 import { isStandalone } from "@/shared/lib";
 
-function GoogleIcon({ className }: { className?: string }) {
+function GoogleIcon(props: ComponentProps<"svg">) {
   return (
-    <svg className={className} viewBox="0 0 24 24">
+    <svg viewBox="0 0 24 24" {...props}>
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
         fill="#4285F4"
@@ -74,69 +74,59 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <Card className="overflow-hidden p-0">
-          <CardContent className="relative px-5 py-6 text-center">
-            <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
-            <div className="relative flex flex-col items-center gap-4">
-              <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm">
-                <span className="text-2xl font-black">P</span>
-              </div>
+    <div className="bg-background text-foreground relative flex min-h-screen overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgb(204_255_0/0.12),transparent_30%),linear-gradient(180deg,transparent_0%,var(--background)_72%)]" />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+        <header className="relative z-10 text-center">
+          <p className="text-primary text-4xl font-black tracking-tight">PRGRSS</p>
+        </header>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                    Workout Tracker
-                  </span>
-                </div>
-                <h1 className="text-3xl font-bold tracking-tight">PRGRSS</h1>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Логуй тренування, стеж за прогресом і тримай історію занять в одному місці.
-                </p>
-              </div>
+        <div className="pointer-events-none absolute inset-x-0 top-20 flex justify-center">
+          <img
+            src="/images/login-runner.png"
+            alt=""
+            className="h-[58vh] max-h-[520px] min-h-[360px] w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_14%,black_72%,transparent_100%)] object-contain object-top opacity-80 saturate-100"
+          />
+          <div className="from-background absolute inset-x-0 top-0 h-20 bg-linear-to-b to-transparent" />
+          <div className="from-background absolute inset-x-0 bottom-0 h-40 bg-linear-to-t to-transparent" />
+        </div>
 
-              <div className="grid w-full grid-cols-3 gap-2 text-center">
-                <HeroPill icon={<Activity className="h-4 w-4" />} label="Логер" />
-                <HeroPill icon={<Flame className="h-4 w-4" />} label="Прогрес" />
-                <HeroPill icon={<ShieldCheck className="h-4 w-4" />} label="Захист" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="relative z-10 mt-auto mb-8 flex flex-col items-center gap-6 text-center">
+          <div className="flex flex-col gap-5">
+            <h1 className="text-[2rem] leading-[1.1] font-bold tracking-tight">
+              Train smarter.
+              <br />
+              Track progress.
+              <br />
+              Stay consistent.
+            </h1>
+            <p className="text-foreground/70 text-lg leading-8">
+              Ваш персональний гід у світі фітнесу. Досягайте результатів з розумною аналітикою.
+            </p>
+          </div>
 
-        <Card className="w-full p-0">
-          <CardContent className="flex flex-col gap-3 p-4">
-            <div>
-              <p className="text-sm font-medium">Увійти в акаунт</p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Авторизація потрібна для синхронізації тренувань, профілю та статистики між
-                пристроями.
-              </p>
-            </div>
-
+          <div className="flex w-full flex-col gap-3">
             <Button
-              variant="outline"
               size="lg"
-              className="w-full gap-3"
+              className="h-16 w-full gap-3 text-base font-black"
               onClick={() => handleLogin("google")}
               disabled={loading !== null}
             >
               {loading === "google" ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 data-icon="inline-start" className="animate-spin" />
               ) : (
-                <GoogleIcon className="h-5 w-5" />
+                <GoogleIcon data-icon="inline-start" />
               )}
               Увійти з Google
             </Button>
 
             {error && <p className="text-destructive text-center text-sm">{error}</p>}
-          </CardContent>
-        </Card>
+          </div>
 
-        <p className="text-muted-foreground text-center text-xs">
-          Входячи, ви погоджуєтесь з умовами використання
-        </p>
+          <p className="text-foreground/45 text-xs leading-5">
+            Входячи, ви погоджуєтесь з умовами використання
+          </p>
+        </div>
       </div>
 
       {showInstall && (
@@ -147,7 +137,9 @@ export default function LoginPage() {
             </div>
             <Link to="/install" className="flex min-w-0 flex-col">
               <span className="text-sm font-medium">Встановити додаток</span>
-              <span className="text-muted-foreground text-xs">Швидший доступ з головного екрана</span>
+              <span className="text-muted-foreground text-xs">
+                Швидший доступ з головного екрана
+              </span>
             </Link>
             <button
               onClick={() => {
@@ -161,15 +153,6 @@ export default function LoginPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function HeroPill({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div className="bg-background/70 rounded-2xl border px-3 py-3 backdrop-blur-sm">
-      <div className="text-primary mb-2 flex justify-center">{icon}</div>
-      <p className="text-xs font-medium">{label}</p>
     </div>
   );
 }
