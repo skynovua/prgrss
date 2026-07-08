@@ -16,9 +16,7 @@ export default function WorkoutNewPage() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-muted-foreground text-lg">Не вдалося завантажити вправи</p>
-        <p className="text-muted-foreground text-sm">
-          Відкрийте додаток з інтернетом хоча б раз, щоб вправи зберіглися для офлайн роботи
-        </p>
+        <p className="text-muted-foreground text-sm">Перевірте з'єднання з інтернетом</p>
       </div>
     );
   }

@@ -1,21 +1,20 @@
 # prgrss
 
-An offline-first PWA workout tracker for the gym: set logging, exercise library, dashboard, progress analytics, completed workout editing, and unfinished session restore after reload.
+A workout tracker for the gym: set logging, exercise library, dashboard, progress analytics, completed workout editing, achievements, and push reminders.
 
 ## Implemented Features
 
 - Google sign-in via Supabase Auth
-- Active workout creation and restore via IndexedDB
-- Workout logger with exercises, sets, RPE, rest timer, and auto-save
+- Workout logger with exercises, sets, RPE, and rest timer
 - Collapse/expand exercise cards in the logger and editor
 - Dumbbell `x2` support in weight display and volume calculation
 - Dashboard with streak, weekly stats, recent workouts, and calendar
-- Fixed unfinished workout banner on the home screen
 - Workout detail + workout edit for completed workouts
 - Exercise library with search, filters, and custom exercises
 - Progress screen with global stats, charts, and estimated 1RM
 - Achievements with a configurable catalog
-- PWA support + offline sync when the network comes back
+- Push reminders for scheduled workouts
+- PWA install support with custom icons and splash screens
 
 ## Stack
 
@@ -24,8 +23,7 @@ An offline-first PWA workout tracker for the gym: set logging, exercise library,
 - **Server state**: TanStack Query
 - **UI**: shadcn/ui + Tailwind CSS
 - **Backend**: Supabase Auth + PostgreSQL + Storage
-- **Offline**: Dexie.js (IndexedDB)
-- **PWA**: vite-plugin-pwa + Workbox
+- **PWA**: vite-plugin-pwa
 - **Charts**: Recharts
 
 ## Local Development
@@ -79,13 +77,16 @@ src/
 	widgets/         reusable page blocks when they are extracted
 supabase/
 	migrations/      SQL migrations and RPC functions
+public/
+	icons/           app icons
+	splash/          launch screens
 docs/
 	achievement-config.md
 ```
 
 ## Feature Status
 
-- **Done**: auth, workout logger, offline restore/save, dashboard, progress, achievements, workout detail/edit, exercise library, profile settings, rest timer, push reminders, PWA
+- **Done**: auth, workout logger, dashboard, progress, achievements, workout detail/edit, exercise library, profile settings, rest timer, push reminders, PWA install assets
 - **Partial / skeleton**: programs/templates
 - **Not implemented yet**: body measurements, Apple sign-in, photo progress, export
 

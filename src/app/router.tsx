@@ -10,7 +10,6 @@ import { AppLayout } from "@/app/ui/app-layout";
 import type { AuthContextType } from "@/shared/auth";
 import LoginPage from "@/pages/login";
 import AuthCallbackPage from "@/pages/auth-callback";
-import OfflinePage from "@/pages/offline";
 import DashboardPage from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import ExercisesPage from "@/pages/exercises";
@@ -64,13 +63,6 @@ const authCallbackRoute = createRoute({
   component: AuthCallbackPage,
 });
 
-// --- Offline ---
-const offlineRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/offline",
-  component: OfflinePage,
-});
-
 // --- App layout (authenticated) ---
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -81,10 +73,6 @@ const appRoute = createRoute({
     }
 
     if (context.auth.user) {
-      return;
-    }
-
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
       return;
     }
 
@@ -174,7 +162,6 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   authCallbackRoute,
-  offlineRoute,
   installRoute,
   appRoute.addChildren([
     dashboardRoute,

@@ -1,4 +1,4 @@
-# PWA Workout Tracker — Project Instructions
+# Workout Tracker — Project Instructions
 
 Цей файл описує архітектуру, стек, структуру БД та правила розробки проєкту.
 Агент повинен дотримуватись цих інструкцій при будь-яких змінах у коді.
@@ -14,9 +14,8 @@
 | Styling         | Tailwind CSS                                                   |
 | Language        | TypeScript (strict mode)                                       |
 | Backend         | Supabase (Auth, PostgreSQL, Edge Functions, Realtime, Storage) |
-| PWA             | vite-plugin-pwa (Workbox) + Service Worker                     |
+| PWA             | vite-plugin-pwa + manifest/icons/splash assets                 |
 | Charts          | Recharts                                                       |
-| Offline storage | Dexie.js (IndexedDB wrapper)                                   |
 | Push            | Web Push API (VAPID) через Supabase Edge Functions             |
 | Deployment      | Vercel (Vite SPA), Supabase Edge Functions                     |
 | Linting         | ESLint + Prettier (автоформатування)                           |
@@ -55,10 +54,9 @@ const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
     /programs
     /progress
     /settings
-    /offline
 
   /entities         — reusable domain slices
-    /workout        — workout model, API, offline sync, reusable workout UI
+    /workout        — workout model, API, reusable workout UI
     /exercise       — exercise API/hooks/library UI
     /progress       — stats API/hooks/charts
     /profile        — profile API/hooks/settings UI
@@ -84,6 +82,7 @@ const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
 /public
   /icons            — PWA іконки
   /splash           — splash screens
+
 ```
 
 ---
@@ -206,26 +205,6 @@ message     text
 
 ---
 
-## Offline-режим
-
-Додаток повинен працювати без інтернету в залі.
-
-- Використовується **Dexie.js** для IndexedDB
-- Активне тренування зберігається локально в реальному часі
-- Після появи інтернету — синхронізація з Supabase через Background Sync API
-- Стратегія: **offline-first** для запису, **network-first** для читання статистики
-
-```ts
-// lib/offline/schema.ts — Dexie схема
-const db = new Dexie("WorkoutDB");
-db.version(1).stores({
-  pendingWorkouts: "++id, syncedAt",
-  pendingSets: "++id, workoutId, syncedAt",
-});
-```
-
----
-
 ## Push-нагадування
 
 1. Клієнт підписується на Web Push (VAPID) і зберігає підписку в таблиці `push_subscriptions`
@@ -287,11 +266,10 @@ export const calc1RM = (weight: number, reps: number) =>
 
 **PWA**
 
-- `manifest.json` з усіма необхідними іконками
-- Service Worker через `vite-plugin-pwa` (автоматична генерація)
-- Offline fallback сторінка `/offline`
-
----
+- PWA конфіг живе у `vite.config.ts` через `vite-plugin-pwa`
+- Іконки зберігаються в `public/icons`
+- Splash screens зберігаються в `public/splash` і підключаються в `index.html`
+- Не повертати Dexie/offline-first чергу без окремого рішення
 
 ## Змінні середовища
 
@@ -316,10 +294,11 @@ VAPID_PRIVATE_KEY=
 
 - [x] Auth (Google) — PKCE flow, захищені роути, сесія через Supabase
 - [ ] Auth (Apple) — не реалізовано
-- [x] Workout logger (offline-first) — Dexie.js, auto-save, sync on reconnect
+- [x] Workout logger — створення тренування через Supabase RPC
 - [x] Exercise library — 60+ вправ (UA), пошук, фільтри, кастомні вправи
 - [x] Базова статистика (обсяг, підходи) — dashboard з тижневою статистикою
 - [x] Push-нагадування — UI, Web Push subscription, Edge Function, test reminder
+- [x] PWA install — manifest, custom icons, splash screens
 
 ### Phase 2
 
@@ -333,9 +312,7 @@ VAPID_PRIVATE_KEY=
 - [x] Workout details + editing (24h window, RLS policy)
 - [x] Dashboard — привітання, аватар, календар тренувань (3 міс), recent workouts
 - [x] Profile settings — ім'я, аватар (Supabase Storage), auto-rest timer toggle
-- [x] Active workout banner
 - [x] Muscle distribution chart (pie/bar)
-- [x] PWA — Vite PWA plugin, manifest, service worker, offline fallback
 
 ### Phase 3
 

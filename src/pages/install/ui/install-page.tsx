@@ -10,7 +10,7 @@ import {
   Smartphone,
   Sparkles,
   Zap,
-  WifiOff,
+  Bell,
 } from "lucide-react";
 import { type Platform, detectPlatform, isStandalone } from "@/shared/lib";
 
@@ -78,19 +78,19 @@ export default function InstallPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-2">
                 <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                  PWA Install
+                  App Install
                 </span>
               </div>
               <h1 className="text-2xl font-bold tracking-tight">Встанови PRGRSS</h1>
               <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed">
-                Додай застосунок на головний екран, щоб запускати його миттєво, працювати офлайн і
-                користуватись ним як окремим тренувальним app.
+                Додай застосунок на головний екран, щоб запускати його миттєво і користуватись ним
+                як окремим тренувальним app.
               </p>
             </div>
 
             <div className="grid w-full grid-cols-3 gap-3">
               <BenefitPill icon={<Zap className="h-4 w-4" />} label="Швидкий старт" />
-              <BenefitPill icon={<WifiOff className="h-4 w-4" />} label="Офлайн" />
+              <BenefitPill icon={<Bell className="h-4 w-4" />} label="Нагадування" />
               <BenefitPill icon={<Sparkles className="h-4 w-4" />} label="App mode" />
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function InstallPage() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">✓</span>
-              Працює офлайн у залі
+              Зручний запуск з головного екрана
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">✓</span>

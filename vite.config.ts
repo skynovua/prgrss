@@ -9,17 +9,16 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      strategies: "injectManifest",
       registerType: "autoUpdate",
+      injectRegister: "auto",
       includeAssets: ["icons/*.png", "splash/*.png"],
-      srcDir: "src",
-      filename: "sw.ts",
       manifest: {
         name: "PRGRSS — Трекер тренувань",
         short_name: "PRGRSS",
-        description: "Офлайн-трекер тренувань у залі",
+        description: "Трекер тренувань, прогресу та нагадувань",
         start_url: "/",
         scope: "/",
+        lang: "uk",
         display: "standalone",
         background_color: "#0a0a0a",
         theme_color: "#0a0a0a",
@@ -35,14 +34,6 @@ export default defineConfig({
             purpose: "maskable",
           },
         ],
-      },
-      injectManifest: {
-        rollupFormat: "es",
-      },
-      devOptions: {
-        enabled: true,
-        type: "module",
-        navigateFallback: "/index.html",
       },
     }),
   ],

@@ -1,5 +1,4 @@
 import { supabase } from "@/shared/api";
-import { db } from "@/entities/workout";
 
 export async function fetchExercises() {
   const { data, error } = await supabase
@@ -8,22 +7,8 @@ export async function fetchExercises() {
     .order("muscle_group")
     .order("name");
 
-  if (data && !error) {
-    // Кешуємо вправи в IndexedDB для офлайн доступу
-    try {
-      await db.cachedExercises.clear();
-      await db.cachedExercises.bulkPut(data);
-    } catch {
-      // Не блокуємо якщо кеш не записався
-    }
-    return data;
-  }
-
-  // Офлайн — повертаємо з IndexedDB
-  const cached = await db.cachedExercises.orderBy("muscle_group").toArray();
-  if (cached.length > 0) return cached;
-
-  throw new Error("Не вдалося завантажити вправи");
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 
 export async function createExercise(formData: {

@@ -212,7 +212,7 @@ function PushNotificationsForm({
 
         {showIosHint ? (
           <div className="bg-muted text-muted-foreground rounded-3xl px-4 py-3 text-xs leading-relaxed">
-            На iPhone push працює стабільно лише після встановлення PWA на головний екран.
+            На iPhone push працює стабільно лише після додавання застосунку на головний екран.
           </div>
         ) : null}
 

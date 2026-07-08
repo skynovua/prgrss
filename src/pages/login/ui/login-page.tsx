@@ -87,20 +87,19 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2">
                   <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                    Workout PWA
+                    Workout Tracker
                   </span>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight">PRGRSS</h1>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Логуй тренування, стеж за прогресом і продовжуй сесію навіть після
-                  перезавантаження.
+                  Логуй тренування, стеж за прогресом і тримай історію занять в одному місці.
                 </p>
               </div>
 
               <div className="grid w-full grid-cols-3 gap-2 text-center">
                 <HeroPill icon={<Activity className="h-4 w-4" />} label="Логер" />
                 <HeroPill icon={<Flame className="h-4 w-4" />} label="Прогрес" />
-                <HeroPill icon={<ShieldCheck className="h-4 w-4" />} label="Офлайн" />
+                <HeroPill icon={<ShieldCheck className="h-4 w-4" />} label="Захист" />
               </div>
             </div>
           </CardContent>
@@ -148,7 +147,7 @@ export default function LoginPage() {
             </div>
             <Link to="/install" className="flex min-w-0 flex-col">
               <span className="text-sm font-medium">Встановити додаток</span>
-              <span className="text-muted-foreground text-xs">Швидший доступ та робота офлайн</span>
+              <span className="text-muted-foreground text-xs">Швидший доступ з головного екрана</span>
             </Link>
             <button
               onClick={() => {

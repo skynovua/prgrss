@@ -9,9 +9,7 @@ import {
   Flame,
   Plus,
 } from "lucide-react";
-import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ActiveWorkoutBanner } from "@/entities/workout";
 import { RecentWorkouts } from "@/entities/workout";
 import { WorkoutCalendar } from "@/entities/workout";
 import { useDashboard } from "@/pages/dashboard/model/use-dashboard";
@@ -44,7 +42,6 @@ function StatDiff({ current, previous }: { current: number; previous: number }) 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
   const { data: achievements } = useAchievements();
-  const [hasActiveWorkoutBanner, setHasActiveWorkoutBanner] = useState(false);
 
   if (isLoading || !data) {
     return <LoaderBar />;
@@ -64,7 +61,7 @@ export default function DashboardPage() {
   ).size;
 
   return (
-    <div className={`flex flex-1 flex-col gap-5 p-4 ${hasActiveWorkoutBanner ? "pb-34" : ""}`}>
+    <div className="flex flex-1 flex-col gap-5 p-4">
       <div className="flex items-center justify-between">
         <Link to="/settings">
           {profile.avatarUrl ? (
@@ -145,18 +142,13 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <ActiveWorkoutBanner
-        onVisibilityChange={setHasActiveWorkoutBanner}
-        fallback={
-          <Link
-            to="/workout/new"
-            className="bg-primary text-primary-foreground flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-medium transition-opacity active:opacity-80"
-          >
-            <Plus className="h-5 w-5" />
-            Почати тренування
-          </Link>
-        }
-      />
+      <Link
+        to="/workout/new"
+        className="bg-primary text-primary-foreground flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-medium transition-opacity active:opacity-80"
+      >
+        <Plus className="h-5 w-5" />
+        Почати тренування
+      </Link>
 
       {recentWorkouts.length > 0 && <RecentWorkouts workouts={recentWorkouts} />}
 
