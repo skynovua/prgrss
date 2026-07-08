@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
 import { createClient } from "@/shared/api";
+import { cn } from "@/shared/lib";
 
-export function LogoutButton() {
+interface LogoutButtonProps {
+  className?: string;
+  variant?: ComponentProps<typeof Button>["variant"];
+}
+
+export function LogoutButton({ className, variant = "destructive" }: LogoutButtonProps) {
   const navigate = useNavigate();
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
@@ -34,12 +40,16 @@ export function LogoutButton() {
   return (
     <div className="flex flex-col gap-2">
       <Button
-        variant="destructive"
-        className="w-full gap-2"
+        variant={variant}
+        className={cn("w-full gap-2", className)}
         onClick={() => setConfirmOpen(true)}
         disabled={loading}
       >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+        {loading ? (
+          <Loader2 data-icon="inline-start" className="animate-spin" />
+        ) : (
+          <LogOut data-icon="inline-start" />
+        )}
         Вийти з акаунту
       </Button>
 

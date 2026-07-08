@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Button } from "@/shared/ui";
 import { Switch } from "@/shared/ui";
-import { Camera, Check, Loader2 } from "lucide-react";
+import { Camera, Check, Dumbbell, Loader2, UserRound } from "lucide-react";
 import { useUpdateProfile, useUploadAvatar } from "@/entities/profile";
 
 interface ProfileSettingsProps {
@@ -51,56 +51,57 @@ export function ProfileSettings({
   const initials = (name || "А").charAt(0).toUpperCase();
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Профіль</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Аватар */}
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadAvatarMutation.isPending}
-              className="group bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-full"
-            >
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Аватар" className="h-full w-full object-cover" />
+    <div className="flex flex-col gap-4">
+      <Card className="p-0">
+        <CardContent className="flex items-center gap-4 p-4">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadAvatarMutation.isPending}
+            className="group bg-muted relative size-20 shrink-0 overflow-hidden rounded-full ring-1 ring-border/70 transition-transform active:scale-[0.98]"
+            aria-label="Змінити фото профілю"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Аватар" className="size-full object-cover" />
+            ) : (
+              <span className="text-muted-foreground flex size-full items-center justify-center text-2xl font-semibold">
+                {initials}
+              </span>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/42 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+              {uploadAvatarMutation.isPending ? (
+                <Loader2 className="size-5 animate-spin text-white" />
               ) : (
-                <span className="text-muted-foreground flex h-full w-full items-center justify-center text-xl font-semibold">
-                  {initials}
-                </span>
+                <Camera className="size-5 text-white" />
               )}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                {uploadAvatarMutation.isPending ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-white" />
-                ) : (
-                  <Camera className="h-5 w-5 text-white" />
-                )}
-              </div>
-            </button>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Фото профілю</p>
-              <p className="text-muted-foreground text-xs">JPG, PNG або WebP. Макс 2 МБ</p>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
+          </button>
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-2xl leading-tight font-bold tracking-tight">{name}</p>
+            <p className="text-muted-foreground mt-1 truncate text-sm">{email}</p>
+            <p className="text-muted-foreground mt-3 text-xs">JPG, PNG або WebP. Макс 2 МБ</p>
           </div>
 
-          {/* Email (readonly) */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Email</label>
-            <Input value={email} disabled />
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
+        </CardContent>
+      </Card>
 
-          {/* Ім'я */}
-          <div className="space-y-1.5">
+      <Card className="p-0">
+        <CardHeader className="px-4 pt-4">
+          <CardTitle className="flex items-center gap-2">
+            <UserRound className="text-primary size-4" />
+            Профіль
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 p-4 pt-0">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Ім&apos;я</label>
             <div className="flex gap-2">
               <Input
@@ -112,27 +113,38 @@ export function ProfileSettings({
                 size="icon"
                 onClick={handleSaveName}
                 disabled={!nameChanged || nameMutation.isPending}
+                aria-label="Зберегти ім'я"
               >
                 {nameMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="animate-spin" />
                 ) : (
-                  <Check className="h-4 w-4" />
+                  <Check />
                 )}
               </Button>
             </div>
           </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Email</label>
+            <Input value={email} disabled />
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Тренування</CardTitle>
+      <Card className="p-0">
+        <CardHeader className="px-4 pt-4">
+          <CardTitle className="flex items-center gap-2">
+            <Dumbbell className="text-primary size-4" />
+            Тренування
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
+        <CardContent className="p-4 pt-0">
+          <div className="flex items-center justify-between gap-4 rounded-xl border px-3 py-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium">Таймер відпочинку</p>
-              <p className="text-muted-foreground text-xs">Автоматично показувати після підходу</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Автоматично показувати після підходу
+              </p>
             </div>
             <Switch
               checked={autoRestTimer}
@@ -142,6 +154,6 @@ export function ProfileSettings({
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }
