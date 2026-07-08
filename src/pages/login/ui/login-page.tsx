@@ -74,21 +74,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-background text-foreground relative flex min-h-dvh overflow-hidden">
-      <div className="absolute -inset-x-8 -top-32 bottom-0 bg-[radial-gradient(circle_at_50%_18%,rgb(204_255_0/0.16),transparent_38%),linear-gradient(180deg,rgb(204_255_0/0.04)_0%,transparent_22%,var(--background)_76%)]" />
-      <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+    <div className="bg-background text-foreground relative flex min-h-screen overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgb(204_255_0/0.12),transparent_50%),linear-gradient(180deg,transparent_0%,var(--background)_72%)]" />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
         <header className="relative z-10 text-center">
           <p className="text-primary text-4xl font-black tracking-tight">PRGRSS</p>
         </header>
 
         <div className="pointer-events-none absolute inset-x-0 top-20 flex justify-center">
-          <img
-            src="/images/login-runner.png"
-            alt=""
-            className="h-[58vh] max-h-[520px] min-h-[360px] w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_6%,black_72%,transparent_100%)] object-contain object-top opacity-80 saturate-100"
-          />
-          <div className="from-background/70 absolute inset-x-0 top-0 h-10 bg-gradient-to-b to-transparent" />
-          <div className="from-background absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t to-transparent" />
+          <img src="/images/login-runner.png" alt="" className="w-full opacity-80 saturate-100" />
+          <div className="from-background absolute inset-x-0 top-0 h-20 bg-linear-to-b to-transparent" />
+          <div className="from-background absolute inset-x-0 bottom-0 h-100 bg-linear-to-t to-transparent" />
         </div>
 
         <div className="relative z-10 mt-auto mb-8 flex flex-col items-center gap-6 text-center">
