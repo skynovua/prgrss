@@ -106,16 +106,14 @@ export default function DashboardPage() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl leading-tight font-bold">
-          Привіт, {profile.displayName}!
-        </h1>
+        <h1 className="text-3xl leading-tight font-bold">Привіт, {profile.displayName}!</h1>
         <p className="text-muted-foreground text-base">Готові до нових досягнень сьогодні?</p>
       </section>
 
       <Card className="p-0">
         <CardContent className="flex flex-col gap-6 p-6">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-heading text-2xl font-bold">Тижневий прогрес</h2>
+            <h2 className="text-2xl font-bold">Тижневий прогрес</h2>
             <MoreHorizontal className="text-muted-foreground size-5" />
           </div>
 
@@ -158,9 +156,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <div className="flex flex-col gap-2">
-            <h2 className="font-heading text-3xl leading-tight font-bold">
-              Сьогоднішнє тренування
-            </h2>
+            <h2 className="text-3xl leading-tight font-bold">Сьогоднішнє тренування</h2>
             <p className="max-w-[18rem] text-sm leading-6 text-white/78">
               Запишіть підходи, стежте за об'ємом і тримайте прогрес у фокусі.
             </p>
