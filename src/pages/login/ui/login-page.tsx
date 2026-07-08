@@ -80,11 +80,16 @@ export default function LoginPage() {
       <div className="from-background absolute inset-x-0 bottom-0 z-1 h-100 bg-linear-to-t to-transparent" />
       <div className="relative mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
         <header className="relative z-10 text-center">
-          <p className="text-primary text-4xl font-black tracking-tight">PRGRSS</p>
+          <p className="font-logo text-4xl font-black tracking-normal">
+            PR<span className="text-primary">G</span>RSS
+          </p>
         </header>
 
         <div className="pointer-events-none absolute inset-x-0 top-20 flex justify-center">
-          <img src="/images/login-runner.png" alt="" className="w-full opacity-80 saturate-100" />
+          <picture>
+            <source srcSet="/images/login-runner.webp" type="image/webp" />
+            <img src="/images/login-runner.png" alt="" className="w-full opacity-80 saturate-100" />
+          </picture>
         </div>
 
         <div className="relative z-10 mt-auto mb-8 flex flex-col items-center gap-6 text-center">

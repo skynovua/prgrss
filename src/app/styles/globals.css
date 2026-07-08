@@ -4,6 +4,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: "Ethnocentric";
+  src: url("/fonts/ethnocentric.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 900;
+}
+
 @utility scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -21,6 +29,7 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-logo: "Ethnocentric", "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", monospace;
   --font-heading: Georgia, "Times New Roman", serif;
   --color-sidebar-ring: var(--sidebar-ring);
