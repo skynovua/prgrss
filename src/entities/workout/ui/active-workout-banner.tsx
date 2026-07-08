@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Dumbbell } from "lucide-react";
 import {
@@ -7,20 +8,26 @@ import {
   type ActiveWorkoutDraft,
 } from "../model/persistence";
 
-function formatDuration(startedAt: string, now: number) {
+function getElapsedSeconds(startedAt: string, now: number) {
   const started = new Date(startedAt).getTime();
-  if (!Number.isFinite(started)) return "00:00";
+  if (!Number.isFinite(started)) return 0;
 
-  const totalSeconds = Math.max(0, Math.floor((now - started) / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
+  return Math.max(0, Math.floor((now - started) / 1000));
+}
+
+function formatDuration(seconds: number) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
 
   if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, "0")}`;
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(
+      2,
+      "0"
+    )}`;
   }
 
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
 }
 
 function getActiveSetText(draft: ActiveWorkoutDraft) {
@@ -37,6 +44,38 @@ function getActiveSetText(draft: ActiveWorkoutDraft) {
     title: activeExercise.exercise.name,
     subtitle: nextSet?.reps ? `Далі: ${nextSet.reps} повт.` : "Повернутися до тренування",
   };
+}
+
+function WorkoutDurationFlow({ seconds }: { seconds: number }) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return (
+    <NumberFlowGroup>
+      <span
+        className="flex shrink-0 items-baseline text-2xl font-bold text-orange-500 tabular-nums"
+        style={{ fontVariantNumeric: "tabular-nums" }}
+        aria-label={formatDuration(seconds)}
+      >
+        {hours > 0 && <NumberFlow trend={1} value={hours} />}
+        <NumberFlow
+          prefix={hours > 0 ? ":" : ""}
+          trend={1}
+          value={minutes}
+          digits={{ 1: { max: hours > 0 ? 5 : 9 } }}
+          format={{ minimumIntegerDigits: 2 }}
+        />
+        <NumberFlow
+          prefix=":"
+          trend={1}
+          value={remainingSeconds}
+          digits={{ 1: { max: 5 } }}
+          format={{ minimumIntegerDigits: 2 }}
+        />
+      </span>
+    </NumberFlowGroup>
+  );
 }
 
 export function ActiveWorkoutBanner({
@@ -79,6 +118,7 @@ export function ActiveWorkoutBanner({
   }, [onVisibilityChange, visible]);
 
   const content = useMemo(() => (draft ? getActiveSetText(draft) : null), [draft]);
+  const elapsedSeconds = draft ? getElapsedSeconds(draft.startedAt, now) : 0;
 
   if (!visible || !draft || !content) {
     return null;
@@ -101,9 +141,7 @@ export function ActiveWorkoutBanner({
             <p className="text-muted-foreground truncate text-sm">{content.subtitle}</p>
           </div>
 
-          <span className="shrink-0 text-2xl font-bold text-orange-500 tabular-nums">
-            {formatDuration(draft.startedAt, now)}
-          </span>
+          <WorkoutDurationFlow seconds={elapsedSeconds} />
         </Link>
       </div>
     </div>

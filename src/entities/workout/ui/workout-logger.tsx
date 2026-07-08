@@ -1,15 +1,15 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
+import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Button } from "@/shared/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
-import { Separator } from "@/shared/ui";
 import { ExerciseCardActions } from "@/entities/workout";
 import { ExercisePicker } from "@/entities/workout";
 import { ExerciseSetIndicators } from "@/entities/workout";
 import { SetRow } from "@/entities/workout";
 import { RestTimer } from "@/entities/workout";
 import { WeightUnitLabel } from "@/entities/workout";
-import { Timer, Plus, Check, Dumbbell } from "lucide-react";
+import { Timer, Plus, Check, Dumbbell, Clock3, Layers3, Flame } from "lucide-react";
 import {
   type Exercise,
   type WorkoutExercise,
@@ -21,6 +21,92 @@ import { useWorkout } from "@/entities/workout";
 import { useProfile } from "@/entities/profile";
 import { usesDoubleWeight } from "@/entities/workout";
 import { cn } from "@/shared/lib";
+
+function getElapsedSeconds(startedAt: string, now: number) {
+  const started = new Date(startedAt).getTime();
+  if (!Number.isFinite(started)) return 0;
+
+  return Math.max(0, Math.floor((now - started) / 1000));
+}
+
+function formatWorkoutDuration(seconds: number) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(
+      2,
+      "0"
+    )}`;
+  }
+
+  return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+function WorkoutDurationTimer({ startedAt }: { startedAt: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  const seconds = getElapsedSeconds(startedAt, now);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  return (
+    <NumberFlowGroup>
+      <span
+        className="flex items-baseline text-3xl font-bold text-orange-500 tabular-nums"
+        style={{ fontVariantNumeric: "tabular-nums" }}
+        aria-label={formatWorkoutDuration(seconds)}
+      >
+        {hours > 0 && <NumberFlow trend={1} value={hours} />}
+        <NumberFlow
+          prefix={hours > 0 ? ":" : ""}
+          trend={1}
+          value={minutes}
+          digits={{ 1: { max: hours > 0 ? 5 : 9 } }}
+          format={{ minimumIntegerDigits: 2 }}
+        />
+        <NumberFlow
+          prefix=":"
+          trend={1}
+          value={remainingSeconds}
+          digits={{ 1: { max: 5 } }}
+          format={{ minimumIntegerDigits: 2 }}
+        />
+      </span>
+    </NumberFlowGroup>
+  );
+}
+
+function WorkoutStat({
+  icon,
+  label,
+  value,
+  helper,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  helper: string;
+}) {
+  return (
+    <div className="bg-background/70 rounded-xl border px-3 py-3">
+      <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <div className="flex items-end gap-1">
+        <span className="truncate text-lg font-semibold tabular-nums">{value}</span>
+        <span className="text-muted-foreground pb-0.5 text-xs">{helper}</span>
+      </div>
+    </div>
+  );
+}
 
 // --- Memoized Exercise Card ---
 
@@ -140,10 +226,10 @@ const ExerciseCard = memo(function ExerciseCard({
           <Button
             variant="ghost"
             size="sm"
-            className="mt-1 gap-1"
+            className="mt-1"
             onClick={() => dispatch({ type: "ADD_SET", exerciseIndex })}
           >
-            <Plus className="h-3 w-3" />
+            <Plus data-icon="inline-start" />
             Додати підхід
           </Button>
         </CardContent>
@@ -178,6 +264,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   const {
     dispatch,
     workoutExercises,
+    startedAt,
     timerOpen,
     saving,
     totalSets,
@@ -213,42 +300,83 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
-      {/* Хедер */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Тренування</h1>
-          <p className="text-muted-foreground text-sm">
-            {totalSets} підходів · {Math.round(totalVolume)} кг об&apos;єм
+    <div className="flex flex-1 flex-col gap-5 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
+      <div className="flex items-start justify-between gap-3 px-1 pt-1">
+        <div className="min-w-0">
+          <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
+            Active session
+          </p>
+          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">Тренування</h1>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Записуй підходи, об&apos;єм і темп сесії.
           </p>
         </div>
         <Button
           variant="outline"
           size="icon"
           onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}
+          aria-label="Відкрити таймер відпочинку"
         >
-          <Timer className="h-5 w-5" />
+          <Timer />
         </Button>
       </div>
 
-      <Separator />
+      <Card className="p-0">
+        <CardContent className="flex flex-col gap-4 p-4">
+          <div className="flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs">
+                <Clock3 className="size-3.5" />
+                <span>Тривалість</span>
+              </div>
+              <WorkoutDurationTimer startedAt={startedAt} />
+            </div>
+            <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
+              <Dumbbell className="size-5" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <WorkoutStat
+              icon={<Layers3 className="size-3.5" />}
+              label="Підходи"
+              value={`${totalSets}`}
+              helper="готово"
+            />
+            <WorkoutStat
+              icon={<Flame className="size-3.5" />}
+              label="Об'єм"
+              value={`${Math.round(totalVolume)}`}
+              helper="кг"
+            />
+            <WorkoutStat
+              icon={<Dumbbell className="size-3.5" />}
+              label="Вправи"
+              value={`${workoutExercises.length}`}
+              helper="у сесії"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Вправи */}
       {workoutExercises.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
-          <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
-            <Dumbbell className="text-muted-foreground h-8 w-8" />
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 py-14 text-center">
+          <div className="bg-primary/10 text-primary flex size-20 items-center justify-center rounded-full">
+            <Dumbbell className="size-8" />
           </div>
           <div className="flex flex-col items-center gap-1">
-            <p className="text-lg font-semibold">Почнемо!</p>
-            <p className="text-muted-foreground text-sm">Додай першу вправу до тренування</p>
+            <p className="text-xl font-semibold">Почнемо</p>
+            <p className="text-muted-foreground max-w-64 text-sm">
+              Додай першу вправу, а таймер тривалості вже рахує сесію.
+            </p>
           </div>
           <ExercisePicker
             exercises={exercises}
             onSelect={handleAddExercise}
             trigger={
-              <Button size="lg" className="gap-2">
-                <Plus className="h-5 w-5" />
+              <Button size="lg">
+                <Plus data-icon="inline-start" />
                 Додати вправу
               </Button>
             }
@@ -293,7 +421,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
               onClick={handleFinish}
               disabled={saving || totalSets === 0}
             >
-              <Check className="h-5 w-5" />
+              <Check data-icon="inline-start" />
               {saving ? "Зберігаю..." : "Завершити тренування"}
             </Button>
           </div>

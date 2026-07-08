@@ -94,6 +94,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
     state,
     dispatch,
     workoutExercises,
+    startedAt,
     timerOpen,
     saving,
     totalSets,
