@@ -12,7 +12,7 @@ export function AppLayout() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col pt-[env(safe-area-inset-top)] pb-[calc(4rem+env(safe-area-inset-bottom))]">
+      <div className="bg-background flex min-h-screen flex-col pt-[env(safe-area-inset-top)] pb-[calc(4rem+env(safe-area-inset-bottom))]">
         <Outlet />
       </div>
       <BottomNav />

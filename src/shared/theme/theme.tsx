@@ -1,65 +1,41 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useCallback } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "dark";
 
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: "light" | "dark";
+  resolvedTheme: "dark";
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const STORAGE_KEY = "prgrss-theme";
 
-function getSystemTheme(): "light" | "dark" {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function getStoredTheme(): Theme {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark" || stored === "system") return stored;
-  return "system";
-}
-
-function applyTheme(resolved: "light" | "dark") {
+function applyTheme() {
   const root = document.documentElement;
-  root.classList.toggle("dark", resolved === "dark");
+  root.classList.add("dark");
 
   // Оновлюємо theme-color мета-тег
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", resolved === "dark" ? "#0a0a0a" : "#ffffff");
+    meta.setAttribute("content", "#050909");
   }
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
-
-  const resolvedTheme = theme === "system" ? getSystemTheme() : theme;
-
   const setTheme = useCallback((newTheme: Theme) => {
     localStorage.setItem(STORAGE_KEY, newTheme);
-    setThemeState(newTheme);
   }, []);
 
-  // Застосовуємо тему при зміні
+  // Застосовуємо темну тему незалежно від системних або старих збережених налаштувань.
   useEffect(() => {
-    applyTheme(resolvedTheme);
-  }, [resolvedTheme]);
-
-  // Слухаємо зміни системної теми
-  useEffect(() => {
-    if (theme !== "system") return;
-
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => applyTheme(getSystemTheme());
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, [theme]);
+    localStorage.setItem(STORAGE_KEY, "dark");
+    applyTheme();
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={{ theme: "dark", setTheme, resolvedTheme: "dark" }}>
       {children}
     </ThemeContext.Provider>
   );

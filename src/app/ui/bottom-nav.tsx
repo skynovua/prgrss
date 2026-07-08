@@ -22,7 +22,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="border-border/80 bg-background/95 supports-backdrop-filter:bg-background/80 fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur"
+      className="border-border/80 bg-card/92 supports-backdrop-filter:bg-card/80 fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-18px_40px_rgb(0_0_0/0.12)] backdrop-blur-xl"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-2">
@@ -37,7 +37,7 @@ export function BottomNav() {
                 to={item.href}
                 className="flex -translate-y-1 flex-col items-center gap-0.5"
               >
-                <div className="bg-primary text-primary-foreground shadow-primary/20 flex h-12 w-12 items-center justify-center rounded-full shadow-lg">
+                <div className="bg-primary text-primary-foreground shadow-primary/30 flex size-12 items-center justify-center rounded-full shadow-[0_0_22px_rgb(204_255_0/0.32)]">
                   <Icon className="h-6 w-6" />
                 </div>
               </Link>
