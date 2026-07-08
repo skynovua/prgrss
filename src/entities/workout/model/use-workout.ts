@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useState } from "react";
+import { useReducer, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -12,8 +12,6 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [state, dispatch] = useReducer(workoutReducer, undefined, createInitialState);
-  const [initialCollapsedCards] = useState<Record<string, boolean>>({});
-  const restored = true;
   const { exercises: workoutExercises, startedAt, timerOpen, saving } = state;
 
   const addExercise = useCallback(
@@ -68,8 +66,6 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
   return {
     state,
     dispatch,
-    initialCollapsedCards,
-    restored,
     workoutExercises,
     timerOpen,
     saving,

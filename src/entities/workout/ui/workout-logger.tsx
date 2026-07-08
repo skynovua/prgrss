@@ -177,8 +177,6 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   const autoRestTimer = profile?.autoRestTimer ?? true;
   const {
     dispatch,
-    initialCollapsedCards,
-    restored,
     workoutExercises,
     timerOpen,
     saving,
@@ -236,7 +234,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
       <Separator />
 
       {/* Вправи */}
-      {!restored ? null : workoutExercises.length === 0 ? (
+      {workoutExercises.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
           <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full">
             <Dumbbell className="text-muted-foreground h-8 w-8" />
@@ -267,9 +265,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
               previousSets={previousSets?.[we.exercise.id]}
               autoRestTimer={autoRestTimer}
               isCollapsed={
-                collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ??
-                initialCollapsedCards[`${we.exercise.id}-${exerciseIndex}`] ??
-                false
+                collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ?? false
               }
               onToggleCollapse={toggleCollapse}
               dispatch={dispatch}

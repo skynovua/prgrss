@@ -19,8 +19,7 @@ export type WorkoutAction =
   | { type: "COMPLETE_SET"; exerciseIndex: number; set: LocalSet; autoTimer: boolean }
   | { type: "DELETE_SET"; exerciseIndex: number; setId: string }
   | { type: "SET_TIMER_OPEN"; open: boolean }
-  | { type: "SET_SAVING"; saving: boolean }
-  | { type: "RESTORE"; exercises: WorkoutExercise[]; startedAt: string };
+  | { type: "SET_SAVING"; saving: boolean };
 
 // --- Reducer ---
 
@@ -147,13 +146,6 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
 
     case "SET_SAVING":
       return { ...state, saving: action.saving };
-
-    case "RESTORE":
-      return {
-        ...state,
-        exercises: action.exercises,
-        startedAt: action.startedAt,
-      };
 
     default:
       return state;
