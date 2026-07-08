@@ -78,7 +78,7 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgb(204_255_0/0.12),transparent_50%),linear-gradient(180deg,transparent_0%,var(--background)_72%)]" />
       <div className="from-background absolute inset-x-0 top-0 z-1 h-20 bg-linear-to-b to-transparent" />
       <div className="from-background absolute inset-x-0 bottom-0 z-1 h-100 bg-linear-to-t to-transparent" />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
         <header className="relative z-10 text-center">
           <p className="font-logo text-4xl font-black tracking-normal">
             PR<span className="text-primary">G</span>RSS

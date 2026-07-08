@@ -17,7 +17,7 @@ export function AppLayout() {
   return (
     <>
       <div
-        className={`bg-background mx-auto flex min-h-screen max-w-md flex-col pt-[env(safe-area-inset-top)] ${
+        className={`bg-background mx-auto flex min-h-screen max-w-3xl flex-col pt-[env(safe-area-inset-top)] ${
           hasActiveWorkoutBanner
             ? "pb-[calc(8.75rem+env(safe-area-inset-bottom))]"
             : "pb-[calc(4rem+env(safe-area-inset-bottom))]"
