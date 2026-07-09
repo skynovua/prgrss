@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/shared/ui";
 import { Sheet, SheetContent } from "@/shared/ui";
 import { Link } from "@tanstack/react-router";
 import type { Achievement } from "@/entities/achievement";
+import { cn } from "@/shared/lib";
 import {
   Award,
   Clock3,
@@ -48,6 +49,7 @@ const TIER_STYLES = {
 const TIER_ORDER = ["bronze", "silver", "gold"] as const;
 
 type AchievementTier = Achievement["tier"];
+type CollectionFilter = "progress" | "completed" | "all";
 
 interface AchievementGroup {
   key: string;
