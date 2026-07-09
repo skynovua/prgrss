@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { Input } from "@/shared/ui";
 import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui";
-import { Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Dumbbell, Layers3, Plus, Search, SlidersHorizontal, Sparkles, Trash2 } from "lucide-react";
 import {
   type Exercise,
   type MuscleGroup,
@@ -13,9 +13,60 @@ import {
 } from "@/entities/workout";
 import { MuscleGroupIcon } from "@/shared/ui";
 import { useCreateExercise, useDeleteExercise } from "@/entities/exercise";
+import { cn } from "@/shared/lib";
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
+}
+
+function FilterChip({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+        active
+          ? "bg-primary text-primary-foreground"
+          : "bg-muted text-muted-foreground active:bg-accent"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function LibraryStat({
+  icon,
+  label,
+  value,
+  helper,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  helper: string;
+}) {
+  return (
+    <div className="bg-background/70 rounded-xl border px-3 py-3">
+      <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <div className="flex items-end gap-1">
+        <span className="text-lg font-semibold tabular-nums">{value}</span>
+        <span className="text-muted-foreground pb-0.5 text-xs">{helper}</span>
+      </div>
+    </div>
+  );
 }
 
 export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
@@ -79,63 +130,100 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
   const muscleGroups = Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[];
   const equipmentKeys = Object.keys(EQUIPMENT_LABELS);
+  const customCount = exercises.filter((exercise) => exercise.is_custom).length;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4">
-      <div className="flex items-start justify-between gap-3 px-1">
+    <div className="flex flex-1 flex-col gap-5 p-4">
+      <div className="flex items-start justify-between gap-3 px-1 pt-1">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight">Бібліотека вправ</h1>
+          <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
+            Exercise library
+          </p>
+          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">
+            Бібліотека вправ
+          </h1>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Шукай базові рухи, фільтруй інвентар і додавай власні вправи.
+          </p>
         </div>
+        <Button size="icon" onClick={() => setAddDialogOpen(true)} aria-label="Додати вправу">
+          <Plus />
+        </Button>
       </div>
 
-      {/* Пошук і фільтри */}
       <Card className="p-0">
         <CardContent className="flex flex-col gap-4 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <SlidersHorizontal className="text-muted-foreground h-4 w-4" />
-            Пошук і фільтри
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold tracking-tight">Твоя база рухів</h2>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {filtered.length} з {exercises.length} вправ видно зараз.
+              </p>
+            </div>
+            <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
+              <Dumbbell className="size-5" />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                placeholder="Пошук вправ..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
+          <div className="grid grid-cols-3 gap-2">
+            <LibraryStat
+              icon={<Layers3 className="size-3.5" />}
+              label="Усього"
+              value={`${exercises.length}`}
+              helper="вправ"
+            />
+            <LibraryStat
+              icon={<Sparkles className="size-3.5" />}
+              label="Власні"
+              value={`${customCount}`}
+              helper="кастом"
+            />
+            <LibraryStat
+              icon={<Search className="size-3.5" />}
+              label="Фільтр"
+              value={`${filtered.length}`}
+              helper="знайдено"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="p-0">
+        <CardContent className="flex flex-col gap-4 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <SlidersHorizontal className="text-muted-foreground size-4" />
+              Пошук і фільтри
             </div>
-            <Button size="sm" className="gap-1.5" onClick={() => setAddDialogOpen(true)}>
-              <Plus className="h-3.5 w-3.5" />
+            <Button size="sm" variant="outline" onClick={() => setAddDialogOpen(true)}>
+              <Plus data-icon="inline-start" />
               Додати
             </Button>
           </div>
 
           <div className="relative">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              placeholder="Пошук вправ..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          <div className="relative">
             <div className="mr-3 flex scrollbar-none gap-1.5 overflow-x-auto">
-              <button
-                onClick={() => setActiveGroup("all")}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                  activeGroup === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground active:bg-accent"
-                }`}
-              >
+              <FilterChip active={activeGroup === "all"} onClick={() => setActiveGroup("all")}>
                 Всі
-              </button>
+              </FilterChip>
               {muscleGroups.map((group) => (
-                <button
+                <FilterChip
                   key={group}
+                  active={activeGroup === group}
                   onClick={() => setActiveGroup(group)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                    activeGroup === group
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground active:bg-accent"
-                  }`}
                 >
                   {MUSCLE_GROUP_LABELS[group]}
-                </button>
+                </FilterChip>
               ))}
             </div>
             <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
@@ -143,63 +231,63 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
           <div className="relative">
             <div className="mr-3 flex scrollbar-none gap-1.5 overflow-x-auto">
-              <button
+              <FilterChip
+                active={activeEquipment === "all"}
                 onClick={() => setActiveEquipment("all")}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                  activeEquipment === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground active:bg-accent"
-                }`}
               >
                 Все обладнання
-              </button>
+              </FilterChip>
               {equipmentKeys.map((eq) => (
-                <button
+                <FilterChip
                   key={eq}
+                  active={activeEquipment === eq}
                   onClick={() => setActiveEquipment(eq)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                    activeEquipment === eq
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground active:bg-accent"
-                  }`}
                 >
                   {EQUIPMENT_LABELS[eq]}
-                </button>
+                </FilterChip>
               ))}
             </div>
             <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
           </div>
-          <p className="text-muted-foreground text-sm">{filtered.length} вправ після фільтрації</p>
         </CardContent>
       </Card>
 
-      {/* Список вправ по групах */}
       {Array.from(grouped.entries()).map(([group, exs]) => (
         <div key={group} className="flex flex-col gap-3">
-          <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
-            {MUSCLE_GROUP_LABELS[group as MuscleGroup] ?? group}
-          </h2>
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+              {MUSCLE_GROUP_LABELS[group as MuscleGroup] ?? group}
+            </h2>
+            <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+              {exs.length}
+            </span>
+          </div>
           {exs.map((exercise) => (
-            <Card key={exercise.id} size="sm" className="py-4">
-              <CardContent className="flex items-center gap-3 px-3">
+            <Card key={exercise.id} size="sm" className="p-0 transition-colors active:bg-muted/60">
+              <CardContent className="flex items-center gap-3 p-3">
                 {exercise.muscle_group && (
                   <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
                 )}
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{exercise.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {exercise.equipment && EQUIPMENT_LABELS[exercise.equipment]}
-                    {exercise.is_custom && <span className="text-primary ml-2">• Кастомна</span>}
-                  </p>
+                  <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                    {exercise.equipment && <span>{EQUIPMENT_LABELS[exercise.equipment]}</span>}
+                    {exercise.is_custom && (
+                      <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 font-medium">
+                        Кастомна
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {exercise.is_custom && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-muted-foreground hover:text-destructive h-8 w-8 shrink-0"
+                    className="text-muted-foreground hover:text-destructive size-8 shrink-0"
                     onClick={() => setDeleteTarget(exercise)}
+                    aria-label={`Видалити вправу ${exercise.name}`}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 />
                   </Button>
                 )}
               </CardContent>
@@ -211,8 +299,8 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       {filtered.length === 0 && (
         <Card className="p-0">
           <CardContent className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">
-            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-2xl">
-              <Search className="text-muted-foreground h-5 w-5" />
+            <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full">
+              <Search className="size-5" />
             </div>
             <div>
               <p className="text-sm font-medium">Нічого не знайдено</p>
