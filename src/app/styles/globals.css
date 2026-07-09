@@ -108,18 +108,18 @@
   --sidebar-ring: #ccff00;
   --surface: #050909;
   --surface-raised: #201f1f;
-  --achievement-bronze-bg-start: oklch(0.42 0.07 55);
-  --achievement-bronze-bg-end: oklch(0.55 0.12 70 / 0.55);
-  --achievement-bronze-fg: oklch(0.84 0.11 75);
-  --achievement-bronze-ring: oklch(0.72 0.16 70);
-  --achievement-silver-bg-start: oklch(0.34 0.01 250);
-  --achievement-silver-bg-end: oklch(0.52 0.03 250 / 0.4);
-  --achievement-silver-fg: oklch(0.9 0.02 255);
-  --achievement-silver-ring: oklch(0.78 0.03 250);
-  --achievement-gold-bg-start: oklch(0.4 0.06 85);
-  --achievement-gold-bg-end: oklch(0.58 0.12 92 / 0.5);
-  --achievement-gold-fg: oklch(0.9 0.1 95);
-  --achievement-gold-ring: oklch(0.84 0.17 96);
+  --achievement-bronze-bg-start: oklch(0.34 0.09 31);
+  --achievement-bronze-bg-end: oklch(0.52 0.14 45 / 0.62);
+  --achievement-bronze-fg: oklch(0.86 0.12 50);
+  --achievement-bronze-ring: oklch(0.76 0.16 45);
+  --achievement-silver-bg-start: oklch(0.3 0.03 235);
+  --achievement-silver-bg-end: oklch(0.55 0.06 220 / 0.55);
+  --achievement-silver-fg: oklch(0.9 0.04 220);
+  --achievement-silver-ring: oklch(0.78 0.08 220);
+  --achievement-gold-bg-start: oklch(0.36 0.08 82);
+  --achievement-gold-bg-end: oklch(0.6 0.16 92 / 0.62);
+  --achievement-gold-fg: oklch(0.92 0.13 96);
+  --achievement-gold-ring: oklch(0.86 0.18 96);
 }
 
 .dark {
@@ -159,18 +159,18 @@
   --sidebar-ring: #ccff00;
   --surface: #050909;
   --surface-raised: #201f1f;
-  --achievement-bronze-bg-start: oklch(0.42 0.07 55);
-  --achievement-bronze-bg-end: oklch(0.55 0.12 70 / 0.55);
-  --achievement-bronze-fg: oklch(0.84 0.11 75);
-  --achievement-bronze-ring: oklch(0.72 0.16 70);
-  --achievement-silver-bg-start: oklch(0.34 0.01 250);
-  --achievement-silver-bg-end: oklch(0.52 0.03 250 / 0.4);
-  --achievement-silver-fg: oklch(0.9 0.02 255);
-  --achievement-silver-ring: oklch(0.78 0.03 250);
-  --achievement-gold-bg-start: oklch(0.4 0.06 85);
-  --achievement-gold-bg-end: oklch(0.58 0.12 92 / 0.5);
-  --achievement-gold-fg: oklch(0.9 0.1 95);
-  --achievement-gold-ring: oklch(0.84 0.17 96);
+  --achievement-bronze-bg-start: oklch(0.34 0.09 31);
+  --achievement-bronze-bg-end: oklch(0.52 0.14 45 / 0.62);
+  --achievement-bronze-fg: oklch(0.86 0.12 50);
+  --achievement-bronze-ring: oklch(0.76 0.16 45);
+  --achievement-silver-bg-start: oklch(0.3 0.03 235);
+  --achievement-silver-bg-end: oklch(0.55 0.06 220 / 0.55);
+  --achievement-silver-fg: oklch(0.9 0.04 220);
+  --achievement-silver-ring: oklch(0.78 0.08 220);
+  --achievement-gold-bg-start: oklch(0.36 0.08 82);
+  --achievement-gold-bg-end: oklch(0.6 0.16 92 / 0.62);
+  --achievement-gold-fg: oklch(0.92 0.13 96);
+  --achievement-gold-ring: oklch(0.86 0.18 96);
 }
 
 @utility achievement-tier-bronze {
@@ -204,7 +204,7 @@
   background: linear-gradient(
     90deg,
     var(--achievement-bronze-ring),
-    color-mix(in oklab, var(--achievement-bronze-ring) 68%, black)
+    color-mix(in oklab, var(--achievement-bronze-ring) 72%, white)
   );
 }
 
@@ -212,7 +212,7 @@
   background: linear-gradient(
     90deg,
     var(--achievement-silver-ring),
-    color-mix(in oklab, var(--achievement-silver-ring) 70%, black)
+    color-mix(in oklab, var(--achievement-silver-ring) 76%, white)
   );
 }
 
@@ -220,7 +220,7 @@
   background: linear-gradient(
     90deg,
     var(--achievement-gold-ring),
-    color-mix(in oklab, var(--achievement-gold-ring) 78%, black)
+    color-mix(in oklab, var(--achievement-gold-ring) 78%, white)
   );
 }
 
