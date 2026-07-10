@@ -1,18 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchExercises,
+  fetchAnatomicalMuscles,
   createExercise,
   deleteExercise,
   fetchFavoriteExerciseIds,
   toggleFavoriteExercise,
   fetchPopularExerciseIds,
-} from "@/entities/exercise";
+} from "../api/exercises";
 import { toast } from "sonner";
 
 export function useExercises() {
   return useQuery({
     queryKey: ["exercises"],
     queryFn: fetchExercises,
+  });
+}
+
+export function useAnatomicalMuscles() {
+  return useQuery({
+    queryKey: ["anatomical-muscles"],
+    queryFn: fetchAnatomicalMuscles,
+    staleTime: 30 * 60 * 1000,
   });
 }
 

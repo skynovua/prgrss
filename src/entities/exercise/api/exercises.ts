@@ -1,34 +1,116 @@
 import { supabase } from "@/shared/api";
+import type {
+  CreateExerciseInput,
+  ExerciseCatalogItem,
+  ExerciseMuscleInput,
+} from "../model/exercise-catalog";
 
-export async function fetchExercises() {
+function validateExerciseMuscles(muscles: ExerciseMuscleInput[]) {
+  if (muscles.length === 0) {
+    throw new Error("Оберіть хоча б один м'яз");
+  }
+
+  if (new Set(muscles.map((muscle) => muscle.muscleKey)).size !== muscles.length) {
+    throw new Error("М'язи у вправі не мають повторюватися");
+  }
+
+  if (
+    muscles.some(
+      (muscle) =>
+        !Number.isInteger(muscle.activationScore) ||
+        muscle.activationScore < 1 ||
+        muscle.activationScore > 10
+    )
+  ) {
+    throw new Error("Оцінка залучення має бути від 1 до 10");
+  }
+
+  if (!muscles.some((muscle) => muscle.activationScore >= 8)) {
+    throw new Error("Основний м'яз повинен мати оцінку щонайменше 8");
+  }
+}
+
+export async function fetchExercises(): Promise<ExerciseCatalogItem[]> {
   const { data, error } = await supabase
     .from("exercises")
-    .select("*")
+    .select(
+      "*, exercise_muscles(activation_score, anatomical_muscles(key, name, muscle_group, sort_order))"
+    )
+    .eq("is_active", true)
     .order("muscle_group")
     .order("name");
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map(({ exercise_muscles, ...exercise }) => ({
+    ...exercise,
+    muscles: exercise_muscles
+      .flatMap(({ activation_score, anatomical_muscles }) =>
+        anatomical_muscles
+          ? [
+              {
+                muscleKey: anatomical_muscles.key,
+                name: anatomical_muscles.name,
+                muscleGroup: anatomical_muscles.muscle_group,
+                sortOrder: anatomical_muscles.sort_order,
+                activationScore: activation_score,
+              },
+            ]
+          : []
+      )
+      .sort(
+        (left, right) =>
+          right.activationScore - left.activationScore || left.sortOrder - right.sortOrder
+      ),
+  }));
+}
+
+export async function fetchAnatomicalMuscles() {
+  const { data, error } = await supabase
+    .from("anatomical_muscles")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order");
 
   if (error) throw new Error(error.message);
   return data ?? [];
 }
 
-export async function createExercise(formData: {
-  name: string;
-  muscle_group: string;
-  equipment: string;
-}) {
+export async function createExercise(formData: CreateExerciseInput) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Не авторизовано");
 
-  const { error } = await supabase.from("exercises").insert({
-    user_id: user.id,
-    name: formData.name.trim(),
-    muscle_group: formData.muscle_group,
-    equipment: formData.equipment,
-    is_custom: true,
-  });
+  const name = formData.name.trim();
+  if (!name) throw new Error("Вкажіть назву вправи");
+  validateExerciseMuscles(formData.muscles);
+
+  const { data: exercise, error } = await supabase
+    .from("exercises")
+    .insert({
+      user_id: user.id,
+      name,
+      equipment: formData.equipment,
+      is_custom: true,
+    })
+    .select("id")
+    .single();
+
   if (error) throw new Error(error.message);
+
+  const { error: musclesError } = await supabase.from("exercise_muscles").insert(
+    formData.muscles.map((muscle) => ({
+      exercise_id: exercise.id,
+      muscle_key: muscle.muscleKey,
+      activation_score: muscle.activationScore,
+    }))
+  );
+
+  if (musclesError) {
+    await supabase.from("exercises").delete().eq("id", exercise.id);
+    throw new Error(musclesError.message);
+  }
 }
 
 export async function deleteExercise(exerciseId: string) {

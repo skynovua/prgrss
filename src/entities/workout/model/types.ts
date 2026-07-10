@@ -1,4 +1,6 @@
 import { Database } from "@/shared/db";
+export { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from "@/shared/config";
+export type { MuscleGroup } from "@/shared/config";
 
 export type Exercise = Database["public"]["Tables"]["exercises"]["Row"];
 export type Workout = Database["public"]["Tables"]["workouts"]["Row"];
@@ -20,27 +22,8 @@ export type WorkoutWithSets = Pick<
   sets: SetData[];
 };
 
-export type MuscleGroup = "chest" | "back" | "legs" | "shoulders" | "arms" | "core";
-
-export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
-  chest: "Груди",
-  back: "Спина",
-  legs: "Ноги",
-  shoulders: "Плечі",
-  arms: "Руки",
-  core: "Кор",
-};
-
-export const EQUIPMENT_LABELS: Record<string, string> = {
-  barbell: "Штанга",
-  dumbbell: "Гантелі",
-  machine: "Тренажер",
-  bodyweight: "Власна вага",
-  cable: "Блок",
-};
-
 export interface WorkoutExercise {
-  exercise: Exercise;
+  exercise: ExerciseData;
   sets: LocalSet[];
 }
 

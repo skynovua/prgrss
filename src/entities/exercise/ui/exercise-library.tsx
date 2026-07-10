@@ -1,22 +1,56 @@
 import { useState, useMemo, type ReactNode } from "react";
-import { Input } from "@/shared/ui";
-import { Button } from "@/shared/ui";
-import { Card, CardContent } from "@/shared/ui";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui";
-import { Dumbbell, Layers3, Plus, Search, SlidersHorizontal, Sparkles, Trash2 } from "lucide-react";
+import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/shared/config";
 import {
-  type Exercise,
-  type MuscleGroup,
-  MUSCLE_GROUP_LABELS,
-  EQUIPMENT_LABELS,
-} from "@/entities/workout";
-import { MuscleGroupIcon } from "@/shared/ui";
-import { useCreateExercise, useDeleteExercise } from "@/entities/exercise";
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  Input,
+  MuscleGroupIcon,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui";
+import {
+  Dumbbell,
+  Info,
+  Layers3,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import { useAnatomicalMuscles, useCreateExercise, useDeleteExercise } from "../hooks/use-exercises";
+import type { ExerciseCatalogItem } from "../model/exercise-catalog";
+import { AnatomyMap } from "./anatomy-map";
+import { ExerciseDetailsDialog } from "./exercise-details-dialog";
 import { cn } from "@/shared/lib";
 
 interface ExerciseLibraryProps {
-  exercises: Exercise[];
+  exercises: ExerciseCatalogItem[];
+}
+
+interface AdditionalMuscle {
+  muscleKey: string;
+  activationScore: number;
 }
 
 function FilterChip({
@@ -72,29 +106,50 @@ function LibraryStat({
 export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   const createMutation = useCreateExercise();
   const deleteMutation = useDeleteExercise();
+  const { data: anatomicalMuscles = [] } = useAnatomicalMuscles();
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
   const [activeEquipment, setActiveEquipment] = useState<string>("all");
+  const [selectedMuscleKey, setSelectedMuscleKey] = useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Exercise | null>(null);
+  const [detailsTarget, setDetailsTarget] = useState<ExerciseCatalogItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ExerciseCatalogItem | null>(null);
 
   // Форма нової вправи
   const [newName, setNewName] = useState("");
-  const [newGroup, setNewGroup] = useState<string>("chest");
+  const [newPrimaryMuscleKey, setNewPrimaryMuscleKey] = useState<string>("");
+  const [newAdditionalMuscles, setNewAdditionalMuscles] = useState<AdditionalMuscle[]>([]);
   const [newEquipment, setNewEquipment] = useState<string>("barbell");
 
   const filtered = useMemo(() => {
-    return exercises.filter((ex) => {
-      const matchesSearch = ex.name.toLowerCase().includes(search.toLowerCase());
-      const matchesGroup = activeGroup === "all" || ex.muscle_group === activeGroup;
-      const matchesEquipment = activeEquipment === "all" || ex.equipment === activeEquipment;
-      return matchesSearch && matchesGroup && matchesEquipment;
+    const result = exercises.filter((exercise) => {
+      const matchesSearch = exercise.name.toLowerCase().includes(search.toLowerCase());
+      const matchesGroup = activeGroup === "all" || exercise.muscle_group === activeGroup;
+      const matchesEquipment = activeEquipment === "all" || exercise.equipment === activeEquipment;
+      const matchesMuscle =
+        !selectedMuscleKey ||
+        exercise.muscles.some(
+          (muscle) => muscle.muscleKey === selectedMuscleKey && muscle.activationScore >= 4
+        );
+
+      return matchesSearch && matchesGroup && matchesEquipment && matchesMuscle;
     });
-  }, [exercises, search, activeGroup, activeEquipment]);
+
+    if (!selectedMuscleKey) return result;
+
+    return result.sort((left, right) => {
+      const leftScore =
+        left.muscles.find((muscle) => muscle.muscleKey === selectedMuscleKey)?.activationScore ?? 0;
+      const rightScore =
+        right.muscles.find((muscle) => muscle.muscleKey === selectedMuscleKey)?.activationScore ??
+        0;
+      return rightScore - leftScore || left.name.localeCompare(right.name, "uk");
+    });
+  }, [activeEquipment, activeGroup, exercises, search, selectedMuscleKey]);
 
   // Групуємо по м'язових групах для відображення
   const grouped = useMemo(() => {
-    const map = new Map<string, Exercise[]>();
+    const map = new Map<string, ExerciseCatalogItem[]>();
     for (const ex of filtered) {
       const group = ex.muscle_group ?? "other";
       const existing = map.get(group) ?? [];
@@ -105,17 +160,19 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   }, [filtered]);
 
   const handleCreate = async () => {
-    if (!newName.trim()) return;
+    if (!newName.trim() || !newPrimaryMuscleKey) return;
     createMutation.mutate(
       {
         name: newName.trim(),
-        muscle_group: newGroup,
         equipment: newEquipment,
+        muscles: [{ muscleKey: newPrimaryMuscleKey, activationScore: 10 }, ...newAdditionalMuscles],
       },
       {
         onSuccess: () => {
           setAddDialogOpen(false);
           setNewName("");
+          setNewPrimaryMuscleKey("");
+          setNewAdditionalMuscles([]);
         },
       }
     );
@@ -131,6 +188,42 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   const muscleGroups = Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[];
   const equipmentKeys = Object.keys(EQUIPMENT_LABELS);
   const customCount = exercises.filter((exercise) => exercise.is_custom).length;
+  const selectedMuscle = anatomicalMuscles.find((muscle) => muscle.key === selectedMuscleKey);
+  const muscleItems = anatomicalMuscles.map((muscle) => ({
+    value: muscle.key,
+    label: muscle.name,
+  }));
+  const equipmentItems = equipmentKeys.map((equipment) => ({
+    value: equipment,
+    label: EQUIPMENT_LABELS[equipment],
+  }));
+  const scoreItems = Array.from({ length: 10 }, (_, index) => {
+    const score = index + 1;
+    return { value: String(score), label: `${score}/10` };
+  });
+  const usedMuscleKeys = new Set([
+    newPrimaryMuscleKey,
+    ...newAdditionalMuscles.map((muscle) => muscle.muscleKey),
+  ]);
+  const availableAdditionalMuscle = anatomicalMuscles.find(
+    (muscle) => !usedMuscleKeys.has(muscle.key)
+  );
+
+  const handlePrimaryMuscleChange = (muscleKey: string | null) => {
+    if (!muscleKey) return;
+    setNewPrimaryMuscleKey(muscleKey);
+    setNewAdditionalMuscles((muscles) =>
+      muscles.filter((muscle) => muscle.muscleKey !== muscleKey)
+    );
+  };
+
+  const handleAddMuscle = () => {
+    if (!availableAdditionalMuscle) return;
+    setNewAdditionalMuscles((muscles) => [
+      ...muscles,
+      { muscleKey: availableAdditionalMuscle.key, activationScore: 5 },
+    ]);
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4">
@@ -139,9 +232,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
           <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
             Exercise library
           </p>
-          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">
-            Бібліотека вправ
-          </h1>
+          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">Бібліотека вправ</h1>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
             Шукай базові рухи, фільтруй інвентар і додавай власні вправи.
           </p>
@@ -252,33 +343,61 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         </CardContent>
       </Card>
 
+      <Card className="p-0">
+        <CardHeader className="p-4 pb-0">
+          <CardTitle>Мапа м&apos;язів</CardTitle>
+          <CardDescription>
+            {selectedMuscle
+              ? `Показано вправи для: ${selectedMuscle.name}`
+              : "Обери зону на тілі для точного анатомічного фільтра."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <AnatomyMap
+            muscles={anatomicalMuscles}
+            selectedMuscleKey={selectedMuscleKey}
+            onMuscleSelect={(muscleKey) =>
+              setSelectedMuscleKey((current) => (current === muscleKey ? null : muscleKey))
+            }
+          />
+        </CardContent>
+      </Card>
+
       {Array.from(grouped.entries()).map(([group, exs]) => (
         <div key={group} className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3 px-1">
             <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
               {MUSCLE_GROUP_LABELS[group as MuscleGroup] ?? group}
             </h2>
-            <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-              {exs.length}
-            </span>
+            <Badge variant="secondary">{exs.length}</Badge>
           </div>
           {exs.map((exercise) => (
-            <Card key={exercise.id} size="sm" className="p-0 transition-colors active:bg-muted/60">
+            <Card key={exercise.id} size="sm" className="active:bg-muted/60 p-0 transition-colors">
               <CardContent className="flex items-center gap-3 p-3">
-                {exercise.muscle_group && (
-                  <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{exercise.name}</p>
-                  <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                    {exercise.equipment && <span>{EQUIPMENT_LABELS[exercise.equipment]}</span>}
-                    {exercise.is_custom && (
-                      <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 font-medium">
-                        Кастомна
-                      </span>
-                    )}
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  onClick={() => setDetailsTarget(exercise)}
+                >
+                  {exercise.muscle_group && (
+                    <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{exercise.name}</p>
+                    <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                      {exercise.equipment && <span>{EQUIPMENT_LABELS[exercise.equipment]}</span>}
+                      {exercise.is_custom && <Badge variant="secondary">Кастомна</Badge>}
+                      {selectedMuscleKey && (
+                        <Badge variant="outline">
+                          {exercise.muscles.find((muscle) => muscle.muscleKey === selectedMuscleKey)
+                            ?.activationScore ?? 0}
+                          /10
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
+                  <Info className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+                </button>
                 {exercise.is_custom && (
                   <Button
                     variant="ghost"
@@ -314,54 +433,184 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
       {/* Діалог створення вправи */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-h-[calc(100vh-2rem)] max-w-sm overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Нова вправа</DialogTitle>
             <DialogDescription>Додайте кастомну вправу до бібліотеки.</DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-4 pt-2">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Назва</label>
+          <FieldGroup className="gap-4 pt-2">
+            <Field>
+              <FieldLabel htmlFor="custom-exercise-name">Назва</FieldLabel>
               <Input
+                id="custom-exercise-name"
                 placeholder="Напр. Жим гантелей під кутом"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
               />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">М&apos;язова група</label>
-              <Select value={newGroup} onValueChange={(v) => v && setNewGroup(v)}>
-                <SelectTrigger>
-                  <SelectValue>{MUSCLE_GROUP_LABELS[newGroup as MuscleGroup]}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {muscleGroups.map((g) => (
-                    <SelectItem key={g} value={g}>
-                      {MUSCLE_GROUP_LABELS[g]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Обладнання</label>
-              <Select value={newEquipment} onValueChange={(v) => v && setNewEquipment(v)}>
-                <SelectTrigger>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="custom-exercise-equipment">Обладнання</FieldLabel>
+              <Select
+                items={equipmentItems}
+                value={newEquipment}
+                onValueChange={(value) => value && setNewEquipment(value)}
+              >
+                <SelectTrigger id="custom-exercise-equipment">
                   <SelectValue>{EQUIPMENT_LABELS[newEquipment]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {equipmentKeys.map((eq) => (
-                    <SelectItem key={eq} value={eq}>
-                      {EQUIPMENT_LABELS[eq]}
-                    </SelectItem>
-                  ))}
+                  <SelectGroup>
+                    {equipmentItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
-            </div>
-            <Button onClick={handleCreate} disabled={!newName.trim() || createMutation.isPending}>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="custom-exercise-primary-muscle">Основний м&apos;яз</FieldLabel>
+              <Select
+                items={muscleItems}
+                value={newPrimaryMuscleKey || null}
+                onValueChange={handlePrimaryMuscleChange}
+              >
+                <SelectTrigger id="custom-exercise-primary-muscle">
+                  <SelectValue>
+                    {anatomicalMuscles.find((muscle) => muscle.key === newPrimaryMuscleKey)?.name ??
+                      "Оберіть м'яз"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {muscleItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <FieldDescription>Основний м&apos;яз отримує оцінку 10/10.</FieldDescription>
+            </Field>
+
+            <FieldSet>
+              <FieldLegend variant="label">Додаткові м&apos;язи</FieldLegend>
+              <FieldDescription>
+                Необов&apos;язково. Додайте залучені м&apos;язи й оцінку.
+              </FieldDescription>
+              <div className="flex flex-col gap-3">
+                {newAdditionalMuscles.map((target, index) => {
+                  const rowMuscleItems = anatomicalMuscles
+                    .filter(
+                      (muscle) => muscle.key === target.muscleKey || !usedMuscleKeys.has(muscle.key)
+                    )
+                    .map((muscle) => ({ value: muscle.key, label: muscle.name }));
+
+                  return (
+                    <Field key={`${target.muscleKey}-${index}`}>
+                      <FieldLabel htmlFor={`additional-muscle-${index}`}>
+                        М&apos;яз {index + 1}
+                      </FieldLabel>
+                      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem_auto] gap-2">
+                        <Select
+                          items={rowMuscleItems}
+                          value={target.muscleKey}
+                          onValueChange={(value) => {
+                            if (!value) return;
+                            setNewAdditionalMuscles((muscles) =>
+                              muscles.map((muscle, muscleIndex) =>
+                                muscleIndex === index ? { ...muscle, muscleKey: value } : muscle
+                              )
+                            );
+                          }}
+                        >
+                          <SelectTrigger id={`additional-muscle-${index}`}>
+                            <SelectValue>
+                              {anatomicalMuscles.find((muscle) => muscle.key === target.muscleKey)
+                                ?.name ?? "М'яз"}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent alignItemWithTrigger={false}>
+                            <SelectGroup>
+                              {rowMuscleItems.map((item) => (
+                                <SelectItem key={item.value} value={item.value}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+
+                        <Select
+                          items={scoreItems}
+                          value={String(target.activationScore)}
+                          onValueChange={(value) => {
+                            if (!value) return;
+                            setNewAdditionalMuscles((muscles) =>
+                              muscles.map((muscle, muscleIndex) =>
+                                muscleIndex === index
+                                  ? { ...muscle, activationScore: Number(value) }
+                                  : muscle
+                              )
+                            );
+                          }}
+                        >
+                          <SelectTrigger aria-label={`Оцінка м'яза ${index + 1}`}>
+                            <SelectValue>{target.activationScore}/10</SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              {scoreItems.map((item) => (
+                                <SelectItem key={item.value} value={item.value}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            setNewAdditionalMuscles((muscles) =>
+                              muscles.filter((_, muscleIndex) => muscleIndex !== index)
+                            )
+                          }
+                          aria-label={`Прибрати додатковий м'яз ${index + 1}`}
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                    </Field>
+                  );
+                })}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddMuscle}
+                  disabled={!availableAdditionalMuscle}
+                >
+                  <Plus data-icon="inline-start" />
+                  Додати м&apos;яз
+                </Button>
+              </div>
+            </FieldSet>
+
+            <Button
+              onClick={handleCreate}
+              disabled={!newName.trim() || !newPrimaryMuscleKey || createMutation.isPending}
+            >
               {createMutation.isPending ? "Зберігаю..." : "Додати вправу"}
             </Button>
-          </div>
+          </FieldGroup>
         </DialogContent>
       </Dialog>
 
@@ -389,6 +638,14 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ExerciseDetailsDialog
+        exercise={detailsTarget}
+        open={detailsTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailsTarget(null);
+        }}
+      />
     </div>
   );
 }

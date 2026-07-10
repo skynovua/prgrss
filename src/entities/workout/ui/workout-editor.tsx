@@ -195,8 +195,6 @@ function workoutToEditorState(
         name: exercise?.name ?? "Невідома вправа",
         muscle_group: exercise?.muscle_group ?? null,
         equipment: exercise?.equipment ?? null,
-        user_id: null,
-        is_custom: false,
       },
       sets: sortedSets.map((s) => ({
         id: s.id,

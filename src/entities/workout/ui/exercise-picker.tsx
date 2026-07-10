@@ -3,7 +3,7 @@ import { Input } from "@/shared/ui";
 import { ScrollArea } from "@/shared/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/shared/ui";
 import { Button } from "@/shared/ui";
-import { Plus, Search, Heart, TrendingUp } from "lucide-react";
+import { Plus, Search, Heart, TrendingUp, Info } from "lucide-react";
 import {
   type Exercise,
   type MuscleGroup,
@@ -12,10 +12,13 @@ import {
 } from "@/entities/workout";
 import { MuscleGroupIcon } from "@/shared/ui";
 import {
+  ExerciseDetailsDialog,
+  type ExerciseCatalogItem,
   useFavoriteExerciseIds,
   useToggleFavoriteExercise,
   usePopularExerciseIds,
 } from "@/entities/exercise";
+import { cn } from "@/shared/lib";
 
 type SortMode = "all" | "popular" | "favorites";
 
@@ -25,11 +28,16 @@ interface ExercisePickerProps {
   trigger?: React.ReactNode;
 }
 
+function isExerciseCatalogItem(exercise: Exercise): exercise is ExerciseCatalogItem {
+  return "muscles" in exercise && Array.isArray(exercise.muscles);
+}
+
 export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
   const [sortMode, setSortMode] = useState<SortMode>("all");
+  const [detailsTarget, setDetailsTarget] = useState<ExerciseCatalogItem | null>(null);
 
   const { data: favoriteIds = [] } = useFavoriteExerciseIds();
   const { data: popularIds = [] } = usePopularExerciseIds();
@@ -93,7 +101,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
         <SheetTrigger
           render={
             <Button variant="outline" className="w-full gap-2">
-              <Plus className="h-4 w-4" />
+              <Plus data-icon="inline-start" />
               Додати вправу
             </Button>
           }
@@ -172,41 +180,57 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
               {filtered.map((exercise) => {
                 const isFav = favoriteSet.has(exercise.id);
                 return (
-                  <button
+                  <div
                     key={exercise.id}
-                    onClick={() => handleSelect(exercise)}
-                    className="hover:bg-accent flex items-center gap-3 px-3 py-3 text-left transition-colors"
+                    className="hover:bg-accent flex items-center gap-1 px-3 py-1 transition-colors"
                   >
-                    {exercise.muscle_group && (
-                      <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">{exercise.name}</p>
-                      <p className="text-muted-foreground text-sm">
-                        {exercise.muscle_group &&
-                          MUSCLE_GROUP_LABELS[exercise.muscle_group as MuscleGroup]}{" "}
-                        · {exercise.equipment && EQUIPMENT_LABELS[exercise.equipment]}
-                      </p>
-                    </div>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => handleToggleFavorite(e, exercise.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleToggleFavorite(e as unknown as React.MouseEvent, exercise.id);
-                        }
+                    <button
+                      type="button"
+                      onClick={() => handleSelect(exercise)}
+                      className="flex min-w-0 flex-1 items-center gap-3 py-2 text-left"
+                    >
+                      {exercise.muscle_group && (
+                        <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium">{exercise.name}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {exercise.muscle_group &&
+                            MUSCLE_GROUP_LABELS[exercise.muscle_group as MuscleGroup]}{" "}
+                          · {exercise.equipment && EQUIPMENT_LABELS[exercise.equipment]}
+                        </p>
+                      </div>
+                    </button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (isExerciseCatalogItem(exercise)) setDetailsTarget(exercise);
                       }}
-                      className="rounded-full p-2 transition-colors active:scale-90"
+                      disabled={!isExerciseCatalogItem(exercise)}
+                      aria-label={`Деталі вправи ${exercise.name}`}
+                    >
+                      <Info />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={(event) => handleToggleFavorite(event, exercise.id)}
+                      aria-label={
+                        isFav
+                          ? `Прибрати ${exercise.name} з вподобаних`
+                          : `Додати ${exercise.name} до вподобаних`
+                      }
                     >
                       <Heart
-                        className={`h-4.5 w-4.5 ${
-                          isFav ? "fill-red-500 text-red-500" : "text-muted-foreground"
-                        }`}
+                        className={cn(
+                          isFav ? "fill-primary text-primary" : "text-muted-foreground"
+                        )}
                       />
-                    </span>
-                  </button>
+                    </Button>
+                  </div>
                 );
               })}
               {filtered.length === 0 && (
@@ -222,6 +246,14 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
           </ScrollArea>
         </div>
       </SheetContent>
+
+      <ExerciseDetailsDialog
+        exercise={detailsTarget}
+        open={detailsTarget !== null}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setDetailsTarget(null);
+        }}
+      />
     </Sheet>
   );
 }

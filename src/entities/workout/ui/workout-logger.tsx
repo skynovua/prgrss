@@ -392,9 +392,7 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
               exerciseIndex={exerciseIndex}
               previousSets={previousSets?.[we.exercise.id]}
               autoRestTimer={autoRestTimer}
-              isCollapsed={
-                collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ?? false
-              }
+              isCollapsed={collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ?? false}
               onToggleCollapse={toggleCollapse}
               dispatch={dispatch}
             />

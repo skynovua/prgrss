@@ -236,7 +236,20 @@
     @apply bg-background text-foreground antialiased;
     overscroll-behavior-y: none;
   }
-  :where(*):not(input, textarea, select, [contenteditable="true"], [data-allow-selection="true"]) {
+  :where(
+    a,
+    button,
+    img,
+    svg,
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    [data-slot="button"],
+    [data-slot="switch"],
+    [data-slot="tabs-trigger"],
+    [data-slot="select-trigger"],
+    [data-slot="select-item"]
+  ):not([data-allow-selection="true"]) {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;

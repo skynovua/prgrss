@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:types": "supabase gen types --lang=typescript --project-id dggyqxvnyynusykobmiq > src/shared/db/generated/types.ts",
-    "db:sync-achievements": "node scripts/sync-achievement-config.mjs"
+    "db:sync-achievements": "node scripts/sync-achievement-config.mjs",
+    "db:sync-exercises": "node --env-file-if-exists=.env.local scripts/sync-exercise-catalog.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
