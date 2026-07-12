@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+
 import { anatomicalMuscles, systemExercises } from "./exercise-catalog-config.mjs";
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
@@ -69,7 +70,11 @@ function validateConfig() {
       if (assignedMuscles.has(target.muscle_key)) {
         throw new Error(`Exercise ${exercise.key} repeats muscle ${target.muscle_key}.`);
       }
-      if (!Number.isInteger(target.activation_score) || target.activation_score < 1 || target.activation_score > 10) {
+      if (
+        !Number.isInteger(target.activation_score) ||
+        target.activation_score < 1 ||
+        target.activation_score > 10
+      ) {
         throw new Error(`Exercise ${exercise.key} has invalid score for ${target.muscle_key}.`);
       }
 
@@ -78,14 +83,20 @@ function validateConfig() {
     }
 
     if (!hasPrimaryMuscle) {
-      throw new Error(`Exercise ${exercise.key} must have a primary muscle with score 8 or higher.`);
+      throw new Error(
+        `Exercise ${exercise.key} must have a primary muscle with score 8 or higher.`
+      );
     }
   }
 }
 
 async function syncMuscles() {
   const { error } = await supabase.from("anatomical_muscles").upsert(
-    anatomicalMuscles.map((muscle) => ({ ...muscle, is_active: true, updated_at: new Date().toISOString() })),
+    anatomicalMuscles.map((muscle) => ({
+      ...muscle,
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    })),
     { onConflict: "key" }
   );
 

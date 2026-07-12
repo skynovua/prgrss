@@ -1,6 +1,7 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Card, CardContent } from "@/shared/ui";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
 import type { MuscleGroupTonnage } from "@/entities/progress";
+import { Card, CardContent } from "@/shared/ui";
 
 interface Props {
   data: MuscleGroupTonnage[];

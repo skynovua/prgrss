@@ -1,24 +1,25 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { Heart, Info, Plus, Search, TrendingUp } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+import {
+  type ExerciseCatalogItem,
+  ExerciseDetailsDialog,
+  useFavoriteExerciseIds,
+  usePopularExerciseIds,
+  useToggleFavoriteExercise,
+} from "@/entities/exercise/@x/workout";
+import {
+  EQUIPMENT_LABELS,
+  type Exercise,
+  MUSCLE_GROUP_LABELS,
+  type MuscleGroup,
+} from "@/entities/workout";
+import { cn } from "@/shared/lib";
 import { Input } from "@/shared/ui";
 import { ScrollArea } from "@/shared/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/shared/ui";
 import { Button } from "@/shared/ui";
-import { Plus, Search, Heart, TrendingUp, Info } from "lucide-react";
-import {
-  type Exercise,
-  type MuscleGroup,
-  MUSCLE_GROUP_LABELS,
-  EQUIPMENT_LABELS,
-} from "@/entities/workout";
 import { MuscleGroupIcon } from "@/shared/ui";
-import {
-  ExerciseDetailsDialog,
-  type ExerciseCatalogItem,
-  useFavoriteExerciseIds,
-  useToggleFavoriteExercise,
-  usePopularExerciseIds,
-} from "@/entities/exercise/@x/workout";
-import { cn } from "@/shared/lib";
 
 type SortMode = "all" | "popular" | "favorites";
 

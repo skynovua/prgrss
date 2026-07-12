@@ -1,5 +1,18 @@
-import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
+import {
+  Dumbbell,
+  EyeOff,
+  Info,
+  Layers3,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import { lazy, type ReactNode, Suspense, useCallback, useMemo, useState } from "react";
+
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/shared/config";
+import { cn } from "@/shared/lib";
 import {
   Badge,
   Button,
@@ -28,17 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui";
-import {
-  Dumbbell,
-  EyeOff,
-  Info,
-  Layers3,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+
 import {
   useAnatomicalMuscles,
   useArchiveExercise,
@@ -46,7 +49,6 @@ import {
 } from "../hooks/use-exercises";
 import type { ExerciseCatalogItem } from "../model/exercise-catalog";
 import { ExerciseDetailsDialog } from "./exercise-details-dialog";
-import { cn } from "@/shared/lib";
 
 const LazyAnatomyMap = lazy(() =>
   import("./anatomy-map").then(({ AnatomyMap }) => ({ default: AnatomyMap }))

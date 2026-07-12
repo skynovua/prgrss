@@ -1,16 +1,17 @@
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, Link } from "@tanstack/react-router";
+
+import { ExerciseCardActions } from "@/entities/workout";
+import { type ExerciseData, type SetData, type WorkoutWithSets } from "@/entities/workout";
+import { useDeleteWorkout } from "@/entities/workout";
+import { isWorkoutEditable } from "@/entities/workout";
+import { getSetVolume, usesDoubleWeight } from "@/entities/workout";
+import { WeightUnitLabel, WeightValue } from "@/entities/workout";
+import { calc1RM } from "@/shared/lib";
 import { Button } from "@/shared/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
-import { ExerciseCardActions } from "@/entities/workout";
-import { ChevronLeft, Trash2, Pencil } from "lucide-react";
-import { type SetData, type ExerciseData, type WorkoutWithSets } from "@/entities/workout";
-import { useDeleteWorkout } from "@/entities/workout";
-import { isWorkoutEditable } from "@/entities/workout";
-import { calc1RM } from "@/shared/lib";
-import { getSetVolume, usesDoubleWeight } from "@/entities/workout";
-import { WeightUnitLabel, WeightValue } from "@/entities/workout";
 
 interface WorkoutDetailProps {
   workout: WorkoutWithSets;

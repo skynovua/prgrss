@@ -1,26 +1,27 @@
-import { memo, useEffect, useState } from "react";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
-import { Button } from "@/shared/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { ConfirmDialog } from "@/shared/ui";
+import { Check, Clock3, Dumbbell, Flame, Layers3, Plus, Timer } from "lucide-react";
+import { memo, useEffect, useState } from "react";
+
+import { useProfile } from "@/entities/profile";
+import type { WorkoutAction } from "@/entities/workout";
 import { ExerciseCardActions } from "@/entities/workout";
 import { ExercisePicker } from "@/entities/workout";
 import { ExerciseSetIndicators } from "@/entities/workout";
 import { SetRow } from "@/entities/workout";
 import { RestTimer } from "@/entities/workout";
 import { WeightUnitLabel } from "@/entities/workout";
-import { Timer, Plus, Check, Dumbbell, Clock3, Layers3, Flame } from "lucide-react";
 import {
   type Exercise,
-  type WorkoutExercise,
-  type PreviousSetsMap,
   type PreviousSetData,
+  type PreviousSetsMap,
+  type WorkoutExercise,
 } from "@/entities/workout";
-import type { WorkoutAction } from "@/entities/workout";
 import { useWorkout } from "@/entities/workout";
-import { useProfile } from "@/entities/profile";
 import { usesDoubleWeight } from "@/entities/workout";
 import { cn } from "@/shared/lib";
+import { Button } from "@/shared/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { ConfirmDialog } from "@/shared/ui";
 
 function getElapsedSeconds(startedAt: string, now: number) {
   const started = new Date(startedAt).getTime();

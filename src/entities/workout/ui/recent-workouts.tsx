@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@/shared/ui";
 import { ChevronRight } from "lucide-react";
+
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/entities/workout";
+import { Badge } from "@/shared/ui";
 
 interface RecentWorkout {
   id: string;

@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { Bell, BellOff, Loader2, Send } from "lucide-react";
-import { Button } from "@/shared/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { Input } from "@/shared/ui";
-import { Switch } from "@/shared/ui";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import type { ReminderSettings } from "@/entities/notification";
 import {
   useDeletePushSubscription,
   usePushSubscriptionStatus,
@@ -12,9 +11,11 @@ import {
   useSaveReminderSettings,
   useSendTestReminder,
 } from "@/entities/notification";
-import type { ReminderSettings } from "@/entities/notification";
 import { cn, detectPlatform, isStandalone } from "@/shared/lib";
-import { toast } from "sonner";
+import { Button } from "@/shared/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { Input } from "@/shared/ui";
+import { Switch } from "@/shared/ui";
 
 const WEEKDAYS = [
   { value: 1, label: "Пн" },

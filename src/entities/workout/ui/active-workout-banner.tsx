@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Dumbbell } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
 import {
   ACTIVE_WORKOUT_DRAFT_EVENT,
-  restoreActiveWorkoutDraft,
   type ActiveWorkoutDraft,
+  restoreActiveWorkoutDraft,
 } from "../model/persistence";
 
 function getElapsedSeconds(startedAt: string, now: number) {

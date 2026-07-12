@@ -1,18 +1,19 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { Button } from "@/shared/ui";
 import {
-  Share,
-  Plus,
-  MoreVertical,
+  Bell,
   Download,
   Monitor,
+  MoreVertical,
+  Plus,
+  Share,
   Smartphone,
   Sparkles,
   Zap,
-  Bell,
 } from "lucide-react";
-import { type Platform, detectPlatform, isStandalone } from "@/shared/lib";
+import { useEffect, useState } from "react";
+
+import { detectPlatform, isStandalone, type Platform } from "@/shared/lib";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { Button } from "@/shared/ui";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;

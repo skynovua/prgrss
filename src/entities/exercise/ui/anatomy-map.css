@@ -1,0 +1,35 @@
+.anatomy-map__figure .anatomy-muscle {
+  transition:
+    fill 150ms ease,
+    fill-opacity 150ms ease,
+    stroke 150ms ease,
+    stroke-opacity 150ms ease;
+}
+
+:where(
+  .anatomy-map__figure[data-interactive="true"] .anatomy-muscle
+) {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+:where(
+  .anatomy-map__figure[data-interactive="true"] .anatomy-muscle:hover
+) {
+  fill: var(--primary) !important;
+  fill-opacity: 0.2 !important;
+  stroke: var(--primary) !important;
+  stroke-opacity: 1 !important;
+}
+
+:where(
+  .anatomy-map__figure[data-interactive="true"]
+    .anatomy-muscle:focus-visible
+) {
+  fill: var(--primary) !important;
+  fill-opacity: 0.25 !important;
+  outline: none;
+  stroke: var(--primary) !important;
+  stroke-opacity: 1 !important;
+  stroke-width: 3px;
+}

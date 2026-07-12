@@ -1,4 +1,5 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
 import { Card, CardContent } from "@/shared/ui";
 
 interface WorkoutFrequencyPoint {

@@ -1,15 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchExercises,
-  fetchAnatomicalMuscles,
-  createExercise,
-  archiveExercise,
-  fetchFavoriteExerciseIds,
-  toggleFavoriteExercise,
-  fetchPopularExerciseIds,
-} from "../api/exercises";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 import { useAuth } from "@/shared/auth";
+
+import {
+  archiveExercise,
+  createExercise,
+  fetchAnatomicalMuscles,
+  fetchExercises,
+  fetchFavoriteExerciseIds,
+  fetchPopularExerciseIds,
+  toggleFavoriteExercise,
+} from "../api/exercises";
 
 const EXERCISE_CATALOG_QUERY_KEY = ["exercise", "catalog"] as const;
 

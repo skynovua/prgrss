@@ -5,23 +5,24 @@ import {
   Outlet,
   redirect,
 } from "@tanstack/react-router";
-import { Toaster } from "@/shared/ui";
+
 import { AppLayout } from "@/app/ui/app-layout";
-import type { AuthContextType } from "@/shared/auth";
-import LoginPage from "@/pages/login";
+import AchievementsPage from "@/pages/achievements";
 import AuthCallbackPage from "@/pages/auth-callback";
-import DashboardPage from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
+import DashboardPage from "@/pages/dashboard";
 import ExercisesPage from "@/pages/exercises";
-import WorkoutNewPage from "@/pages/workout-new";
-import WorkoutDetailPage from "@/pages/workout-detail";
-import WorkoutEditPage from "@/pages/workout-edit";
+import InstallPage from "@/pages/install";
+import LoginPage from "@/pages/login";
+import ProgramsPage from "@/pages/programs";
 import ProgressPage from "@/pages/progress";
 import ExerciseProgressPage from "@/pages/progress-exercise";
 import SettingsPage from "@/pages/settings";
-import ProgramsPage from "@/pages/programs";
-import AchievementsPage from "@/pages/achievements";
-import InstallPage from "@/pages/install";
+import WorkoutDetailPage from "@/pages/workout-detail";
+import WorkoutEditPage from "@/pages/workout-edit";
+import WorkoutNewPage from "@/pages/workout-new";
+import type { AuthContextType } from "@/shared/auth";
+import { Toaster } from "@/shared/ui";
 
 interface RouterContext {
   auth: AuthContextType;

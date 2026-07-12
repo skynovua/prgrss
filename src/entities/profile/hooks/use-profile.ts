@@ -1,6 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchProfile, updateProfile, uploadAvatar } from "@/entities/profile";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+import { fetchProfile, updateProfile, uploadAvatar } from "@/entities/profile";
 
 export function useProfile() {
   return useQuery({

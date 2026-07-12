@@ -1,31 +1,32 @@
-import { memo, useReducer, useCallback, useState } from "react";
-import { useNavigate, Link } from "@tanstack/react-router";
-import { Button } from "@/shared/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { ConfirmDialog } from "@/shared/ui";
-import { Separator } from "@/shared/ui";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Check, Plus, Timer } from "lucide-react";
+import { memo, useCallback, useReducer, useState } from "react";
+import { toast } from "sonner";
+
+import { useProfile } from "@/entities/profile";
 import { ExerciseCardActions } from "@/entities/workout";
 import { ExercisePicker } from "@/entities/workout";
 import { ExerciseSetIndicators } from "@/entities/workout";
 import { SetRow } from "@/entities/workout";
 import { RestTimer } from "@/entities/workout";
 import { WeightUnitLabel } from "@/entities/workout";
-import { ArrowLeft, Timer, Plus, Check } from "lucide-react";
 import {
   type Exercise,
-  type WorkoutExercise,
-  type PreviousSetsMap,
-  type PreviousSetData,
-  type SetData,
   type ExerciseData,
+  type PreviousSetData,
+  type PreviousSetsMap,
+  type SetData,
+  type WorkoutExercise,
   type WorkoutWithSets,
 } from "@/entities/workout";
-import { workoutReducer, type WorkoutAction } from "@/entities/workout";
+import { type WorkoutAction, workoutReducer } from "@/entities/workout";
 import { useUpdateWorkout } from "@/entities/workout";
-import { useProfile } from "@/entities/profile";
 import { getWorkoutVolume, usesDoubleWeight } from "@/entities/workout";
 import { cn } from "@/shared/lib";
-import { toast } from "sonner";
+import { Button } from "@/shared/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { ConfirmDialog } from "@/shared/ui";
+import { Separator } from "@/shared/ui";
 
 // --- Memoized Exercise Card ---
 

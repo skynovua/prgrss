@@ -1,4 +1,5 @@
-import { useParams, useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
+
 import { WorkoutDetail } from "@/entities/workout";
 import { useWorkoutDetail } from "@/entities/workout";
 import { LoaderBar } from "@/shared/ui";

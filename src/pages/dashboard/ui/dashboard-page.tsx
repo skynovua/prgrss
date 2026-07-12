@@ -1,20 +1,23 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Dumbbell,
-  Calendar,
-  ArrowUp,
   ArrowDown,
-  Minus,
+  ArrowUp,
   Award,
-  Flame,
-  Plus,
-  MoreHorizontal,
+  Calendar,
   ChevronRight,
+  Dumbbell,
+  Flame,
+  Minus,
+  MoreHorizontal,
+  Plus,
   Zap,
 } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useDashboard } from "@/pages/dashboard/model/use-dashboard";
+
 import { useAchievements } from "@/entities/achievement";
+import { useDashboard } from "@/pages/dashboard/model/use-dashboard";
+import { cn, getWeekDays, getWeekStartsOn, toDateKey, toLocalDateKey } from "@/shared/lib";
 import {
+  buttonVariants,
   Card,
   CardContent,
   DropdownMenu,
@@ -23,10 +26,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-  buttonVariants,
 } from "@/shared/ui";
 import { LoaderBar } from "@/shared/ui";
-import { cn, getWeekDays, getWeekStartsOn, toDateKey, toLocalDateKey } from "@/shared/lib";
 
 function StatDiff({ current, previous }: { current: number; previous: number }) {
   if (previous === 0 && current === 0) return null;

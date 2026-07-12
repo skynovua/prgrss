@@ -1,4 +1,4 @@
-import type { Exercise, WorkoutExercise, LocalSet, PreviousSetData } from "@/entities/workout";
+import type { Exercise, LocalSet, PreviousSetData, WorkoutExercise } from "@/entities/workout";
 
 // --- State ---
 

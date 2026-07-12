@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { Camera, Check, Dumbbell, Loader2, UserRound } from "lucide-react";
+import { useRef, useState } from "react";
+
+import { useUpdateProfile, useUploadAvatar } from "@/entities/profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Button } from "@/shared/ui";
 import { Switch } from "@/shared/ui";
-import { Camera, Check, Dumbbell, Loader2, UserRound } from "lucide-react";
-import { useUpdateProfile, useUploadAvatar } from "@/entities/profile";
 
 interface ProfileSettingsProps {
   name: string;
@@ -58,7 +59,7 @@ export function ProfileSettings({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadAvatarMutation.isPending}
-            className="group bg-muted relative size-20 shrink-0 overflow-hidden rounded-full ring-1 ring-border/70 transition-transform active:scale-[0.98]"
+            className="group bg-muted ring-border/70 relative size-20 shrink-0 overflow-hidden rounded-full ring-1 transition-transform active:scale-[0.98]"
             aria-label="Змінити фото профілю"
           >
             {avatarUrl ? (
@@ -115,11 +116,7 @@ export function ProfileSettings({
                 disabled={!nameChanged || nameMutation.isPending}
                 aria-label="Зберегти ім'я"
               >
-                {nameMutation.isPending ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Check />
-                )}
+                {nameMutation.isPending ? <Loader2 className="animate-spin" /> : <Check />}
               </Button>
             </div>
           </div>

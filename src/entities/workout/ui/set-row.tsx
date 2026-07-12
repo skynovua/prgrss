@@ -1,10 +1,11 @@
+import { Check, Trash2 } from "lucide-react";
 import { useState } from "react";
+
+import { type LocalSet } from "@/entities/workout";
+import { cn } from "@/shared/lib";
 import { Input } from "@/shared/ui";
 import { Button } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
-import { Check, Trash2 } from "lucide-react";
-import { type LocalSet } from "@/entities/workout";
-import { cn } from "@/shared/lib";
 
 interface SetRowProps {
   set: LocalSet;

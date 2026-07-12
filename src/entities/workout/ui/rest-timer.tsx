@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { Pause, Play, RotateCcw, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { Button } from "@/shared/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui";
-import { Pause, Play, RotateCcw, X } from "lucide-react";
 
 interface RestTimerProps {
   open: boolean;

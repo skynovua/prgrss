@@ -1,6 +1,7 @@
-import { createClient } from "@/shared/api";
-import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/entities/workout";
 import type { WorkoutExercise } from "@/entities/workout";
+import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/entities/workout";
+import { createClient } from "@/shared/api";
+
 import { generateId } from "./reducer";
 
 const ACTIVE_WORKOUT_STORAGE_KEY = "prgrss.activeWorkout";

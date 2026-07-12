@@ -1,6 +1,6 @@
-import { Link, useLocation, type LinkProps } from "@tanstack/react-router";
-import { Home, Dumbbell, Plus, TrendingUp, Settings } from "lucide-react";
+import { Link, type LinkProps, useLocation } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
+import { Dumbbell, Home, Plus, Settings, TrendingUp } from "lucide-react";
 
 interface NavItem {
   href: NonNullable<LinkProps["to"]>;

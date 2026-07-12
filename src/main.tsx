@@ -1,12 +1,14 @@
-import React, { useEffect } from "react";
-import ReactDOM from "react-dom/client";
+import "./app/styles/globals.css";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
-import { AuthProvider, useAuth } from "@/shared/auth";
-import { ThemeProvider } from "@/shared/theme";
+import React, { useEffect } from "react";
+import ReactDOM from "react-dom/client";
+
 import { router } from "@/app";
 import { useMobileGestureGuard } from "@/app/use-mobile-gesture-guard";
-import "./app/styles/globals.css";
+import { AuthProvider, useAuth } from "@/shared/auth";
+import { ThemeProvider } from "@/shared/theme";
 
 const queryClient = new QueryClient({
   defaultOptions: {

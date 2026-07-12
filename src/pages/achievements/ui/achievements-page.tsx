@@ -1,26 +1,27 @@
-import { useState } from "react";
-import { useAchievements, useMarkAchievementsSeen } from "@/entities/achievement";
-import { LoaderBar } from "@/shared/ui";
-import { Card, CardContent } from "@/shared/ui";
-import { Sheet, SheetContent } from "@/shared/ui";
 import { Link } from "@tanstack/react-router";
-import type { Achievement } from "@/entities/achievement";
-import { cn } from "@/shared/lib";
 import {
   Award,
-  Clock3,
   BarChart3,
   ChevronLeft,
+  Clock3,
   Dumbbell,
   Flame,
   Layers3,
   Lock,
+  type LucideIcon,
   Repeat2,
   Shapes,
   Target,
   Trophy,
-  type LucideIcon,
 } from "lucide-react";
+import { useState } from "react";
+
+import type { Achievement } from "@/entities/achievement";
+import { useAchievements, useMarkAchievementsSeen } from "@/entities/achievement";
+import { cn } from "@/shared/lib";
+import { LoaderBar } from "@/shared/ui";
+import { Card, CardContent } from "@/shared/ui";
+import { Sheet, SheetContent } from "@/shared/ui";
 
 const TIER_STYLES = {
   bronze: {

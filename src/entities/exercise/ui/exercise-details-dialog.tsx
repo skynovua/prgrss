@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+
 import { EQUIPMENT_LABELS } from "@/shared/config";
 import {
   Badge,
@@ -8,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui";
+
 import type { ExerciseCatalogItem } from "../model/exercise-catalog";
 
 const LazyAnatomyMap = lazy(() =>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import {
   ArrowDown,
@@ -11,13 +10,15 @@ import {
   Scale,
   TrendingUp,
 } from "lucide-react";
+import { useState } from "react";
+
+import { useExercises } from "@/entities/exercise";
+import type { Period } from "@/entities/progress";
+import { ExerciseProgressChart } from "@/entities/progress";
+import { useExerciseProgress } from "@/entities/progress";
 import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui";
-import { ExerciseProgressChart } from "@/entities/progress";
 import { LoaderBar } from "@/shared/ui";
-import { useExercises } from "@/entities/exercise";
-import { useExerciseProgress } from "@/entities/progress";
-import type { Period } from "@/entities/progress";
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: "7d", label: "7 днів" },

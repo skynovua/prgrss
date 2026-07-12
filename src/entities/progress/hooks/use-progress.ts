@@ -1,11 +1,12 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
 import {
-  fetchGlobalStats,
-  fetchPeriodSummary,
   fetchExerciseProgress,
   fetchExerciseProgressById,
-  periodToDate,
+  fetchGlobalStats,
+  fetchPeriodSummary,
   type Period,
+  periodToDate,
 } from "@/entities/progress";
 
 // Період-незалежні дані — не рефетчаться при зміні фільтра

@@ -1,9 +1,10 @@
-import { useCallback, useState } from "react";
 import { Outlet } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
+
 import { BottomNav } from "@/app/ui/bottom-nav";
 import { ActiveWorkoutBanner } from "@/entities/workout";
-import { LoaderBar } from "@/shared/ui";
 import { useAuth } from "@/shared/auth";
+import { LoaderBar } from "@/shared/ui";
 
 export function AppLayout() {
   const auth = useAuth();

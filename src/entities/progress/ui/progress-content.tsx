@@ -1,23 +1,24 @@
-import { useState, type ReactNode } from "react";
 import {
-  Flame,
+  Activity,
+  ArrowDown,
+  ArrowUp,
+  CalendarDays,
   Clock,
   Dumbbell,
+  Flame,
   Loader2,
-  ArrowUp,
-  ArrowDown,
   Minus,
-  CalendarDays,
-  Activity,
   TrendingUp,
 } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui";
+import { type ReactNode, useState } from "react";
+
+import type { LastWorkoutComparison, Period, TopExercise } from "@/entities/progress";
 import { ExerciseProgressChart } from "@/entities/progress";
 import { MuscleDistributionChart } from "@/entities/progress";
 import { useGlobalStats, usePeriodProgress } from "@/entities/progress";
-import type { Period, LastWorkoutComparison, TopExercise } from "@/entities/progress";
-import { LoaderBar } from "@/shared/ui";
 import { cn } from "@/shared/lib";
+import { Card, CardContent } from "@/shared/ui";
+import { LoaderBar } from "@/shared/ui";
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: "7d", label: "7 днів" },

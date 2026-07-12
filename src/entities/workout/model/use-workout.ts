@@ -1,10 +1,11 @@
-import { useReducer, useCallback, useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useReducer } from "react";
 import { toast } from "sonner";
+
 import type { Exercise, PreviousSetsMap } from "@/entities/workout";
 import { toWorkoutOperationError } from "@/entities/workout";
-import { workoutReducer, createInitialState } from "./reducer";
+
 import { getWorkoutVolume } from "./metrics";
 import {
   clearActiveWorkoutDraft,
@@ -12,6 +13,7 @@ import {
   restoreActiveWorkoutDraft,
   saveActiveWorkoutDraft,
 } from "./persistence";
+import { createInitialState, workoutReducer } from "./reducer";
 
 export function useWorkout(previousSets?: PreviousSetsMap) {
   const navigate = useNavigate();

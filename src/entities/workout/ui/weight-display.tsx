@@ -1,5 +1,5 @@
-import { Badge } from "@/shared/ui";
 import { cn } from "@/shared/lib";
+import { Badge } from "@/shared/ui";
 
 interface WeightUnitLabelProps {
   isDoubleWeight?: boolean;

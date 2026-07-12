@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
+
 import { WorkoutCalendar } from "@/entities/workout";
-import { LoaderBar } from "@/shared/ui";
 import { useDashboard } from "@/pages/dashboard/model/use-dashboard";
+import { LoaderBar } from "@/shared/ui";
 
 export default function CalendarPage() {
   const { data, isLoading } = useDashboard();

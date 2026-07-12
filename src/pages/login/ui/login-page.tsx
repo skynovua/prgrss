@@ -1,11 +1,12 @@
-import { useNavigate, Link } from "@tanstack/react-router";
-import type { ComponentProps } from "react";
-import { useState, useEffect } from "react";
-import { Button } from "@/shared/ui";
-import { useAuth } from "@/shared/auth";
-import { createClient } from "@/shared/api";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Download, Loader2, X } from "lucide-react";
+import type { ComponentProps } from "react";
+import { useEffect, useState } from "react";
+
+import { createClient } from "@/shared/api";
+import { useAuth } from "@/shared/auth";
 import { isStandalone } from "@/shared/lib";
+import { Button } from "@/shared/ui";
 
 function GoogleIcon(props: ComponentProps<"svg">) {
   return (

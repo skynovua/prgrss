@@ -1,14 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import type { WorkoutExercise } from "@/entities/workout";
 import {
-  fetchWorkoutDetail,
-  fetchPreviousSets,
-  deleteWorkout,
   deleteSetFromWorkout,
+  deleteWorkout,
+  fetchPreviousSets,
+  fetchWorkoutDetail,
   updateWorkout,
 } from "@/entities/workout";
-import type { WorkoutExercise } from "@/entities/workout";
 import { toWorkoutOperationError } from "@/entities/workout";
-import { toast } from "sonner";
 
 export function useWorkoutDetail(id: string | undefined) {
   return useQuery({

@@ -1,10 +1,11 @@
-import { useState, type ComponentProps } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { LogOut, Loader2 } from "lucide-react";
-import { Button } from "@/shared/ui";
-import { ConfirmDialog } from "@/shared/ui";
+import { Loader2, LogOut } from "lucide-react";
+import { type ComponentProps, useState } from "react";
+
 import { createClient } from "@/shared/api";
 import { cn } from "@/shared/lib";
+import { Button } from "@/shared/ui";
+import { ConfirmDialog } from "@/shared/ui";
 
 interface LogoutButtonProps {
   className?: string;

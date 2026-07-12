@@ -1,9 +1,10 @@
-import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
+
 import {
+  type Achievement,
   fetchAchievements,
   markAchievementStatesSeen,
-  type Achievement,
 } from "@/entities/achievement";
 
 export function useAchievements() {

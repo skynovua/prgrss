@@ -1,5 +1,5 @@
-import { WorkoutLogger } from "@/entities/workout";
 import { useExercises } from "@/entities/exercise";
+import { WorkoutLogger } from "@/entities/workout";
 import { usePreviousSets } from "@/entities/workout";
 import { Button, LoaderBar } from "@/shared/ui";
 

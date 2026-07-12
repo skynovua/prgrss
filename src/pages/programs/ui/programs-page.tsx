@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { CalendarRange, ChevronRight, Dumbbell, Layers3 } from "lucide-react";
+
 import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui";
 

@@ -1,7 +1,8 @@
-import { useParams, useNavigate } from "@tanstack/react-router";
-import { WorkoutEditor } from "@/entities/workout";
-import { useWorkoutDetail, usePreviousSets } from "@/entities/workout";
+import { useNavigate, useParams } from "@tanstack/react-router";
+
 import { useExercises } from "@/entities/exercise";
+import { WorkoutEditor } from "@/entities/workout";
+import { usePreviousSets, useWorkoutDetail } from "@/entities/workout";
 import { isWorkoutEditable } from "@/entities/workout";
 import { Button, LoaderBar } from "@/shared/ui";
 

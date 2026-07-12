@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { Button } from "@/shared/ui";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import { toLocalDateKey } from "@/shared/lib";
 import { cn } from "@/shared/lib";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { Button } from "@/shared/ui";
 
 interface WorkoutDay {
   id: string;

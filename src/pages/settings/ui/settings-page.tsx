@@ -1,11 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { Link } from "@tanstack/react-router";
+import { ChevronRight, Download, Settings2, ShieldCheck } from "lucide-react";
+
 import { LogoutButton } from "@/entities/auth";
 import { ProfileSettings } from "@/entities/profile";
 // import { PushNotificationsCard } from "@/entities/notification";
 import { useProfile } from "@/entities/profile";
-import { Link } from "@tanstack/react-router";
-import { ChevronRight, Download, Settings2, ShieldCheck } from "lucide-react";
 import { isStandalone } from "@/shared/lib";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { LoaderBar } from "@/shared/ui";
 
 export default function SettingsPage() {

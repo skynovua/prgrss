@@ -1,15 +1,16 @@
 import { useState } from "react";
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
-import { Card, CardContent } from "@/shared/ui";
+
 import type { ExerciseProgressData } from "@/entities/progress";
+import { Card, CardContent } from "@/shared/ui";
 
 interface Props {
   data: ExerciseProgressData[];

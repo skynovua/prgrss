@@ -1,10 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+
+import { deleteWorkout } from "@/entities/workout";
 import { Button } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
-import { Trash2 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
-import { deleteWorkout } from "@/entities/workout";
-import { toast } from "sonner";
 
 export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
   const [open, setOpen] = useState(false);

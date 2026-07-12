@@ -1,5 +1,5 @@
-import { cn } from "@/shared/lib";
 import type { LocalSet } from "@/entities/workout";
+import { cn } from "@/shared/lib";
 
 interface ExerciseSetIndicatorsProps {
   sets: LocalSet[];

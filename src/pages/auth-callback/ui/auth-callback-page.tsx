@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+
 import { useAuth } from "@/shared/auth";
 
 export default function AuthCallbackPage() {

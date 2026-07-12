@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/api";
+
 import type {
   CreateExerciseInput,
   ExerciseCatalogItem,

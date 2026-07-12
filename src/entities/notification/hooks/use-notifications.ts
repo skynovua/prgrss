@@ -1,4 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import type { PushSubscriptionPayload, ReminderSettings } from "@/entities/notification";
 import {
   deletePushSubscription,
   fetchPushSubscriptionStatus,
@@ -7,8 +10,6 @@ import {
   saveReminderSettings,
   sendTestReminder,
 } from "@/entities/notification";
-import type { PushSubscriptionPayload, ReminderSettings } from "@/entities/notification";
-import { toast } from "sonner";
 
 export function useReminderSettings() {
   return useQuery({
