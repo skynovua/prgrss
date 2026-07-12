@@ -17,7 +17,7 @@ import {
   useFavoriteExerciseIds,
   useToggleFavoriteExercise,
   usePopularExerciseIds,
-} from "@/entities/exercise";
+} from "@/entities/exercise/@x/workout";
 import { cn } from "@/shared/lib";
 
 type SortMode = "all" | "popular" | "favorites";
@@ -39,8 +39,8 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
   const [sortMode, setSortMode] = useState<SortMode>("all");
   const [detailsTarget, setDetailsTarget] = useState<ExerciseCatalogItem | null>(null);
 
-  const { data: favoriteIds = [] } = useFavoriteExerciseIds();
-  const { data: popularIds = [] } = usePopularExerciseIds();
+  const { data: favoriteIds = [] } = useFavoriteExerciseIds({ enabled: open });
+  const { data: popularIds = [] } = usePopularExerciseIds({ enabled: open });
   const toggleFavorite = useToggleFavoriteExercise();
 
   const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
@@ -82,7 +82,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
 
       pendingIds.current.add(exerciseId);
       toggleFavorite.mutate(
-        { exerciseId, isFavorite: favoriteSet.has(exerciseId) },
+        { exerciseId, wasFavorite: favoriteSet.has(exerciseId) },
         {
           onSettled: () => {
             pendingIds.current.delete(exerciseId);
@@ -117,6 +117,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Пошук вправ..."
+              aria-label="Пошук вправ"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -124,7 +125,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
           </div>
 
           {/* Таби: Всі / Популярні / Вподобані */}
-          <div className="flex gap-1.5 px-3">
+          <div className="flex gap-1.5 px-3" role="group" aria-label="Сортування вправ">
             {[
               { mode: "all" as const, label: "Всі" },
               { mode: "popular" as const, label: "Популярні", icon: TrendingUp },
@@ -132,7 +133,9 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
             ].map(({ mode, label, icon: Icon }) => (
               <button
                 key={mode}
+                type="button"
                 onClick={() => setSortMode(mode)}
+                aria-pressed={sortMode === mode}
                 className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   sortMode === mode
                     ? "bg-primary text-primary-foreground"
@@ -147,9 +150,15 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
 
           {/* Фільтр по групі м'язів */}
           <div className="relative">
-            <div className="mr-3 flex scrollbar-none gap-1.5 overflow-x-auto px-3">
+            <div
+              className="mr-3 flex scrollbar-none gap-1.5 overflow-x-auto px-3"
+              role="group"
+              aria-label="Фільтр за м'язовою групою"
+            >
               <button
+                type="button"
                 onClick={() => setActiveGroup("all")}
+                aria-pressed={activeGroup === "all"}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeGroup === "all"
                     ? "bg-primary text-primary-foreground"
@@ -161,7 +170,9 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
               {(Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[]).map((group) => (
                 <button
                   key={group}
+                  type="button"
                   onClick={() => setActiveGroup(group)}
+                  aria-pressed={activeGroup === group}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     activeGroup === group
                       ? "bg-primary text-primary-foreground"

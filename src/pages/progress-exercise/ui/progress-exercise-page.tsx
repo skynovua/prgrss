@@ -31,12 +31,14 @@ export default function ExerciseProgressPage() {
   const { exerciseId } = useParams({ strict: false });
   const search = useSearch({ strict: false });
   const [period, setPeriod] = useState<Period>("30d");
-  const { data: exercises } = useExercises();
   const {
     data: exerciseProgress,
     isLoading,
     isFetching,
   } = useExerciseProgress(exerciseId ?? "", period);
+  const { data: exercises } = useExercises({
+    enabled: Boolean(exerciseId) && !isLoading && !exerciseProgress,
+  });
 
   if (!exerciseId || isLoading) {
     return <LoaderBar />;

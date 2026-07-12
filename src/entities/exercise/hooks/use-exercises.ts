@@ -3,24 +3,45 @@ import {
   fetchExercises,
   fetchAnatomicalMuscles,
   createExercise,
-  deleteExercise,
+  archiveExercise,
   fetchFavoriteExerciseIds,
   toggleFavoriteExercise,
   fetchPopularExerciseIds,
 } from "../api/exercises";
 import { toast } from "sonner";
+import { useAuth } from "@/shared/auth";
 
-export function useExercises() {
+const EXERCISE_CATALOG_QUERY_KEY = ["exercise", "catalog"] as const;
+
+const exerciseQueryKeys = {
+  catalog: (userId: string | undefined) => [...EXERCISE_CATALOG_QUERY_KEY, userId] as const,
+  anatomicalMuscles: ["exercise", "anatomical-muscles"] as const,
+  favorites: (userId: string | undefined) => ["exercise", "favorites", userId] as const,
+  popular: (userId: string | undefined) => ["exercise", "popular", userId] as const,
+};
+
+interface ExerciseQueryOptions {
+  enabled?: boolean;
+}
+
+export function useExercises({ enabled = true }: ExerciseQueryOptions = {}) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["exercises"],
+    queryKey: exerciseQueryKeys.catalog(user?.id),
     queryFn: fetchExercises,
+    enabled: enabled && Boolean(user),
+    staleTime: 30 * 60 * 1000,
   });
 }
 
 export function useAnatomicalMuscles() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["anatomical-muscles"],
+    queryKey: exerciseQueryKeys.anatomicalMuscles,
     queryFn: fetchAnatomicalMuscles,
+    enabled: Boolean(user),
     staleTime: 30 * 60 * 1000,
   });
 }
@@ -31,7 +52,7 @@ export function useCreateExercise() {
   return useMutation({
     mutationFn: createExercise,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["exercises"] });
+      queryClient.invalidateQueries({ queryKey: EXERCISE_CATALOG_QUERY_KEY });
       toast.success("Вправу додано");
     },
     onError: (err) => {
@@ -42,64 +63,77 @@ export function useCreateExercise() {
   });
 }
 
-export function useDeleteExercise() {
+export function useArchiveExercise() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteExercise,
+    mutationFn: archiveExercise,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["exercises"] });
-      toast.success("Вправу видалено");
+      queryClient.invalidateQueries({ queryKey: EXERCISE_CATALOG_QUERY_KEY });
+      toast.success("Вправу приховано");
     },
     onError: (err) => {
-      toast.error("Не вдалося видалити вправу", {
+      toast.error("Не вдалося приховати вправу", {
         description: err instanceof Error ? err.message : "Спробуйте ще раз",
       });
     },
   });
 }
 
-export function useFavoriteExerciseIds() {
+export function useFavoriteExerciseIds({ enabled = true }: ExerciseQueryOptions = {}) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["favorite-exercises"],
+    queryKey: exerciseQueryKeys.favorites(user?.id),
     queryFn: fetchFavoriteExerciseIds,
+    enabled: enabled && Boolean(user),
   });
 }
 
 export function useToggleFavoriteExercise() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const favoriteQueryKey = exerciseQueryKeys.favorites(user?.id);
 
   return useMutation({
-    mutationFn: ({ exerciseId, isFavorite }: { exerciseId: string; isFavorite: boolean }) =>
-      toggleFavoriteExercise(exerciseId, isFavorite),
-    onMutate: async ({ exerciseId, isFavorite }) => {
+    mutationFn: ({ exerciseId, wasFavorite }: { exerciseId: string; wasFavorite: boolean }) =>
+      toggleFavoriteExercise(exerciseId, wasFavorite),
+    onMutate: async ({ exerciseId, wasFavorite }) => {
       // Скасовуємо запити що летять, щоб не перезаписати optimistic update
-      await queryClient.cancelQueries({ queryKey: ["favorite-exercises"] });
+      await queryClient.cancelQueries({ queryKey: favoriteQueryKey });
 
-      const previous = queryClient.getQueryData<string[]>(["favorite-exercises"]);
+      const previous = queryClient.getQueryData<string[]>(favoriteQueryKey);
 
-      queryClient.setQueryData<string[]>(["favorite-exercises"], (old = []) =>
-        isFavorite ? old.filter((id) => id !== exerciseId) : [...old, exerciseId]
+      queryClient.setQueryData<string[]>(favoriteQueryKey, (old = []) =>
+        wasFavorite
+          ? old.filter((id) => id !== exerciseId)
+          : old.includes(exerciseId)
+            ? old
+            : [...old, exerciseId]
       );
 
       return { previous };
     },
-    onError: (_err, _vars, context) => {
+    onError: (err, _vars, context) => {
       // Відкат при помилці
-      if (context?.previous) {
-        queryClient.setQueryData(["favorite-exercises"], context.previous);
-      }
+      queryClient.setQueryData(favoriteQueryKey, context?.previous);
+      toast.error("Не вдалося оновити вподобання", {
+        description: err instanceof Error ? err.message : "Спробуйте ще раз",
+      });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorite-exercises"] });
+      queryClient.invalidateQueries({ queryKey: favoriteQueryKey });
     },
   });
 }
 
-export function usePopularExerciseIds() {
+export function usePopularExerciseIds({ enabled = true }: ExerciseQueryOptions = {}) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["popular-exercises"],
+    queryKey: exerciseQueryKeys.popular(user?.id),
     queryFn: fetchPopularExerciseIds,
+    enabled: enabled && Boolean(user),
     staleTime: 5 * 60 * 1000, // 5 хвилин
   });
 }

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { EQUIPMENT_LABELS } from "@/shared/config";
 import {
   Badge,
@@ -8,7 +9,10 @@ import {
   DialogTitle,
 } from "@/shared/ui";
 import type { ExerciseCatalogItem } from "../model/exercise-catalog";
-import { AnatomyMap } from "./anatomy-map";
+
+const LazyAnatomyMap = lazy(() =>
+  import("./anatomy-map").then(({ AnatomyMap }) => ({ default: AnatomyMap }))
+);
 
 interface ExerciseDetailsDialogProps {
   exercise: ExerciseCatalogItem | null;
@@ -65,12 +69,21 @@ export function ExerciseDetailsDialog({
         {exercise && (
           <div className="flex flex-col gap-6">
             {exercise.muscles.length > 0 ? (
-              <AnatomyMap
-                muscles={mapMuscles}
-                highlights={exercise.muscles}
-                compact
-                className="bg-muted rounded-3xl p-3"
-              />
+              <Suspense
+                fallback={
+                  <div
+                    className="bg-muted mx-auto aspect-[792/1427] w-full max-w-44 rounded-3xl"
+                    aria-busy="true"
+                  />
+                }
+              >
+                <LazyAnatomyMap
+                  muscles={mapMuscles}
+                  highlights={exercise.muscles}
+                  compact
+                  className="bg-muted rounded-3xl p-3"
+                />
+              </Suspense>
             ) : (
               <p className="text-muted-foreground text-sm">
                 Для цієї вправи анатомічна розмітка ще не додана.

@@ -1,14 +1,14 @@
 import { WorkoutLogger } from "@/entities/workout";
 import { useExercises } from "@/entities/exercise";
 import { usePreviousSets } from "@/entities/workout";
-import { LoaderBar } from "@/shared/ui";
+import { Button, LoaderBar } from "@/shared/ui";
 
 export default function WorkoutNewPage() {
-  const { data: exercises, isLoading, isError } = useExercises();
+  const { data: exercises, isPending, isError, refetch } = useExercises();
 
   const { data: previousSets } = usePreviousSets();
 
-  if (isLoading) {
+  if (isPending) {
     return <LoaderBar />;
   }
 
@@ -17,6 +17,9 @@ export default function WorkoutNewPage() {
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-muted-foreground text-lg">Не вдалося завантажити вправи</p>
         <p className="text-muted-foreground text-sm">Перевірте з'єднання з інтернетом</p>
+        <Button variant="outline" onClick={() => void refetch()}>
+          Спробувати ще раз
+        </Button>
       </div>
     );
   }

@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
+import {
+  memo,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 
 import { cn } from "@/shared/lib";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui";
@@ -83,6 +91,7 @@ const MUSCLE_ELEMENT_IDS: Record<string, Partial<Record<AnatomyView, string[]>>>
 };
 
 const INTERACTIVE_CLASSES = ["cursor-pointer", "hover:fill-primary/20", "hover:stroke-primary"];
+const EMPTY_HIGHLIGHTS: Array<Pick<ExerciseMuscleTarget, "muscleKey" | "activationScore">> = [];
 
 function withResponsiveSvg(source: string, interactive: boolean) {
   const accessibility = interactive
@@ -183,6 +192,7 @@ function AnatomyFigure({
           element.setAttribute("role", "button");
           element.setAttribute("tabindex", "0");
           element.setAttribute("aria-label", nameByKey.get(muscleKey) ?? muscleKey);
+          element.setAttribute("aria-pressed", String(selectedMuscleKey === muscleKey));
         }
       }
     }
@@ -217,9 +227,9 @@ function AnatomyFigure({
   );
 }
 
-export function AnatomyMap({
+export const AnatomyMap = memo(function AnatomyMap({
   muscles,
-  highlights = [],
+  highlights = EMPTY_HIGHLIGHTS,
   selectedMuscleKey,
   onMuscleSelect,
   compact = false,
@@ -265,4 +275,4 @@ export function AnatomyMap({
       )}
     </div>
   );
-}
+});

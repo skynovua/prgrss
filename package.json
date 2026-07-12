@@ -11,7 +11,7 @@
     "ci": "npm run typecheck && npm run lint && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:types": "supabase gen types --lang=typescript --project-id dggyqxvnyynusykobmiq > src/shared/db/generated/types.ts",
+    "db:types": "tmp=$(mktemp) && SUPABASE_TELEMETRY_DISABLED=1 supabase gen types --lang=typescript --project-id dggyqxvnyynusykobmiq > \"$tmp\" && mv \"$tmp\" src/shared/db/generated/types.ts",
     "db:sync-achievements": "node scripts/sync-achievement-config.mjs",
     "db:sync-exercises": "node --env-file-if-exists=.env.local scripts/sync-exercise-catalog.mjs"
   },

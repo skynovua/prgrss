@@ -5,6 +5,18 @@ import type {
   ExerciseMuscleInput,
 } from "../model/exercise-catalog";
 
+async function getCurrentUserId() {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error) throw new Error(error.message);
+  if (!user) throw new Error("Не авторизовано");
+
+  return user.id;
+}
+
 function validateExerciseMuscles(muscles: ExerciseMuscleInput[]) {
   if (muscles.length === 0) {
     throw new Error("Оберіть хоча б один м'яз");
@@ -77,10 +89,7 @@ export async function fetchAnatomicalMuscles() {
 }
 
 export async function createExercise(formData: CreateExerciseInput) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Не авторизовано");
+  const userId = await getCurrentUserId();
 
   const name = formData.name.trim();
   if (!name) throw new Error("Вкажіть назву вправи");
@@ -89,7 +98,7 @@ export async function createExercise(formData: CreateExerciseInput) {
   const { data: exercise, error } = await supabase
     .from("exercises")
     .insert({
-      user_id: user.id,
+      user_id: userId,
       name,
       equipment: formData.equipment,
       is_custom: true,
@@ -113,17 +122,14 @@ export async function createExercise(formData: CreateExerciseInput) {
   }
 }
 
-export async function deleteExercise(exerciseId: string) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Не авторизовано");
+export async function archiveExercise(exerciseId: string) {
+  const userId = await getCurrentUserId();
 
   const { error } = await supabase
     .from("exercises")
-    .delete()
+    .update({ is_active: false })
     .eq("id", exerciseId)
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("is_custom", true);
   if (error) throw new Error(error.message);
 }
@@ -137,13 +143,13 @@ export async function fetchFavoriteExerciseIds(): Promise<string[]> {
   return (data ?? []).map((r) => r.exercise_id);
 }
 
-export async function toggleFavoriteExercise(exerciseId: string, isFavorite: boolean) {
+export async function toggleFavoriteExercise(exerciseId: string, wasFavorite: boolean) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) throw new Error("Не авторизовано");
 
-  if (isFavorite) {
+  if (wasFavorite) {
     const { error } = await supabase
       .from("favorite_exercises")
       .delete()

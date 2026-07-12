@@ -559,6 +559,7 @@ export type Database = {
         Args: { equipment?: string; reps: number; weight: number }
         Returns: number
       }
+      create_custom_exercise: { Args: { payload: Json }; Returns: string }
       delete_workout_cascade: {
         Args: { target_workout_id: string }
         Returns: boolean
