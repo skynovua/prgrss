@@ -1,11 +1,3 @@
-.anatomy-map__figure .anatomy-muscle {
-  transition:
-    fill 150ms ease,
-    fill-opacity 150ms ease,
-    stroke 150ms ease,
-    stroke-opacity 150ms ease;
-}
-
 :where(
   .anatomy-map__figure[data-interactive="true"] .anatomy-muscle
 ) {
