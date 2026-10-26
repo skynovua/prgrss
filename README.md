@@ -82,7 +82,15 @@ public/
 	splash/          launch screens
 docs/
 	achievement-config.md
+	react-native-expo-guide.md
 ```
+
+## Mobile App Guide
+
+The implementation plan for the separate Expo React Native client, including
+standalone project setup, Supabase auth, native push notifications, i18n,
+mobile-specific backend changes, testing, and release requirements, is
+documented in [docs/react-native-expo-guide.md](docs/react-native-expo-guide.md).
 
 ## Feature Status
 
