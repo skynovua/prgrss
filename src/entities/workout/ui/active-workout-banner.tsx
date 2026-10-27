@@ -55,7 +55,7 @@ function WorkoutDurationFlow({ seconds }: { seconds: number }) {
   return (
     <NumberFlowGroup>
       <span
-        className="flex shrink-0 items-baseline text-2xl font-bold text-orange-500 tabular-nums"
+        className="flex shrink-0 items-baseline text-xl font-medium tracking-tight tabular-nums"
         style={{ fontVariantNumeric: "tabular-nums" }}
         aria-label={formatDuration(seconds)}
       >
@@ -131,7 +131,7 @@ export function ActiveWorkoutBanner({
       <div className="mx-auto max-w-lg">
         <Link
           to="/workout/new"
-          className="border-border/80 bg-card/94 supports-backdrop-filter:bg-card/86 flex h-16 items-center gap-3 rounded-full border px-4 shadow-[0_12px_42px_rgb(0_0_0/0.22)] backdrop-blur-xl transition-transform active:scale-[0.99]"
+          className="border-border/80 bg-card/94 supports-backdrop-filter:bg-card/86 flex h-16 items-center gap-3 rounded-full border px-4 shadow-sm backdrop-blur-xl transition-transform active:scale-[0.99]"
           aria-label="Повернутися до активного тренування"
         >
           <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">

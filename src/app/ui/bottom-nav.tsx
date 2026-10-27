@@ -2,6 +2,8 @@ import { Link, type LinkProps, useLocation } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { Dumbbell, Home, Plus, Settings, TrendingUp } from "lucide-react";
 
+import { cn } from "@/shared/lib";
+
 interface NavItem {
   href: NonNullable<LinkProps["to"]>;
   label: string;
@@ -22,10 +24,11 @@ export function BottomNav() {
 
   return (
     <nav
-      className="border-border/80 bg-card/92 supports-backdrop-filter:bg-card/80 fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-18px_40px_rgb(0_0_0/0.12)] backdrop-blur-xl"
+      aria-label="Основна навігація"
+      className="border-border bg-card/95 fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-xl"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-2">
+      <div className="mx-auto grid h-16 max-w-lg grid-cols-5 items-center px-2">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
@@ -35,10 +38,12 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 to={item.href}
-                className="flex -translate-y-1 flex-col items-center gap-0.5"
+                aria-label="Почати тренування"
+                aria-current={isActive ? "page" : undefined}
+                className="flex items-center justify-center"
               >
-                <div className="bg-primary text-primary-foreground shadow-primary/30 flex size-12 items-center justify-center rounded-full shadow-[0_0_22px_rgb(204_255_0/0.32)]">
-                  <Icon className="h-6 w-6" />
+                <div className="bg-primary text-primary-foreground flex size-11 items-center justify-center rounded-xl">
+                  <Icon className="size-5" />
                 </div>
               </Link>
             );
@@ -48,12 +53,14 @@ export function BottomNav() {
             <Link
               key={item.href}
               to={item.href}
-              className={`flex min-w-0 flex-col items-center gap-0.5 px-3 py-2 transition-colors ${
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "flex min-w-0 flex-col items-center gap-1 py-2 transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}
+              )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <Icon className="size-5" strokeWidth={isActive ? 2 : 1.75} />
+              <span className="text-[11px] font-medium">{item.label}</span>
             </Link>
           );
         })}

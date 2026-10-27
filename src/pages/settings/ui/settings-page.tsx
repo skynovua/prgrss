@@ -1,37 +1,89 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Download, Settings2, ShieldCheck } from "lucide-react";
+import { ChevronRight, Download, Palette, ShieldCheck } from "lucide-react";
 
 import { LogoutButton } from "@/entities/auth";
 import { ProfileSettings } from "@/entities/profile";
 // import { PushNotificationsCard } from "@/entities/notification";
 import { useProfile } from "@/entities/profile";
 import { isStandalone } from "@/shared/lib";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { useTheme } from "@/shared/theme";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui";
 import { LoaderBar } from "@/shared/ui";
+
+const THEMES = [
+  { value: "light", label: "Світла" },
+  { value: "dark", label: "Темна" },
+  { value: "system", label: "Як на пристрої" },
+];
 
 export default function SettingsPage() {
   const { data: profile, isLoading } = useProfile();
+  const { theme, setTheme } = useTheme();
 
   if (isLoading || !profile) {
     return <LoaderBar data-testid="loader-bar" />;
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5 p-4">
-      <div className="flex items-start justify-between gap-3 px-1 pt-1">
-        <div className="min-w-0">
-          <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
-            Control center
-          </p>
-          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">Налаштування</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Профіль, тренувальні звички та стан застосунку.
-          </p>
-        </div>
-        <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
-          <Settings2 className="size-5" />
-        </div>
-      </div>
+    <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
+      <header className="flex flex-col gap-2">
+        <h1 className="text-3xl font-medium tracking-tight">Налаштування</h1>
+        <p className="text-muted-foreground text-sm">Твій профіль і комфортний ритм тренувань.</p>
+      </header>
+
+      <Card className="gap-4 p-0">
+        <CardHeader className="px-5 pt-5">
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="size-4" />
+            Вигляд
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-5 pb-5">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="color-scheme">Колірна тема</FieldLabel>
+              <Select
+                items={THEMES}
+                value={theme}
+                onValueChange={(value) => {
+                  if (value === "light" || value === "dark" || value === "system") setTheme(value);
+                }}
+              >
+                <SelectTrigger id="color-scheme" aria-describedby="color-scheme-description">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {THEMES.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <FieldDescription id="color-scheme-description">
+                Вибір зберігається на цьому пристрої.
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
+        </CardContent>
+      </Card>
 
       <ProfileSettings
         name={profile.name}
@@ -57,9 +109,7 @@ export default function SettingsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Встановити PRGRSS</p>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  Додай на головний екран для app mode
-                </p>
+                <p className="text-muted-foreground mt-1 text-xs">Додай на головний екран</p>
               </div>
               <ChevronRight className="text-muted-foreground size-4 shrink-0" />
             </Link>

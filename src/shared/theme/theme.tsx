@@ -1,41 +1,70 @@
-import { createContext, useCallback, useContext, useEffect } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-type Theme = "dark";
+type Theme = "light" | "dark" | "system";
 
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: "dark";
+  resolvedTheme: "light" | "dark";
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = "prgrss-theme";
+// Старий ключ завжди містив примусову темну тему, а не вибір користувача.
+const STORAGE_KEY = "prgrss-color-scheme";
 
-function applyTheme() {
-  const root = document.documentElement;
-  root.classList.add("dark");
-
-  // Оновлюємо theme-color мета-тег
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) {
-    meta.setAttribute("content", "#050909");
+function readTheme(): Theme {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "light" || saved === "dark" || saved === "system") return saved;
+  } catch {
+    // Тема працює і тоді, коли браузер забороняє доступ до сховища.
   }
+  return "light";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(readTheme);
+  const [systemDark, setSystemDark] = useState(
+    () => window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+  const resolvedTheme = theme === "system" ? (systemDark ? "dark" : "light") : theme;
+
   const setTheme = useCallback((newTheme: Theme) => {
-    localStorage.setItem(STORAGE_KEY, newTheme);
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem(STORAGE_KEY, newTheme);
+    } catch {
+      // Зберігаємо вибір у межах поточної сесії без browser storage.
+    }
   }, []);
 
-  // Застосовуємо темну тему незалежно від системних або старих збережених налаштувань.
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, "dark");
-    applyTheme();
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onSystemChange = (event: MediaQueryListEvent) => setSystemDark(event.matches);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY || event.key === null) setThemeState(readTheme());
+    };
+    media.addEventListener("change", onSystemChange);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      media.removeEventListener("change", onSystemChange);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute(
+        "content",
+        getComputedStyle(document.documentElement).getPropertyValue("--background").trim()
+      );
+  }, [resolvedTheme]);
 
   return (
-    <ThemeContext.Provider value={{ theme: "dark", setTheme, resolvedTheme: "dark" }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
       {children}
     </ThemeContext.Provider>
   );

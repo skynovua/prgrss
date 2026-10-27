@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Download, Loader2, X } from "lucide-react";
+import { Download, Loader2, Moon, Sun, X } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useEffect, useState } from "react";
 
 import { createClient } from "@/shared/api";
 import { useAuth } from "@/shared/auth";
 import { isStandalone } from "@/shared/lib";
+import { useTheme } from "@/shared/theme";
 import { Button } from "@/shared/ui";
 
 function GoogleIcon(props: ComponentProps<"svg">) {
@@ -34,6 +35,7 @@ function GoogleIcon(props: ComponentProps<"svg">) {
 export default function LoginPage() {
   const supabase = createClient();
   const navigate = useNavigate();
+  const { resolvedTheme, setTheme } = useTheme();
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState<"google" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,42 +77,41 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-background text-foreground relative flex min-h-screen overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgb(204_255_0/0.12),transparent_50%),linear-gradient(180deg,transparent_0%,var(--background)_72%)]" />
-      <div className="from-background absolute inset-x-0 top-0 z-1 h-20 bg-linear-to-b to-transparent" />
-      <div className="from-background absolute inset-x-0 bottom-0 z-1 h-100 bg-linear-to-t to-transparent" />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
-        <header className="relative z-10 text-center">
-          <p className="font-logo text-4xl font-black tracking-normal">
+    <div className="bg-background text-foreground relative flex min-h-dvh">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-12 px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
+        <header className="flex items-center justify-between gap-4">
+          <p className="font-logo text-xl tracking-normal">
             PR<span className="text-primary">G</span>RSS
           </p>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={
+              resolvedTheme === "light" ? "Увімкнути темну тему" : "Увімкнути світлу тему"
+            }
+            onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
+          >
+            {resolvedTheme === "light" ? <Moon /> : <Sun />}
+          </Button>
         </header>
 
-        <div className="pointer-events-none absolute inset-x-0 top-20 flex justify-center">
-          <picture>
-            <source srcSet="/images/login-runner.webp" type="image/webp" />
-            <img src="/images/login-runner.png" alt="" className="w-full opacity-80 saturate-100" />
-          </picture>
-        </div>
-
-        <div className="relative z-10 mt-auto mb-8 flex flex-col items-center gap-6 text-center">
+        <div className="flex flex-1 flex-col justify-center gap-8 pb-12">
           <div className="flex flex-col gap-5">
-            <h1 className="text-[2rem] leading-[1.1] font-bold tracking-tight">
-              Train smarter.
+            <span className="text-primary text-sm font-medium">Маленькі кроки. Помітні зміни.</span>
+            <h1 className="text-5xl leading-[1.12] font-medium tracking-tight">
+              Твій ритм.
               <br />
-              Track progress.
-              <br />
-              Stay consistent.
+              Твій прогрес.
             </h1>
-            <p className="text-foreground/70 text-lg leading-8">
-              Ваш персональний гід у світі фітнесу. Досягайте результатів з розумною аналітикою.
+            <p className="text-muted-foreground text-base leading-7">
+              Записуй тренування, помічай свої досягнення та рухайся вперед у власному темпі.
             </p>
           </div>
 
           <div className="flex w-full flex-col gap-3">
             <Button
               size="lg"
-              className="h-16 w-full gap-3 text-base font-black"
+              className="w-full"
               onClick={() => handleLogin("google")}
               disabled={loading !== null}
             >
@@ -125,7 +126,7 @@ export default function LoginPage() {
             {error && <p className="text-destructive text-center text-sm">{error}</p>}
           </div>
 
-          <p className="text-foreground/45 text-xs leading-5">
+          <p className="text-muted-foreground text-xs leading-5">
             Входячи, ви погоджуєтесь з умовами використання
           </p>
         </div>

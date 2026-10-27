@@ -8,16 +8,15 @@ import {
   Flame,
   Loader2,
   Minus,
-  TrendingUp,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 
 import type { LastWorkoutComparison, Period, TopExercise } from "@/entities/progress";
 import { ExerciseProgressChart } from "@/entities/progress";
 import { MuscleDistributionChart } from "@/entities/progress";
 import { useGlobalStats, usePeriodProgress } from "@/entities/progress";
 import { cn } from "@/shared/lib";
-import { Card, CardContent } from "@/shared/ui";
+import { Card, CardContent, ToggleGroup, ToggleGroupItem } from "@/shared/ui";
 import { LoaderBar } from "@/shared/ui";
 
 const PERIODS: { value: Period; label: string }[] = [
@@ -26,31 +25,6 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: "90d", label: "90 днів" },
   { value: "all", label: "Весь час" },
 ];
-
-function PeriodChip({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-        active
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground hover:bg-accent"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function ProgressContent() {
   const [period, setPeriod] = useState<Period>("30d");
@@ -62,149 +36,81 @@ export function ProgressContent() {
   }
 
   const currentPeriodLabel = PERIODS.find((currentPeriod) => currentPeriod.value === period)?.label;
-  const topExercise = periodData?.topExercises[0] ?? null;
   const totalWorkouts = periodData?.stats.totalWorkouts ?? 0;
   const avgDuration = periodData?.stats.avgDuration;
   const streak = global?.streak ?? 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-5 p-4">
-      <div className="flex items-start justify-between gap-3 px-1 pt-1">
-        <div className="min-w-0">
-          <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
-            Progress analytics
-          </p>
-          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">Прогрес</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Дивись динаміку тренувань, об&apos;єм і найсильніші рухи.
-          </p>
+    <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-medium tracking-tight">Прогрес</h1>
+          <p className="text-muted-foreground text-sm">Кожне тренування має значення.</p>
         </div>
-        <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
-          {isFetching ? (
-            <Loader2 className="size-5 animate-spin" />
-          ) : (
-            <TrendingUp className="size-5" />
-          )}
-        </div>
-      </div>
-
-      <Card className="p-0">
-        <CardContent className="flex flex-col gap-3 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-medium">Період аналізу</h2>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Поточний зріз: {currentPeriodLabel}
-              </p>
-            </div>
-            {isFetching && <Loader2 className="text-muted-foreground size-4 animate-spin" />}
-          </div>
-          <div className="flex scrollbar-none gap-2 overflow-x-auto">
-            {PERIODS.map((p) => (
-              <PeriodChip
-                key={p.value}
-                active={period === p.value}
-                onClick={() => setPeriod(p.value)}
-              >
-                {p.label}
-              </PeriodChip>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="overflow-hidden p-0">
-        <CardContent className="relative px-4 py-4">
-          <div className="relative flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                    {currentPeriodLabel}
-                  </span>
-                  <span className="text-muted-foreground text-xs">Огляд активності</span>
-                </div>
-                <h2 className="text-xl font-semibold tracking-tight">Твоя динаміка тренувань</h2>
-              </div>
-
-              <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
-                <TrendingUp className="size-5" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <MetricCard
-                icon={<Flame className="size-3.5" />}
-                label="Стрік"
-                value={`${streak}`}
-                helper={streak === 1 ? "тиждень" : streak < 5 ? "тижні" : "тижнів"}
-              />
-              <MetricCard
-                icon={<CalendarDays className="size-3.5" />}
-                label="Тренування"
-                value={`${totalWorkouts}`}
-                helper="за період"
-              />
-              <MetricCard
-                icon={<Clock className="size-3.5" />}
-                label="Середня тривалість"
-                value={avgDuration ? `${avgDuration}` : "—"}
-                helper="хв"
-              />
-              <MetricCard
-                icon={<Dumbbell className="size-3.5" />}
-                label="Топ вправа"
-                value={topExercise ? compactExerciseName(topExercise.exerciseName) : "—"}
-                helper={topExercise ? topExercise.sets + " підх" : "немає"}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        {global?.lastComparison ? (
-          <LastWorkoutCard comparison={global.lastComparison} />
-        ) : (
-          <EmptyInsightCard
-            title="Останнє тренування"
-            description="Коли з'являться завершені тренування, тут буде коротке порівняння з попередньою сесією."
-            icon={<Activity className="size-5" />}
+        {isFetching && (
+          <Loader2
+            className="text-muted-foreground size-4 animate-spin"
+            aria-label="Оновлення статистики"
           />
         )}
+      </header>
 
-        <Card className="p-0">
-          <CardContent className="p-4">
-            <h3 className="mb-3 text-sm font-medium">Що важливо</h3>
-            <div className="flex flex-col gap-2.5 text-sm">
-              <InsightRow
-                label="Стрік"
-                value={`${streak} ${streak === 1 ? "тиждень" : streak < 5 ? "тижні" : "тижнів"}`}
-              />
-              <InsightRow
-                label="Середня тривалість"
-                value={avgDuration ? `${avgDuration} хв` : "—"}
-              />
-              <InsightRow
-                label="Найоб'ємніша вправа"
-                value={
-                  topExercise
-                    ? `${topExercise.exerciseName} · ${topExercise.volume > 1000 ? `${(topExercise.volume / 1000).toFixed(1)} т` : `${topExercise.volume} кг`}`
-                    : "Ще немає даних"
-                }
-              />
-              <InsightRow
-                label="Активність"
-                value={
-                  totalWorkouts > 0
-                    ? `${totalWorkouts} тренувань за період`
-                    : "Без завершених тренувань"
-                }
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="scrollbar-none overflow-x-auto">
+        <ToggleGroup
+          value={[period]}
+          onValueChange={(values) => {
+            const next = PERIODS.find((option) => option.value === values[0]);
+            if (next) setPeriod(next.value);
+          }}
+          aria-label="Період аналізу"
+          spacing={1}
+        >
+          {PERIODS.map((option) => (
+            <ToggleGroupItem key={option.value} value={option.value}>
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
+
+      <section className="flex flex-col gap-4" aria-labelledby="activity-title">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="activity-title" className="text-base font-semibold">
+            Огляд активності
+          </h2>
+          <span className="text-muted-foreground text-xs">{currentPeriodLabel}</span>
+        </div>
+        <div className="divide-border grid grid-cols-3 divide-x">
+          <MetricCard
+            icon={<CalendarDays className="size-3.5" />}
+            label="Тренування"
+            value={`${totalWorkouts}`}
+            helper="за період"
+          />
+          <MetricCard
+            icon={<Clock className="size-3.5" />}
+            label="Тривалість"
+            value={avgDuration ? `${avgDuration}` : "—"}
+            helper="хв у середньому"
+          />
+          <MetricCard
+            icon={<Flame className="size-3.5" />}
+            label="Серія"
+            value={`${streak}`}
+            helper={streak === 1 ? "тиждень" : streak > 1 && streak < 5 ? "тижні" : "тижнів"}
+          />
+        </div>
+      </section>
+
+      {global?.lastComparison ? (
+        <LastWorkoutCard comparison={global.lastComparison} />
+      ) : (
+        <EmptyInsightCard
+          title="Останнє тренування"
+          description="Тут з’явиться порівняння після завершення тренувань."
+          icon={<Activity className="size-5" />}
+        />
+      )}
 
       {periodData && <MuscleDistributionChart data={periodData.muscleTonnage} />}
 
@@ -240,7 +146,7 @@ function LastWorkoutCard({ comparison }: { comparison: LastWorkoutComparison }) 
             <h3 className="text-sm font-medium">Останнє тренування</h3>
             <p className="text-muted-foreground text-xs">{date}</p>
           </div>
-          <span className="text-muted-foreground text-xs">vs попереднє</span>
+          <span className="text-muted-foreground text-xs">до попереднього</span>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
@@ -350,14 +256,14 @@ function MetricCard({
   helper: string;
 }) {
   return (
-    <div className="bg-background/70 rounded-xl border px-3 py-3 backdrop-blur-sm">
-      <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
+    <div className="flex min-w-0 flex-col gap-1 px-3 first:pl-0 last:pr-0">
+      <div className="text-muted-foreground mb-2 flex flex-wrap items-center gap-1.5 text-xs">
         {icon}
         <span>{label}</span>
       </div>
-      <div className="flex items-end gap-1">
-        <span className="max-w-full truncate text-lg font-semibold tabular-nums">{value}</span>
-        <span className="text-muted-foreground truncate pb-0.5 text-xs">{helper}</span>
+      <div className="flex flex-col gap-1">
+        <span className="text-2xl font-medium tracking-tight tabular-nums">{value}</span>
+        <span className="text-muted-foreground text-xs">{helper}</span>
       </div>
     </div>
   );
@@ -375,22 +281,13 @@ function LatestStatCard({
   diff?: number | null;
 }) {
   return (
-    <div className="bg-muted/40 rounded-xl px-3 py-3 text-center">
+    <div className="px-1 py-2 text-center">
       <p className="text-muted-foreground text-xs">{label}</p>
       <div className="mt-1 flex items-end justify-center gap-1">
         <span className="text-lg font-semibold tabular-nums">{value}</span>
         <span className="text-muted-foreground pb-0.5 text-xs">{helper}</span>
       </div>
       {diff !== undefined ? <DiffBadge diff={diff} /> : null}
-    </div>
-  );
-}
-
-function InsightRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium">{value}</span>
     </div>
   );
 }
@@ -410,15 +307,11 @@ function EmptyInsightCard({
         <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full">
           {icon}
         </div>
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <p className="text-sm font-medium">{title}</p>
           <p className="text-muted-foreground mx-auto max-w-sm text-sm">{description}</p>
         </div>
       </CardContent>
     </Card>
   );
-}
-
-function compactExerciseName(name: string) {
-  return name.length > 16 ? `${name.slice(0, 16)}…` : name;
 }

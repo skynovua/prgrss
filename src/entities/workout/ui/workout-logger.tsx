@@ -60,7 +60,7 @@ function WorkoutDurationTimer({ startedAt }: { startedAt: string }) {
   return (
     <NumberFlowGroup>
       <span
-        className="flex items-baseline text-3xl font-bold text-orange-500 tabular-nums"
+        className="flex items-baseline text-3xl font-medium tracking-tight tabular-nums"
         style={{ fontVariantNumeric: "tabular-nums" }}
         aria-label={formatWorkoutDuration(seconds)}
       >
@@ -96,7 +96,7 @@ function WorkoutStat({
   helper: string;
 }) {
   return (
-    <div className="bg-background/70 rounded-xl border px-3 py-3">
+    <div className="min-w-0 px-3 first:pl-0 last:pr-0">
       <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
         {icon}
         <span>{label}</span>
@@ -301,16 +301,11 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-5 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
+    <div className="flex flex-1 flex-col gap-5 px-4 pt-7 pb-[calc(10rem+env(safe-area-inset-bottom))] sm:px-5 md:px-8">
       <div className="flex items-start justify-between gap-3 px-1 pt-1">
         <div className="min-w-0">
-          <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
-            Active session
-          </p>
-          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">Тренування</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Записуй підходи, об&apos;єм і темп сесії.
-          </p>
+          <h1 className="text-3xl leading-tight font-medium tracking-tight">Тренування</h1>
+          <p className="text-muted-foreground mt-2 text-sm">Зосередься на наступному підході.</p>
         </div>
         <Button
           variant="outline"
@@ -322,43 +317,38 @@ export function WorkoutLogger({ exercises, previousSets }: WorkoutLoggerProps) {
         </Button>
       </div>
 
-      <Card className="p-0">
-        <CardContent className="flex flex-col gap-4 p-4">
-          <div className="flex items-end justify-between gap-4">
-            <div className="min-w-0">
-              <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs">
-                <Clock3 className="size-3.5" />
-                <span>Тривалість</span>
-              </div>
-              <WorkoutDurationTimer startedAt={startedAt} />
+      <section aria-label="Поточна сесія" className="flex flex-col gap-5 border-b px-1 pb-5">
+        <div className="flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs">
+              <Clock3 className="size-3.5" />
+              <span>Тривалість</span>
             </div>
-            <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
-              <Dumbbell className="size-5" />
-            </div>
+            <WorkoutDurationTimer startedAt={startedAt} />
           </div>
+        </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <WorkoutStat
-              icon={<Layers3 className="size-3.5" />}
-              label="Підходи"
-              value={`${totalSets}`}
-              helper="готово"
-            />
-            <WorkoutStat
-              icon={<Flame className="size-3.5" />}
-              label="Об'єм"
-              value={`${Math.round(totalVolume)}`}
-              helper="кг"
-            />
-            <WorkoutStat
-              icon={<Dumbbell className="size-3.5" />}
-              label="Вправи"
-              value={`${workoutExercises.length}`}
-              helper="у сесії"
-            />
-          </div>
-        </CardContent>
-      </Card>
+        <div className="divide-border grid grid-cols-3 divide-x">
+          <WorkoutStat
+            icon={<Layers3 className="size-3.5" />}
+            label="Підходи"
+            value={`${totalSets}`}
+            helper="готово"
+          />
+          <WorkoutStat
+            icon={<Flame className="size-3.5" />}
+            label="Об'єм"
+            value={`${Math.round(totalVolume)}`}
+            helper="кг"
+          />
+          <WorkoutStat
+            icon={<Dumbbell className="size-3.5" />}
+            label="Вправи"
+            value={`${workoutExercises.length}`}
+            helper="у сесії"
+          />
+        </div>
+      </section>
 
       {/* Вправи */}
       {workoutExercises.length === 0 ? (

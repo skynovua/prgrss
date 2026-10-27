@@ -18,3 +18,4 @@ export * from "./components/sheet";
 export * from "./components/sonner";
 export * from "./components/switch";
 export * from "./components/tabs";
+export * from "./components/toggle-group";

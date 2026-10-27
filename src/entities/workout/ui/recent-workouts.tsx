@@ -18,16 +18,14 @@ export function RecentWorkouts({ workouts }: { workouts: RecentWorkout[] }) {
   if (workouts.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <h2 className="text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase">
-        Останні тренування
-      </h2>
-      <div className="bg-card divide-border divide-y rounded-xl">
+    <section className="flex flex-col gap-3">
+      <h2 className="text-base font-semibold">Останні тренування</h2>
+      <div className="divide-border divide-y">
         {workouts.map((workout) => (
           <WorkoutRow key={workout.id} workout={workout} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -56,7 +54,7 @@ function WorkoutRow({ workout }: { workout: RecentWorkout }) {
     <Link
       to="/workout/$id"
       params={{ id: workout.id }}
-      className="active:bg-accent/50 flex items-center gap-3 px-4 py-3 transition-colors"
+      className="hover:bg-muted/50 active:bg-accent/50 flex items-center gap-3 rounded-lg py-4 transition-colors"
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

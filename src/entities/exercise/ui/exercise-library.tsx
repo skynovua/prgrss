@@ -1,26 +1,16 @@
-import {
-  Dumbbell,
-  EyeOff,
-  Info,
-  Layers3,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
-import { lazy, type ReactNode, Suspense, useCallback, useMemo, useState } from "react";
+import { EyeOff, Info, Plus, Search, Trash2 } from "lucide-react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/shared/config";
-import { cn } from "@/shared/lib";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
   Badge,
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -40,6 +30,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@/shared/ui";
 
 import {
@@ -61,57 +53,6 @@ interface ExerciseLibraryProps {
 interface AdditionalMuscle {
   muscleKey: string;
   activationScore: number;
-}
-
-function FilterChip({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-        active
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground active:bg-accent"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function LibraryStat({
-  icon,
-  label,
-  value,
-  helper,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  helper: string;
-}) {
-  return (
-    <div className="bg-background/70 rounded-xl border px-3 py-3">
-      <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <div className="flex items-end gap-1">
-        <span className="text-lg font-semibold tabular-nums">{value}</span>
-        <span className="text-muted-foreground pb-0.5 text-xs">{helper}</span>
-      </div>
-    </div>
-  );
 }
 
 export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
@@ -203,7 +144,6 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
   const muscleGroups = Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[];
   const equipmentKeys = Object.keys(EQUIPMENT_LABELS);
-  const customCount = exercises.filter((exercise) => exercise.is_custom).length;
   const selectedMuscle = anatomicalMuscles.find((muscle) => muscle.key === selectedMuscleKey);
   const muscleItems = anatomicalMuscles.map((muscle) => ({
     value: muscle.key,
@@ -242,158 +182,116 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-5 p-4">
-      <div className="flex items-start justify-between gap-3 px-1 pt-1">
-        <div className="min-w-0">
-          <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
-            Exercise library
-          </p>
-          <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">Бібліотека вправ</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Шукай базові рухи, фільтруй інвентар і додавай власні вправи.
-          </p>
+    <div className="flex flex-1 flex-col gap-5 px-5 pt-7 pb-6 md:px-8">
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-2">
+          <h1 className="text-3xl font-medium tracking-tight">Вправи</h1>
+          <p className="text-muted-foreground text-sm">Знайди свій наступний рух.</p>
         </div>
-        <Button size="icon" onClick={() => setAddDialogOpen(true)} aria-label="Додати вправу">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setAddDialogOpen(true)}
+          aria-label="Додати вправу"
+        >
           <Plus />
         </Button>
-      </div>
+      </header>
 
-      <Card className="p-0">
-        <CardContent className="flex flex-col gap-4 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold tracking-tight">Твоя база рухів</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {filtered.length} з {exercises.length} вправ видно зараз.
-              </p>
-            </div>
-            <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
-              <Dumbbell className="size-5" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <LibraryStat
-              icon={<Layers3 className="size-3.5" />}
-              label="Усього"
-              value={`${exercises.length}`}
-              helper="вправ"
-            />
-            <LibraryStat
-              icon={<Sparkles className="size-3.5" />}
-              label="Власні"
-              value={`${customCount}`}
-              helper="кастом"
-            />
-            <LibraryStat
-              icon={<Search className="size-3.5" />}
-              label="Фільтр"
-              value={`${filtered.length}`}
-              helper="знайдено"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="p-0">
-        <CardContent className="flex flex-col gap-4 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <SlidersHorizontal className="text-muted-foreground size-4" />
-              Пошук і фільтри
-            </div>
-            <Button size="sm" variant="outline" onClick={() => setAddDialogOpen(true)}>
-              <Plus data-icon="inline-start" />
-              Додати
-            </Button>
-          </div>
-
-          <div className="relative">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input
-              placeholder="Пошук вправ..."
-              aria-label="Пошук вправ"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          <div className="relative">
-            <div
-              className="mr-3 flex scrollbar-none gap-1.5 overflow-x-auto"
-              role="group"
-              aria-label="Фільтр за м'язовою групою"
+      <FieldGroup className="gap-3">
+        <Field>
+          <FieldLabel htmlFor="exercise-search" className="sr-only">
+            Пошук вправ
+          </FieldLabel>
+          <Input
+            id="exercise-search"
+            placeholder="Пошук вправ…"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel className="sr-only">М’язова група</FieldLabel>
+          <div className="scrollbar-none overflow-x-auto">
+            <ToggleGroup
+              value={[activeGroup]}
+              onValueChange={(values) => {
+                const group = values[0];
+                if (group === "all" || muscleGroups.includes(group as MuscleGroup))
+                  setActiveGroup(group as MuscleGroup | "all");
+              }}
+              aria-label="Фільтр за м’язовою групою"
+              spacing={1}
             >
-              <FilterChip active={activeGroup === "all"} onClick={() => setActiveGroup("all")}>
-                Всі
-              </FilterChip>
+              <ToggleGroupItem value="all">Усі</ToggleGroupItem>
               {muscleGroups.map((group) => (
-                <FilterChip
-                  key={group}
-                  active={activeGroup === group}
-                  onClick={() => setActiveGroup(group)}
-                >
+                <ToggleGroupItem key={group} value={group}>
                   {MUSCLE_GROUP_LABELS[group]}
-                </FilterChip>
+                </ToggleGroupItem>
               ))}
-            </div>
-            <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
+            </ToggleGroup>
           </div>
-
-          <div className="relative">
-            <div
-              className="mr-3 flex scrollbar-none gap-1.5 overflow-x-auto"
-              role="group"
-              aria-label="Фільтр за обладнанням"
-            >
-              <FilterChip
-                active={activeEquipment === "all"}
-                onClick={() => setActiveEquipment("all")}
-              >
-                Все обладнання
-              </FilterChip>
-              {equipmentKeys.map((eq) => (
-                <FilterChip
-                  key={eq}
-                  active={activeEquipment === eq}
-                  onClick={() => setActiveEquipment(eq)}
-                >
-                  {EQUIPMENT_LABELS[eq]}
-                </FilterChip>
-              ))}
-            </div>
-            <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l to-transparent" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="p-0">
-        <CardHeader className="p-4 pb-0">
-          <CardTitle>Мапа м&apos;язів</CardTitle>
-          <CardDescription>
-            {selectedMuscle
-              ? `Показано вправи для: ${selectedMuscle.name}`
-              : "Обери зону на тілі для точного анатомічного фільтра."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4">
-          <Suspense
-            fallback={
-              <div
-                className="bg-muted mx-auto aspect-[792/1427] w-full max-w-72 rounded-3xl"
-                aria-busy="true"
-              />
-            }
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="equipment-filter" className="sr-only">
+            Обладнання
+          </FieldLabel>
+          <Select
+            items={[
+              { value: "all", label: "Усе обладнання" },
+              ...equipmentKeys.map((equipment) => ({
+                value: equipment,
+                label: EQUIPMENT_LABELS[equipment],
+              })),
+            ]}
+            value={activeEquipment}
+            onValueChange={(value) => {
+              if (value) setActiveEquipment(value);
+            }}
           >
-            <LazyAnatomyMap
-              muscles={anatomicalMuscles}
-              selectedMuscleKey={selectedMuscleKey}
-              onMuscleSelect={handleMuscleSelect}
-            />
-          </Suspense>
-        </CardContent>
-      </Card>
+            <SelectTrigger id="equipment-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">Усе обладнання</SelectItem>
+                {equipmentKeys.map((equipment) => (
+                  <SelectItem key={equipment} value={equipment}>
+                    {EQUIPMENT_LABELS[equipment]}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </Field>
+      </FieldGroup>
+
+      <Accordion>
+        <AccordionItem value="anatomy">
+          <AccordionTrigger>
+            {selectedMuscle ? `М’яз: ${selectedMuscle.name}` : "Обрати на мапі м’язів"}
+          </AccordionTrigger>
+          <AccordionContent>
+            <Suspense
+              fallback={
+                <p className="text-muted-foreground py-4 text-sm" aria-busy="true">
+                  Завантаження мапи…
+                </p>
+              }
+            >
+              <LazyAnatomyMap
+                muscles={anatomicalMuscles}
+                selectedMuscleKey={selectedMuscleKey}
+                onMuscleSelect={handleMuscleSelect}
+              />
+            </Suspense>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <p className="text-muted-foreground text-xs" role="status">
+        Знайдено {filtered.length} із {exercises.length} вправ
+      </p>
 
       {Array.from(grouped.entries()).map(([group, exs]) => (
         <div key={group} className="flex flex-col gap-3">

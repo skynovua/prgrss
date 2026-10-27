@@ -106,10 +106,13 @@ export function SetRow({
       <Button
         variant={set.completed ? "default" : "outline"}
         size="icon"
-        className={cn(
-          "h-11 w-full shrink-0",
-          set.completed && "border-green-600 bg-green-600 hover:bg-green-700"
-        )}
+        className="h-11 w-full shrink-0"
+        aria-label={
+          set.completed
+            ? `Скасувати виконання підходу ${set.setNumber}`
+            : `Завершити підхід ${set.setNumber}`
+        }
+        aria-pressed={set.completed}
         onClick={() => onComplete({ ...set, completed: !set.completed })}
       >
         <Check className="h-4 w-4" />
@@ -119,6 +122,7 @@ export function SetRow({
         variant="ghost"
         size="icon"
         className="text-muted-foreground h-11 w-11 shrink-0"
+        aria-label={`Видалити підхід ${set.setNumber}`}
         onClick={() => setConfirmOpen(true)}
       >
         <Trash2 className="h-4 w-4" />
