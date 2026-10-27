@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { ArrowDownRight, ArrowUpRight, Dumbbell, Minus } from "lucide-react";
+import { useId, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -9,125 +10,247 @@ import {
   YAxis,
 } from "recharts";
 
-import type { ExerciseProgressData } from "@/entities/progress";
-import { Card, CardContent } from "@/shared/ui";
+import { cn } from "@/shared/lib";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  Field,
+  FieldGroup,
+  FieldLabel,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/shared/ui";
 
-interface Props {
-  data: ExerciseProgressData[];
-}
+import type { ExerciseProgressData } from "../api/stats";
+import {
+  EXERCISE_METRICS,
+  type ExerciseMetric,
+  summarizeExercise,
+} from "../model/exercise-metrics";
 
-type Metric = "estimated1RM" | "bestWeight" | "totalVolume";
-
-const METRIC_LABELS: Record<Metric, string> = {
-  bestWeight: "Макс вага",
-  totalVolume: "Об'єм",
-  estimated1RM: "Оц. 1RM",
+const LABELS: Record<ExerciseMetric, string> = {
+  bestWeight: "Робоча вага",
+  estimated1RM: "Розрахунковий 1ПМ",
+  totalVolume: "Об’єм за день",
 };
+const number = (value: number) => value.toLocaleString("uk-UA", { maximumFractionDigits: 1 });
 
-export function ExerciseProgressChart({ data }: Props) {
-  const [selectedExercise, setSelectedExercise] = useState(0);
-  const [metric, setMetric] = useState<Metric>("bestWeight");
+export function ExerciseProgressChart({
+  data,
+  onShowAll,
+}: {
+  data: ExerciseProgressData[];
+  onShowAll?: () => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [metric, setMetric] = useState<ExerciseMetric>("bestWeight");
+  const selectId = useId();
+  const exercise = data.find((entry) => entry.exerciseId === selectedId) ?? data[0];
 
-  if (data.length === 0) {
+  if (!exercise) {
     return (
       <Card className="p-0">
-        <CardContent className="flex h-48 items-center justify-center p-6">
-          <p className="text-muted-foreground text-sm">
-            Потрібно хоча б 2 тренування з однією вправою
-          </p>
-        </CardContent>
+        <Empty className="px-5 py-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Dumbbell />
+            </EmptyMedia>
+            <EmptyTitle>Побачимо, як змінюється сила</EmptyTitle>
+            <EmptyDescription>
+              Для графіка потрібні записи однієї вправи щонайменше за два різні тренувальні дні.
+            </EmptyDescription>
+          </EmptyHeader>
+          {onShowAll && (
+            <EmptyContent>
+              <Button variant="outline" onClick={onShowAll}>
+                Подивитися за весь час
+              </Button>
+            </EmptyContent>
+          )}
+        </Empty>
       </Card>
     );
   }
 
-  const exercise = data[selectedExercise];
-  const chartData = exercise.data.map((p) => ({
-    ...p,
-    date: formatDate(p.date),
+  const summary = summarizeExercise(exercise, metric);
+  const chartData = summary.points.map((point) => ({
+    ...point,
+    timestamp: new Date(`${point.date}T12:00:00`).getTime(),
   }));
+  const DeltaIcon =
+    summary.delta === null || summary.delta === 0
+      ? Minus
+      : summary.delta > 0
+        ? ArrowUpRight
+        : ArrowDownRight;
 
   return (
-    <Card className="p-0">
-      <CardContent className="p-4">
-        <h3 className="mb-3 text-sm font-medium">Прогрес вправи</h3>
-
-        {/* Вибір вправи */}
-        {data.length > 1 && (
-          <div className="mb-3 flex flex-wrap gap-1.5">
-            {data.map((ex, i) => (
-              <button
-                key={ex.exerciseId}
-                onClick={() => setSelectedExercise(i)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                  i === selectedExercise
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-accent"
-                }`}
-              >
-                {ex.exerciseName}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Вибір метрики */}
-        <div className="mb-4 flex gap-1.5">
-          {(Object.keys(METRIC_LABELS) as Metric[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMetric(m)}
-              className={`rounded-md px-2 py-1 text-xs transition-colors ${
-                m === metric
-                  ? "bg-accent text-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-accent/50"
-              }`}
+    <Card className="gap-4 py-5">
+      <CardHeader className="gap-1 px-5">
+        <CardTitle>Сила у вправах</CardTitle>
+        <CardDescription>Порівнюй свої записи, помічай зміни</CardDescription>
+      </CardHeader>
+      <CardContent className="flex min-w-0 flex-col gap-4 px-5">
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor={selectId}>Вправа</FieldLabel>
+            <Select
+              items={data.map((entry) => ({ value: entry.exerciseId, label: entry.exerciseName }))}
+              value={exercise.exerciseId}
+              onValueChange={(value) => {
+                if (value) setSelectedId(value);
+              }}
             >
-              {METRIC_LABELS[m]}
-            </button>
+              <SelectTrigger id={selectId}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {data.map((entry) => (
+                    <SelectItem key={entry.exerciseId} value={entry.exerciseId}>
+                      {entry.exerciseName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Field>
+        </FieldGroup>
+        <ToggleGroup
+          value={[metric]}
+          spacing={1}
+          aria-label="Показник вправи"
+          onValueChange={(values) => {
+            const next = EXERCISE_METRICS.find((entry) => entry.value === values[0]);
+            if (next) setMetric(next.value);
+          }}
+        >
+          {EXERCISE_METRICS.map((entry) => (
+            <ToggleGroupItem key={entry.value} value={entry.value}>
+              {entry.label}
+            </ToggleGroupItem>
           ))}
+        </ToggleGroup>
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-4">
+          <div className="flex min-w-0 flex-col gap-1">
+            <p className="text-muted-foreground text-xs">{LABELS[metric]} · останній запис</p>
+            <p className="flex items-baseline gap-1.5 whitespace-nowrap tabular-nums">
+              <span className="text-3xl font-medium tracking-tight">{number(summary.latest)}</span>
+              <span className="text-muted-foreground text-base">кг</span>
+            </p>
+          </div>
+          {summary.delta !== null && (
+            <div className="flex min-w-0 flex-col items-start gap-1 sm:items-end">
+              <p
+                className={cn(
+                  "flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm tabular-nums sm:justify-end",
+                  summary.delta > 0 ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <DeltaIcon className="size-4 shrink-0" />
+                  <span>{`${summary.delta > 0 ? "+" : ""}${number(summary.delta)}\u00a0кг`}</span>
+                </span>
+                {summary.percent !== null && summary.delta !== 0 && (
+                  <span className="whitespace-nowrap">
+                    {`(${summary.percent > 0 ? "+" : ""}${number(summary.percent)}%)`}
+                  </span>
+                )}
+              </p>
+              <p className="text-muted-foreground text-xs sm:text-right">
+                від першого запису за період
+              </p>
+            </div>
+          )}
         </div>
-
-        <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+        <ResponsiveContainer width="100%" height={190} minWidth={0}>
+          <LineChart
+            data={chartData}
+            margin={{ top: 10, right: 10, bottom: 0, left: -15 }}
+            accessibilityLayer
+          >
+            <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+            <XAxis
+              dataKey="timestamp"
+              type="number"
+              scale="time"
+              domain={["dataMin", "dataMax"]}
+              axisLine={false}
+              tickLine={false}
+              tickMargin={10}
+              minTickGap={24}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+              tickFormatter={(value) =>
+                new Date(value).toLocaleDateString("uk-UA", { day: "numeric", month: "short" })
+              }
+            />
             <YAxis
-              tick={{ fontSize: 11 }}
-              className="fill-muted-foreground"
-              width={50}
-              tickFormatter={(v: number) =>
-                metric === "totalVolume" && v >= 1000 ? `${(v / 1000).toFixed(0)}т` : `${v}`
+              width={55}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+              tickFormatter={(value: number) =>
+                value >= 1000 ? `${number(value / 1000)} т` : number(value)
               }
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "var(--card)",
+                background: "var(--popover)",
                 border: "1px solid var(--border)",
-                borderRadius: "8px",
+                borderRadius: 12,
                 fontSize: 12,
-                color: "var(--card-foreground)",
+                color: "var(--popover-foreground)",
               }}
-              formatter={(value) => [
-                `${Number(value).toLocaleString("uk-UA")} кг`,
-                METRIC_LABELS[metric],
-              ]}
+              labelFormatter={(value) =>
+                new Date(Number(value)).toLocaleDateString("uk-UA", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              }
+              formatter={(value) => [`${number(Number(value))} кг`, LABELS[metric]]}
             />
             <Line
-              type="monotone"
+              type="linear"
               dataKey={metric}
               stroke="var(--chart-1)"
               strokeWidth={2}
-              dot={{ r: 4, fill: "var(--chart-1)" }}
-              activeDot={{ r: 6 }}
+              dot={{ r: 3, fill: "var(--chart-1)", strokeWidth: 0 }}
+              activeDot={{ r: 5 }}
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
+      <CardFooter className="flex flex-col items-start gap-2 px-5">
+        <p className="text-muted-foreground text-xs">
+          Максимум за період: {number(summary.best)} кг · днів із записами: {summary.points.length}
+        </p>
+        <p className="text-muted-foreground text-xs leading-5">
+          {metric === "estimated1RM"
+            ? "1ПМ — оцінка за записаними підходами, а не результат максимальної спроби."
+            : metric === "totalVolume"
+              ? "Об’єм підсумовано за день. Для гантелей враховано пару."
+              : "Найбільша записана вага підходу за кожен тренувальний день."}
+        </p>
+      </CardFooter>
     </Card>
   );
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("uk-UA", { day: "numeric", month: "short" });
 }
