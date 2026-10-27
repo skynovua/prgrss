@@ -1,65 +1,73 @@
 import { Link } from "@tanstack/react-router";
 import {
+  ArrowLeft,
+  ArrowRight,
   Award,
   BarChart3,
-  ChevronLeft,
+  Check,
+  ChevronRight,
   Clock3,
   Dumbbell,
   Flame,
   Layers3,
-  Lock,
+  LockKeyhole,
   type LucideIcon,
   Repeat2,
   Shapes,
+  Sparkles,
+  Star,
   Target,
   Trophy,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import type { Achievement } from "@/entities/achievement";
 import { useAchievements, useMarkAchievementsSeen } from "@/entities/achievement";
 import { cn } from "@/shared/lib";
-import { LoaderBar } from "@/shared/ui";
-import { Card, CardContent } from "@/shared/ui";
-import { Sheet, SheetContent } from "@/shared/ui";
+import {
+  Badge,
+  Button,
+  buttonVariants,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  LoaderBar,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/shared/ui";
 
-const TIER_STYLES = {
-  bronze: {
-    bg: "achievement-tier-bronze",
-    text: "text-(--achievement-bronze-fg)",
-    bar: "achievement-ring-bronze",
-    ring: "var(--achievement-bronze-ring)",
-    label: "Бронза",
-  },
-  silver: {
-    bg: "achievement-tier-silver",
-    text: "text-(--achievement-silver-fg)",
-    bar: "achievement-ring-silver",
-    ring: "var(--achievement-silver-ring)",
-    label: "Срібло",
-  },
-  gold: {
-    bg: "achievement-tier-gold",
-    text: "text-(--achievement-gold-fg)",
-    bar: "achievement-ring-gold",
-    ring: "var(--achievement-gold-ring)",
-    label: "Золото",
-  },
-} as const;
+import {
+  type AchievementTrack,
+  buildAchievementTracks,
+  formatMetric,
+  getBestTier,
+  getClosestTrack,
+  getGoalDescription,
+  getNextTier,
+  getProgressPercent,
+  getRemainingLabel,
+  getUnseenRewards,
+  isEarned,
+  TIER_LABELS,
+} from "../model/achievement-tracks";
 
-const TIER_ORDER = ["bronze", "silver", "gold"] as const;
-
-type AchievementTier = Achievement["tier"];
-type CollectionFilter = "progress" | "completed" | "all";
-
-interface AchievementGroup {
-  key: string;
-  slug: string;
-  title: string;
-  tiers: Record<AchievementTier, Achievement | undefined>;
-}
-
-const ACHIEVEMENT_ICONS: Record<string, LucideIcon> = {
+const TIER_TONES = {
+  bronze: "achievement-tier-bronze",
+  silver: "achievement-tier-silver",
+  gold: "achievement-tier-gold",
+};
+const ICONS: Record<string, LucideIcon> = {
   workouts: Dumbbell,
   streak: Flame,
   volume: BarChart3,
@@ -70,621 +78,486 @@ const ACHIEVEMENT_ICONS: Record<string, LucideIcon> = {
   duration: Clock3,
   balance: Shapes,
 };
+type CollectionFilter = "all" | "progress" | "earned";
 
-function getAchievementTiers(group: AchievementGroup): Achievement[] {
-  return TIER_ORDER.map((tier) => group.tiers[tier]).filter((tier): tier is Achievement =>
-    Boolean(tier)
-  );
-}
-
-function getNextTier(group: AchievementGroup): Achievement {
-  const tiers = getAchievementTiers(group);
-  return tiers.find((tier) => !tier.unlocked) ?? tiers[tiers.length - 1];
-}
-
-function getRemainingProgress(group: AchievementGroup): number {
-  const nextTier = getNextTier(group);
-  return Math.max(nextTier.target - nextTier.current, 0);
-}
-
-function getDisplayTier(group: AchievementGroup): AchievementTier {
-  const tiers = getAchievementTiers(group);
-  const unlockedTier = [...tiers].reverse().find((tier) => tier.unlocked);
-
-  return unlockedTier?.tier ?? getNextTier(group).tier;
-}
-
-function AchievementIcon({
-  achievementKey,
-  className,
-  strokeWidth,
+function RewardEmblem({
+  icon: Icon,
+  tier,
+  size = "default",
 }: {
-  achievementKey: string;
-  className?: string;
-  strokeWidth?: number;
+  icon: LucideIcon;
+  tier?: Achievement["tier"];
+  size?: "default" | "large";
 }) {
-  const IconComponent = ACHIEVEMENT_ICONS[achievementKey] ?? Trophy;
-
-  return <IconComponent className={className} strokeWidth={strokeWidth} />;
-}
-
-function groupAchievements(achievements: Achievement[]): AchievementGroup[] {
-  const grouped = new Map<string, AchievementGroup>();
-
-  for (const achievement of achievements) {
-    const key = achievement.familyKey;
-    const existing = grouped.get(key);
-
-    if (existing) {
-      existing.tiers[achievement.tier] = achievement;
-      continue;
-    }
-
-    grouped.set(key, {
-      key,
-      slug: achievement.slug,
-      title: achievement.title,
-      tiers: {
-        bronze: achievement.tier === "bronze" ? achievement : undefined,
-        silver: achievement.tier === "silver" ? achievement : undefined,
-        gold: achievement.tier === "gold" ? achievement : undefined,
-      },
-    });
-  }
-
-  return Array.from(grouped.values());
-}
-
-function isCompleted(group: AchievementGroup): boolean {
-  return TIER_ORDER.every((tier) => group.tiers[tier]?.unlocked);
-}
-
-function getAchievementVisual(group: AchievementGroup) {
-  const tiers = getAchievementTiers(group);
-  const unlockedCount = tiers.filter((tier) => tier.unlocked).length;
-  const nextTier = getNextTier(group);
-  const accentTier = getDisplayTier(group);
-  const style = TIER_STYLES[accentTier];
-  const percent = Math.round(nextTier.progress * 100);
-  const ringDegrees = Math.max(percent * 3.6, unlockedCount === 0 ? 18 : 48);
-  const ringStyle = {
-    ["--achievement-ring-progress" as string]: `${ringDegrees}deg`,
-    ["--achievement-ring-color" as string]: style.ring,
-  };
-
-  return { tiers, unlockedCount, nextTier, accentTier, style, percent, ringStyle };
-}
-
-function getUnseenIds(group: AchievementGroup) {
-  return getAchievementTiers(group)
-    .filter((tier) => tier.unlocked && tier.unlockedAt && !tier.seenAt)
-    .map((tier) => tier.id);
-}
-
-function ProgressTrack({ percent, className }: { percent: number; className?: string }) {
   return (
-    <div className={cn("bg-muted h-1.5 overflow-hidden rounded-full", className)}>
-      <div
-        className="bg-primary h-full rounded-full transition-[width] duration-500"
-        style={{ width: `${Math.min(Math.max(percent, 0), 100)}%` }}
-      />
-    </div>
-  );
-}
-
-function AchievementMedallion({
-  group,
-  size = "md",
-}: {
-  group: AchievementGroup;
-  size?: "sm" | "md" | "lg";
-}) {
-  const { style, ringStyle } = getAchievementVisual(group);
-  const iconSizeClass = size === "lg" ? "size-8" : size === "md" ? "size-5" : "size-4";
-  const innerSizeClass = size === "lg" ? "size-18" : size === "md" ? "size-12" : "size-9";
-
-  return (
-    <div className="relative flex aspect-square items-center justify-center">
-      <div
-        className="absolute inset-0 rounded-full bg-[conic-gradient(var(--achievement-ring-color)_0deg_var(--achievement-ring-progress),color-mix(in_oklab,var(--border)_78%,transparent)_var(--achievement-ring-progress)_360deg)]"
-        style={ringStyle}
-      />
-      <div className="bg-card absolute inset-[10%] rounded-full" />
-      <div
+    <span
+      className={cn(
+        "relative inline-flex shrink-0 items-center justify-center",
+        size === "large" ? "size-28" : "size-16"
+      )}
+      aria-hidden="true"
+    >
+      <span
         className={cn(
-          "relative z-10 flex items-center justify-center rounded-full",
-          innerSizeClass,
-          style.bg
+          "ring-background absolute inset-0 rounded-[28%] border-2 ring-4",
+          tier
+            ? cn(TIER_TONES[tier], "border-current/15")
+            : "bg-muted text-muted-foreground border-border border-dashed"
+        )}
+      />
+      <span
+        className={cn(
+          "absolute inset-1.5 flex items-center justify-center rounded-[24%] border border-current/10",
+          tier ? TIER_TONES[tier] : "text-muted-foreground",
+          size === "large" ? "[&>svg]:size-11" : "[&>svg]:size-7"
         )}
       >
-        <AchievementIcon
-          achievementKey={group.key}
-          className={cn(iconSizeClass, style.text)}
-          strokeWidth={2.1}
-        />
-      </div>
-    </div>
+        <Icon className={size === "large" ? "size-11" : "size-7"} strokeWidth={1.6} />
+      </span>
+      {!tier && (
+        <LockKeyhole className="bg-card text-muted-foreground absolute -right-1 -bottom-1 size-5 rounded-full p-0.5" />
+      )}
+    </span>
   );
 }
 
-function AchievementFocusCard({
-  group,
-  isNew,
-  onSelect,
-}: {
-  group: AchievementGroup;
-  isNew: boolean;
-  onSelect: (group: AchievementGroup) => void;
-}) {
-  const { nextTier, style, percent } = getAchievementVisual(group);
-  const remaining = getRemainingProgress(group);
-
+function ProgressTrack({ value, label }: { value: number; label: string }) {
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(group)}
-      className="bg-card text-card-foreground ring-border/80 active:bg-muted/70 flex w-full items-center gap-3 rounded-xl p-3 text-left shadow-[0_18px_50px_rgb(0_0_0/0.08)] ring-1 transition-colors dark:shadow-[0_18px_50px_rgb(0_0_0/0.28)]"
+    <span
+      className="bg-muted block h-1.5 overflow-hidden rounded-full"
+      role="progressbar"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={value}
     >
-      <div className="size-16 shrink-0">
-        <AchievementMedallion group={group} size="md" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-semibold tracking-tight">{group.title}</p>
-          {isNew && (
-            <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.08em] uppercase">
-              New
-            </span>
+      <span className="bg-primary block h-full rounded-full" style={{ width: `${value}%` }} />
+    </span>
+  );
+}
+
+function TierStars({ track }: { track: AchievementTrack }) {
+  const earned = track.tiers.filter(isEarned).length;
+  return (
+    <span
+      className="inline-flex gap-1"
+      role="img"
+      aria-label={`Здобуто рівнів: ${earned} із ${track.tiers.length}`}
+    >
+      {track.tiers.map((achievement) => (
+        <Star
+          key={achievement.id}
+          aria-hidden="true"
+          className={cn(
+            "size-3.5",
+            isEarned(achievement) ? "text-primary fill-current" : "text-muted-foreground/40"
           )}
-        </div>
-        <div className="mt-1 flex items-center gap-2">
-          <span
-            className={cn(
-              "rounded-full px-2 py-0.5 text-[10px] font-semibold",
-              style.bg,
-              style.text
-            )}
-          >
-            {style.label}
-          </span>
-          <span className="text-muted-foreground text-xs">
-            {remaining > 0 ? `Ще ${remaining}` : "Відкрито"}
-          </span>
-        </div>
-        <ProgressTrack percent={percent} className="mt-3" />
-        <p className="text-muted-foreground mt-1 text-xs">
-          {nextTier.current} / {nextTier.target} · {percent}%
-        </p>
-      </div>
-    </button>
+        />
+      ))}
+    </span>
   );
 }
 
-function AchievementCollectionCard({
-  group,
-  isNew,
-  onSelect,
-}: {
-  group: AchievementGroup;
-  isNew: boolean;
-  onSelect: (group: AchievementGroup) => void;
-}) {
-  const { tiers, nextTier, percent } = getAchievementVisual(group);
-
+function PageHeader() {
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(group)}
-      className="bg-card text-card-foreground ring-border/80 active:bg-muted/70 flex min-h-36 flex-col gap-3 rounded-xl p-3 text-left ring-1 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="size-12">
-          <AchievementMedallion group={group} size="sm" />
-        </div>
-        {isNew && (
-          <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.08em] uppercase">
-            New
-          </span>
-        )}
+    <header className="flex items-start gap-3">
+      <Link
+        to="/dashboard"
+        aria-label="На головну"
+        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "-ml-2 shrink-0")}
+      >
+        <ArrowLeft />
+      </Link>
+      <div className="flex min-w-0 flex-col gap-2">
+        <h1 className="text-3xl font-medium tracking-tight">Досягнення</h1>
+        <p className="text-muted-foreground text-sm leading-6">Твої зусилля стають нагородами.</p>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="line-clamp-2 text-sm leading-5 font-semibold tracking-tight">{group.title}</p>
-        <div className="mt-2 flex gap-1">
-          {tiers.map((tier) => {
-            const tierStyle = TIER_STYLES[tier.tier];
-
-            return (
-              <span
-                key={tier.id}
-                className={cn(
-                  "h-1.5 flex-1 rounded-full",
-                  tier.unlocked ? tierStyle.bar : "bg-border"
-                )}
-              />
-            );
-          })}
-        </div>
-        <ProgressTrack percent={percent} className="mt-3" />
-        <p className="text-muted-foreground mt-1 text-xs">
-          {nextTier.current} / {nextTier.target}
-        </p>
-      </div>
-    </button>
+    </header>
   );
 }
 
-function AchievementDetailContent({ group }: { group: AchievementGroup }) {
-  const tiers = getAchievementTiers(group);
-  const currentTier = getDisplayTier(group);
-  const style = TIER_STYLES[currentTier];
-  const nextTier = getNextTier(group);
-  const nextTierPercent = Math.round(nextTier.progress * 100);
-  const remaining = getRemainingProgress(group);
-
+function NextReward({ track, onSelect }: { track: AchievementTrack; onSelect: () => void }) {
+  const next = getNextTier(track);
+  if (!next) return null;
+  const percent = getProgressPercent(next);
   return (
-    <div className="flex flex-col gap-5 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-      <div className="flex items-start gap-4 px-1 pt-1">
-        <div className="size-24 shrink-0">
-          <AchievementMedallion group={group} size="lg" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <span
-            className={cn(
-              "inline-flex rounded-full px-2 py-1 text-[10px] font-semibold tracking-[0.12em] uppercase",
-              style.bg,
-              style.text
-            )}
-          >
-            {style.label}
-          </span>
-          <h2 className="mt-3 text-2xl leading-tight font-bold tracking-tight">{group.title}</h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">{nextTier.description}</p>
-        </div>
-      </div>
-
-      <Card className="p-0">
-        <CardContent className="p-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium">Прогрес рівня</p>
-              <p className="text-muted-foreground mt-1 text-xs">
-                {nextTier.current} / {nextTier.target}
-              </p>
-            </div>
-            <span className="text-2xl font-bold tabular-nums">{nextTierPercent}%</span>
-          </div>
-          <ProgressTrack percent={nextTierPercent} className="mt-3 h-2" />
-          <p className="text-muted-foreground mt-3 text-sm">
-            {remaining > 0 ? `До наступного рівня: ${remaining}` : "Цей рівень уже відкрито."}
+    <Card className="gap-4 py-5">
+      <CardHeader className="gap-4 px-5">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-primary flex items-center gap-2 text-xs font-medium">
+            <Target className="size-3.5" />
+            Наступна нагорода
           </p>
-        </CardContent>
-      </Card>
+          <Badge variant="secondary">{TIER_LABELS[next.tier]}</Badge>
+        </div>
+        <div className="flex items-center gap-4">
+          <RewardEmblem icon={ICONS[track.key] ?? Award} tier={next.tier} />
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <CardTitle>{track.title}</CardTitle>
+            <CardDescription>{getGoalDescription(next)}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2 px-5">
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="font-medium">{getRemainingLabel(next)}</span>
+          <span className="text-muted-foreground text-xs tabular-nums">{percent}%</span>
+        </div>
+        <ProgressTrack value={percent} label={`Прогрес до нагороди «${track.title}»`} />
+        <p className="text-muted-foreground text-xs">
+          {next.current.toLocaleString("uk-UA", { maximumFractionDigits: 1 })} /{" "}
+          {formatMetric(track.key, next.target)}
+        </p>
+      </CardContent>
+      <CardFooter className="px-5">
+        <Button variant="outline" className="w-full justify-between" onClick={onSelect}>
+          Деталі цілі
+          <ArrowRight data-icon="inline-end" />
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
 
-      <div>
-        <h3 className="mb-3 px-1 text-sm font-semibold tracking-tight">Рівні</h3>
-        <div className="grid gap-2">
-          {tiers.map((tier) => {
-            const isNext = tier.id === nextTier.id;
-            const isUnlocked = tier.unlocked;
-            const isLocked = !isUnlocked;
-            const tierStyle = TIER_STYLES[tier.tier];
-            const tierPercent = Math.round(tier.progress * 100);
+function CollectionItem({ track, onSelect }: { track: AchievementTrack; onSelect: () => void }) {
+  const best = getBestTier(track);
+  const next = getNextTier(track);
+  const hasNew = getUnseenRewards(track).length > 0;
+  return (
+    <Button
+      variant="outline"
+      className="h-auto min-w-0 flex-col items-stretch gap-3 p-4 whitespace-normal"
+      onClick={onSelect}
+      aria-label={`${track.title}. ${best ? TIER_LABELS[best.tier] : "Ще не здобуто"}${hasNew ? ". Нова нагорода" : ""}. ${next ? `${next.current.toLocaleString("uk-UA")} із ${formatMetric(track.key, next.target)}` : "Усі рівні здобуто"}`}
+    >
+      <span className="flex min-h-5 items-center justify-between gap-2">
+        <TierStars track={track} />
+        {hasNew && <Badge variant="secondary">Нова</Badge>}
+      </span>
+      <span className="flex justify-center py-2">
+        <RewardEmblem icon={ICONS[track.key] ?? Award} tier={best?.tier} />
+      </span>
+      <span className="flex flex-1 flex-col gap-1 text-center">
+        <span className="text-sm font-semibold">{track.title}</span>
+        <span className="text-muted-foreground text-xs">
+          {best ? TIER_LABELS[best.tier] : "Ще попереду"}
+        </span>
+      </span>
+      {next ? (
+        <span className="flex flex-col gap-2 text-left">
+          <ProgressTrack value={getProgressPercent(next)} label={`Прогрес «${track.title}»`} />
+          <span className="text-muted-foreground text-xs leading-5 tabular-nums">
+            {next.current.toLocaleString("uk-UA", { maximumFractionDigits: 1 })} /{" "}
+            {formatMetric(track.key, next.target)}
+          </span>
+        </span>
+      ) : (
+        <span className="text-primary flex items-center justify-center gap-1.5 py-1 text-xs">
+          <Check />
+          Усі рівні здобуто
+        </span>
+      )}
+    </Button>
+  );
+}
 
+function RewardDetails({ track }: { track: AchievementTrack }) {
+  const best = getBestTier(track);
+  const next = getNextTier(track);
+  const unseen = getUnseenRewards(track);
+  const hasNew = unseen.length > 0;
+  const highlighted = hasNew ? unseen[unseen.length - 1] : (best ?? next);
+  return (
+    <>
+      <SheetHeader className="items-center gap-3 px-5 pt-8 text-center">
+        <RewardEmblem icon={ICONS[track.key] ?? Award} tier={best?.tier} size="large" />
+        {highlighted && (
+          <Badge variant={hasNew ? "default" : "secondary"}>
+            {hasNew ? "Нова нагорода · " : ""}
+            {TIER_LABELS[highlighted.tier]}
+          </Badge>
+        )}
+        <SheetTitle>{track.title}</SheetTitle>
+        <SheetDescription>
+          {hasNew
+            ? "Ще одна перемога у твоїй колекції. Твої зусилля дають результат."
+            : "Кожен рівень — новий крок. Здобуті нагороди залишаються з тобою."}
+        </SheetDescription>
+        <TierStars track={track} />
+      </SheetHeader>
+      <div className="flex flex-col gap-4 px-5">
+        <h2 className="text-sm font-semibold">Шлях нагороди</h2>
+        <ol className="flex flex-col">
+          {track.tiers.map((achievement, index) => {
+            const earned = isEarned(achievement);
+            const isNext = achievement.id === next?.id;
             return (
-              <div
-                key={tier.id}
-                className={cn(
-                  "flex items-start gap-3 rounded-xl border px-3 py-3",
-                  isNext ? "bg-muted/35" : isLocked ? "bg-muted/15 opacity-80" : "bg-transparent"
+              <li key={achievement.id} className="relative flex gap-3 pb-5 last:pb-0">
+                {index < track.tiers.length - 1 && (
+                  <span
+                    className="bg-border absolute top-10 bottom-0 left-5 w-px"
+                    aria-hidden="true"
+                  />
                 )}
-              >
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center">
-                  {isUnlocked ? (
-                    <span className={cn("size-2 rounded-full", tierStyle.bar)} />
+                <span
+                  className={cn(
+                    "relative flex size-10 shrink-0 items-center justify-center rounded-full border",
+                    earned
+                      ? TIER_TONES[achievement.tier]
+                      : isNext
+                        ? "bg-accent text-accent-foreground border-primary/30"
+                        : "bg-background text-muted-foreground"
+                  )}
+                  aria-hidden="true"
+                >
+                  {earned ? (
+                    <Check className="size-4" />
+                  ) : isNext ? (
+                    <Target className="size-4" />
                   ) : (
-                    <Lock className="text-muted-foreground size-3.5" strokeWidth={2} />
+                    <LockKeyhole className="size-4" />
                   )}
                 </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold">{tierStyle.label}</span>
-                    <span className="text-muted-foreground text-xs tabular-nums">
-                      {tier.current}/{tier.target}
+                <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-semibold">{TIER_LABELS[achievement.tier]}</span>
+                    <span
+                      className={cn(
+                        "text-xs",
+                        earned || isNext ? "text-primary" : "text-muted-foreground"
+                      )}
+                    >
+                      {earned ? "Здобуто" : isNext ? "Наступна ціль" : "Попереду"}
                     </span>
                   </div>
-                  <p className="text-muted-foreground mt-1 text-xs leading-5">{tier.description}</p>
-                  <ProgressTrack percent={tierPercent} className="mt-2" />
+                  <p className="text-muted-foreground text-sm leading-5">
+                    {getGoalDescription(achievement)}
+                  </p>
+                  {earned ? (
+                    achievement.unlockedAt && (
+                      <p className="text-muted-foreground text-xs">
+                        {new Date(achievement.unlockedAt).toLocaleDateString("uk-UA", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )
+                  ) : (
+                    <>
+                      <ProgressTrack
+                        value={getProgressPercent(achievement)}
+                        label={`Прогрес: ${TIER_LABELS[achievement.tier]}`}
+                      />
+                      <p className="text-muted-foreground text-xs tabular-nums">
+                        {achievement.current.toLocaleString("uk-UA", { maximumFractionDigits: 1 })}{" "}
+                        / {formatMetric(track.key, achievement.target)}
+                      </p>
+                    </>
+                  )}
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
+        {track.key === "1rm" && (
+          <p className="text-muted-foreground border-t pt-4 text-xs leading-5">
+            1ПМ — розрахункова вага одного повторення за твоїми записаними підходами. Виконувати
+            максимальну спробу для цієї нагороди не потрібно.
+          </p>
+        )}
+        {track.key === "streak" && (
+          <p className="text-muted-foreground border-t pt-4 text-xs leading-5">
+            Серія рахується за тижнями з тренуваннями поспіль. Перерва змінює поточний прогрес, але
+            зберігає здобуті нагороди.
+          </p>
+        )}
       </div>
-    </div>
+      <SheetFooter className="px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+        <SheetClose render={<Button className="w-full" />}>
+          {hasNew ? "Чудово!" : "Зрозуміло"}
+        </SheetClose>
+      </SheetFooter>
+    </>
   );
 }
 
 export default function AchievementsPage() {
-  const { data: achievements, isLoading } = useAchievements();
-  const [selectedAchievementSlug, setSelectedAchievementSlug] = useState<string | null>(null);
-  const [collectionFilter, setCollectionFilter] = useState<CollectionFilter>("progress");
-  const markAchievementsSeen = useMarkAchievementsSeen();
-
-  const currentNewSlugs = Array.from(
-    new Set(
-      (achievements ?? [])
-        .filter(
-          (achievement) => achievement.unlocked && achievement.unlockedAt && !achievement.seenAt
-        )
-        .map((achievement) => achievement.slug)
-    )
+  const { data: achievements = [], isLoading, isError, refetch } = useAchievements();
+  const markSeen = useMarkAchievementsSeen();
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [filter, setFilter] = useState<CollectionFilter>("all");
+  const tracks = buildAchievementTracks(achievements);
+  const selected = tracks.find((track) => track.key === selectedKey);
+  const closest = getClosestTrack(tracks);
+  const earned = achievements.filter(isEarned).length;
+  const percent = achievements.length ? Math.round((earned / achievements.length) * 100) : 0;
+  const unseenTracks = tracks.filter((track) => getUnseenRewards(track).length > 0);
+  const unseenCount = unseenTracks.reduce(
+    (count, track) => count + getUnseenRewards(track).length,
+    0
   );
+  const inProgress = tracks.filter((track) => getNextTier(track));
+  const earnedTracks = tracks.filter((track) => getBestTier(track));
+  const visibleTracks =
+    filter === "progress" ? inProgress : filter === "earned" ? earnedTracks : tracks;
+
+  function closeDetails() {
+    const ids = selected ? getUnseenRewards(selected).map((achievement) => achievement.id) : [];
+    setSelectedKey(null);
+    if (ids.length)
+      void markSeen(ids).catch(() => toast.error("Не вдалося позначити нагороду переглянутою"));
+  }
+
   if (isLoading) return <LoaderBar />;
-
-  const groups = groupAchievements(achievements ?? []);
-  const highlightedSlugSet = new Set(currentNewSlugs);
-  const completed = groups.filter(isCompleted);
-  const inProgress = groups.filter((group) => !isCompleted(group));
-  const sortedInProgress = [...inProgress].sort((left, right) => {
-    const progressDiff = getNextTier(right).progress - getNextTier(left).progress;
-
-    if (progressDiff !== 0) return progressDiff;
-
-    return getRemainingProgress(left) - getRemainingProgress(right);
-  });
-  const baseOrderedGroups = [...sortedInProgress, ...completed];
-  const orderedGroups = [
-    ...baseOrderedGroups.filter((group) => highlightedSlugSet.has(group.slug)),
-    ...baseOrderedGroups.filter((group) => !highlightedSlugSet.has(group.slug)),
-  ];
-  const highlightedGroups = orderedGroups.filter((group) => highlightedSlugSet.has(group.slug));
-  const selectedGroup =
-    selectedAchievementSlug === null
-      ? null
-      : (orderedGroups.find((group) => group.slug === selectedAchievementSlug) ?? null);
-  const unlockedTiers = (achievements ?? []).filter((achievement) => achievement.unlocked).length;
-  const totalTiers = achievements?.length ?? 0;
-  const completionPercent = totalTiers === 0 ? 0 : Math.round((unlockedTiers / totalTiers) * 100);
-  const closestGroups = sortedInProgress.slice(0, 3);
-  const collectionGroups =
-    collectionFilter === "progress"
-      ? orderedGroups.filter((group) => !isCompleted(group))
-      : collectionFilter === "completed"
-        ? orderedGroups.filter(isCompleted)
-        : orderedGroups;
-
-  const handleSelectGroup = (group: AchievementGroup) => {
-    setSelectedAchievementSlug(group.slug);
-    void markAchievementsSeen(getUnseenIds(group));
-  };
 
   return (
     <Sheet
-      open={selectedGroup !== null}
+      open={Boolean(selected)}
       onOpenChange={(open) => {
-        if (!open) {
-          setSelectedAchievementSlug(null);
-        }
+        if (!open) closeDetails();
       }}
     >
-      <div className="relative flex flex-1 flex-col gap-5 p-4">
-        <div className="flex items-start gap-3 px-1 pt-1">
-          <Link
-            to="/dashboard"
-            className="text-muted-foreground hover:text-foreground bg-background/80 ring-foreground/8 -ml-1 flex size-10 shrink-0 items-center justify-center rounded-full ring-1 backdrop-blur-sm transition-colors"
-            aria-label="Назад на dashboard"
-          >
-            <ChevronLeft className="size-5" />
-          </Link>
-
-          <div className="min-w-0 flex-1">
-            <p className="text-primary text-[10px] font-semibold tracking-[0.16em] uppercase">
-              Achievement shelf
+      <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
+        <PageHeader />
+        {isError ? (
+          <section className="flex flex-col items-center gap-4 py-12 text-center" role="alert">
+            <Award className="text-muted-foreground size-10" />
+            <div className="flex flex-col gap-2">
+              <h2 className="font-semibold">Нагороди не завантажилися</h2>
+              <p className="text-muted-foreground text-sm">
+                Спробуй ще раз — твій прогрес збережено.
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => void refetch()}>
+              Спробувати ще
+            </Button>
+          </section>
+        ) : tracks.length === 0 ? (
+          <section className="flex flex-col items-center gap-4 py-12 text-center">
+            <RewardEmblem icon={Trophy} size="large" />
+            <h2 className="text-lg font-semibold">Колекція ще готується</h2>
+            <p className="text-muted-foreground max-w-xs text-sm leading-6">
+              Коли нагороди стануть доступними, тут з’являться цілі та твій прогрес.
             </p>
-            <h1 className="mt-2 text-3xl leading-tight font-bold tracking-tight">Ачівки</h1>
-            <p className="text-muted-foreground mt-2 text-sm leading-6">
-              Відкривай рівні, тримай прогрес у фокусі й добивай найближчі цілі.
-            </p>
-          </div>
-        </div>
-
-        {orderedGroups.length > 0 && (
-          <Card className="overflow-hidden p-0">
-            <CardContent className="px-4 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="bg-primary/10 text-primary inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                    Progress
-                  </div>
-                  <h2 className="mt-2 text-lg font-semibold tracking-tight">
-                    Твоя полиця досягнень
+            <Link to="/workout/new" className={buttonVariants()}>
+              Почати тренування
+            </Link>
+          </section>
+        ) : (
+          <>
+            <section className="flex flex-col gap-4" aria-labelledby="collection-summary">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-2">
+                  <h2 id="collection-summary" className="text-muted-foreground text-sm">
+                    Нагород у колекції
                   </h2>
-                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                    {unlockedTiers} з {totalTiers} рівнів відкрито, {completed.length} сімейств
-                    завершено повністю.
+                  <p className="flex items-baseline gap-2 tabular-nums">
+                    <span className="text-4xl font-medium tracking-tight">{earned}</span>
+                    <span className="text-muted-foreground text-lg">/ {achievements.length}</span>
                   </p>
                 </div>
-
-                <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
-                  <Award className="size-5" />
-                </div>
+                <RewardEmblem icon={Trophy} tier={earned > 0 ? "gold" : undefined} />
               </div>
+              <ProgressTrack value={percent} label="Зібрано нагород" />
+              <p className="text-muted-foreground text-xs">
+                Бронза → Срібло → Золото. Кожен значок має свій шлях.
+              </p>
+            </section>
 
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <SummaryTile label="Відкрито" value={`${unlockedTiers}`} helper="рівнів" />
-                <SummaryTile label="Нові" value={`${highlightedGroups.length}`} helper="сімейств" />
-                <SummaryTile label="Готовність" value={`${completionPercent}%`} helper="колекції" />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {highlightedGroups.length > 0 && (
-          <AchievementSection title="Нові" description="Щойно відкриті або оновлені сімейства.">
-            <div className="flex flex-col gap-2">
-              {highlightedGroups.map((group) => (
-                <AchievementFocusCard
-                  key={group.slug}
-                  group={group}
-                  isNew
-                  onSelect={handleSelectGroup}
-                />
-              ))}
-            </div>
-          </AchievementSection>
-        )}
-
-        {closestGroups.length > 0 && (
-          <AchievementSection
-            title="Найближче до відкриття"
-            description="Цілі з найкращим прогресом прямо зараз."
-          >
-            <div className="flex flex-col gap-2">
-              {closestGroups.map((group) => (
-                <AchievementFocusCard
-                  key={group.slug}
-                  group={group}
-                  isNew={highlightedSlugSet.has(group.slug)}
-                  onSelect={handleSelectGroup}
-                />
-              ))}
-            </div>
-          </AchievementSection>
-        )}
-
-        {orderedGroups.length > 0 && (
-          <AchievementSection title="Колекція" description="Переглядай прогрес по сімействах.">
-            <div className="flex scrollbar-none gap-2 overflow-x-auto">
-              <CollectionFilterChip
-                active={collectionFilter === "progress"}
-                onClick={() => setCollectionFilter("progress")}
+            {unseenCount > 0 && (
+              <Button
+                variant="secondary"
+                className="h-auto justify-between gap-3 px-4 py-3"
+                onClick={() => setSelectedKey(unseenTracks[0].key)}
               >
-                У процесі
-              </CollectionFilterChip>
-              <CollectionFilterChip
-                active={collectionFilter === "completed"}
-                onClick={() => setCollectionFilter("completed")}
-              >
-                Завершені
-              </CollectionFilterChip>
-              <CollectionFilterChip
-                active={collectionFilter === "all"}
-                onClick={() => setCollectionFilter("all")}
-              >
-                Всі
-              </CollectionFilterChip>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {collectionGroups.map((group) => (
-                <AchievementCollectionCard
-                  key={group.slug}
-                  group={group}
-                  isNew={highlightedSlugSet.has(group.slug)}
-                  onSelect={handleSelectGroup}
-                />
-              ))}
-            </div>
-
-            {collectionGroups.length === 0 && (
-              <Card className="p-0">
-                <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-                  <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full">
-                    <Award className="size-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Тут поки порожньо</p>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      Зміни фільтр або заверши кілька тренувань.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                <span className="flex items-center gap-2">
+                  <Sparkles />
+                  <span>Нові нагороди: {unseenCount}</span>
+                </span>
+                <ChevronRight data-icon="inline-end" />
+              </Button>
             )}
-          </AchievementSection>
-        )}
 
-        {(!achievements || achievements.length === 0) && (
-          <Card className="p-0">
-            <CardContent className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">
-              <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full">
-                <Award className="size-5" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Починай тренуватися, щоб отримати ачівки</p>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  Завершуй тренування, тримай streak і нарощуй об&apos;єм, щоб відкривати нові
-                  рівні.
+            {closest ? (
+              <NextReward track={closest} onSelect={() => setSelectedKey(closest.key)} />
+            ) : (
+              <div className="bg-accent text-accent-foreground flex items-center gap-3 rounded-xl p-4">
+                <Trophy className="size-5 shrink-0" />
+                <p className="text-sm">
+                  Усю колекцію зібрано. Кожна нагорода — результат твоєї роботи.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            )}
+
+            <section className="flex flex-col gap-4" aria-labelledby="collection-title">
+              <h2 id="collection-title" className="text-base font-semibold">
+                Значки
+              </h2>
+              <div className="scrollbar-none overflow-x-auto">
+                <ToggleGroup
+                  value={[filter]}
+                  onValueChange={(values) => {
+                    const value = values[0];
+                    if (value === "all" || value === "progress" || value === "earned")
+                      setFilter(value);
+                  }}
+                  aria-label="Фільтр колекції"
+                  spacing={1}
+                >
+                  <ToggleGroupItem value="all">Усі · {tracks.length}</ToggleGroupItem>
+                  <ToggleGroupItem value="progress">
+                    У процесі · {inProgress.length}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="earned">Здобуті · {earnedTracks.length}</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              {filter !== "all" && (
+                <p className="text-muted-foreground text-xs leading-5">
+                  {filter === "earned"
+                    ? "Значки, у яких уже здобуто хоча б один рівень."
+                    : "Значки, у яких ще можна відкрити наступний рівень."}
+                </p>
+              )}
+              <p className="sr-only" role="status">
+                Показано значків: {visibleTracks.length}
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {visibleTracks.map((track) => (
+                  <CollectionItem
+                    key={track.key}
+                    track={track}
+                    onSelect={() => setSelectedKey(track.key)}
+                  />
+                ))}
+              </div>
+              {visibleTracks.length === 0 && (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <Star className="text-muted-foreground size-8" />
+                  <p className="text-sm font-medium">
+                    {filter === "earned" ? "Перші нагороди ще попереду" : "Усі цілі пройдено"}
+                  </p>
+                  <p className="text-muted-foreground max-w-xs text-sm leading-6">
+                    {filter === "earned"
+                      ? "Завершуй тренування — значки відкриватимуться автоматично."
+                      : "Переглянь значки, які вже є у твоїй колекції."}
+                  </p>
+                  <Button variant="outline" onClick={() => setFilter("all")}>
+                    Переглянути всі
+                  </Button>
+                </div>
+              )}
+            </section>
+          </>
         )}
       </div>
-
       <SheetContent
         side="bottom"
-        className="overflow-y-auto rounded-t-[2rem] px-0 pt-[calc(env(safe-area-inset-top)+1.25rem)]"
+        className="mx-auto max-h-[90dvh] max-w-lg overflow-y-auto rounded-t-3xl px-0 pt-0"
+        showCloseButton={false}
       >
-        {selectedGroup && <AchievementDetailContent group={selectedGroup} />}
+        {selected && <RewardDetails track={selected} />}
       </SheetContent>
     </Sheet>
-  );
-}
-
-function AchievementSection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-3">
-      <div>
-        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
-        <p className="text-muted-foreground mt-1 text-sm">{description}</p>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function CollectionFilterChip({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-        active
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground hover:bg-accent"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function SummaryTile({ label, value, helper }: { label: string; value: string; helper: string }) {
-  return (
-    <div className="bg-background/70 rounded-2xl border px-3 py-3 backdrop-blur-sm">
-      <p className="text-muted-foreground text-xs">{label}</p>
-      <div className="mt-2 flex items-end gap-1">
-        <span className="text-lg font-semibold tabular-nums">{value}</span>
-        <span className="text-muted-foreground pb-0.5 text-xs">{helper}</span>
-      </div>
-    </div>
   );
 }
