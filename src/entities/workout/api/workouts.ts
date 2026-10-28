@@ -1,15 +1,10 @@
-import type { WorkoutExercise } from "@/entities/workout";
+import type { ExerciseData, PreviousSetsMap, WorkoutExercise } from "@/entities/workout";
 import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/entities/workout";
 import { supabase } from "@/shared/api";
 
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 години
 
-type ExerciseSummary = {
-  id: string;
-  name: string;
-  muscle_group: string | null;
-  equipment: string | null;
-};
+type ExerciseSummary = ExerciseData;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -23,6 +18,7 @@ function readExerciseSummary(value: unknown): ExerciseSummary | null {
     name: typeof value.name === "string" ? value.name : "",
     muscle_group: typeof value.muscle_group === "string" ? value.muscle_group : null,
     equipment: typeof value.equipment === "string" ? value.equipment : null,
+    catalog_key: typeof value.catalog_key === "string" ? value.catalog_key : null,
   };
 }
 
@@ -43,7 +39,8 @@ export function isWorkoutEditable(startedAt: string | null): boolean {
 export async function updateWorkout(
   workoutId: string,
   workoutExercises: WorkoutExercise[],
-  notes?: string | null
+  notes?: string | null,
+  name?: string
 ) {
   // Перевіряємо 24-год вікно на клієнті (на сервері — RLS-політика)
   const { data: workout } = await supabase
@@ -66,6 +63,7 @@ export async function updateWorkout(
     startedAt: workout.started_at,
     finishedAt: workout.finished_at ?? workout.started_at,
     notes,
+    name,
     programId: workout.program_id,
     enforceEditWindow: true,
   });
@@ -91,17 +89,14 @@ export async function fetchWorkoutDetail(id: string) {
   const { data: workout } = await supabase
     .from("workouts")
     .select(
-      "id, name, started_at, finished_at, notes, sets(id, set_number, weight, reps, rpe, duration_s, exercise_id, exercises(id, name, muscle_group, equipment))"
+      "id, name, started_at, finished_at, notes, sets(id, set_number, weight, reps, rpe, duration_s, notes, exercise_id, exercises(id, name, muscle_group, equipment, catalog_key))"
     )
     .eq("id", id)
     .single();
 
   if (!workout) return null;
 
-  const exerciseMap = new Map<
-    string,
-    { id: string; name: string; muscle_group: string | null; equipment: string | null }
-  >();
+  const exerciseMap = new Map<string, ExerciseData>();
 
   const sets = (workout.sets ?? []).map((set) => {
     const exercise = readExerciseSummary(set.exercises);
@@ -120,16 +115,15 @@ export async function fetchWorkoutDetail(id: string) {
 }
 
 export async function fetchPreviousSets() {
-  const { data: lastSets } = await supabase
+  const { data: lastSets, error } = await supabase
     .from("sets")
-    .select("exercise_id, set_number, weight, reps, rpe, workouts!inner(started_at)")
+    .select("exercise_id, set_number, weight, reps, rpe, duration_s, workouts!inner(started_at)")
     .order("created_at", { ascending: false })
     .limit(500);
 
-  const previousSetsMap: Record<
-    string,
-    { setNumber: number; weight: number | null; reps: number | null; rpe: number | null }[]
-  > = {};
+  if (error) throw error;
+
+  const previousSetsMap: PreviousSetsMap = {};
 
   if (lastSets) {
     const exerciseLatestDate = new Map<string, string>();
@@ -154,6 +148,7 @@ export async function fetchPreviousSets() {
         weight: s.weight,
         reps: s.reps,
         rpe: s.rpe,
+        durationS: s.duration_s,
       });
     }
 

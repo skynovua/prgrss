@@ -1,5 +1,7 @@
 import type { Exercise, LocalSet, SetData, WorkoutExercise } from "@/entities/workout";
 
+import { isSetValid } from "./workout-logging";
+
 type ExerciseWithEquipment = Pick<Exercise, "equipment"> | null | undefined;
 type WeightedSet = Pick<LocalSet, "weight" | "reps"> | Pick<SetData, "weight" | "reps">;
 
@@ -24,7 +26,7 @@ export function getWorkoutVolume(workoutExercises: WorkoutExercise[]): number {
     (total, workoutExercise) =>
       total +
       workoutExercise.sets
-        .filter((set) => set.completed)
+        .filter((set) => set.completed && isSetValid(set, workoutExercise.trackingType))
         .reduce(
           (exerciseTotal, set) => exerciseTotal + getSetVolume(set, workoutExercise.exercise),
           0

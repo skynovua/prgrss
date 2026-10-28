@@ -1,149 +1,197 @@
-import { Pause, Play, RotateCcw, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Pause, Play, Timer, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
-import { Button } from "@/shared/ui";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui";
+import { cn } from "@/shared/lib";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Field,
+  FieldGroup,
+  FieldLabel,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/shared/ui";
+
+import type { WorkoutAction } from "../model/reducer";
+import { formatRestTime, getRestSeconds, type RestClock } from "../model/rest-clock";
 
 interface RestTimerProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  defaultSeconds?: number;
+  clock: RestClock | null;
+  dispatch: React.ActionDispatch<[action: WorkoutAction]>;
+  aboveSaveButton?: boolean;
 }
 
-const PRESETS = [60, 90, 120, 180];
-
-export function RestTimer({ open, onOpenChange, defaultSeconds = 90 }: RestTimerProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      {open ? (
-        <RestTimerContent
-          key={defaultSeconds}
-          defaultSeconds={defaultSeconds}
-          onClose={() => onOpenChange(false)}
-        />
-      ) : null}
-    </Dialog>
-  );
-}
-
-function RestTimerContent({
-  defaultSeconds,
-  onClose,
-}: {
-  defaultSeconds: number;
-  onClose: () => void;
-}) {
-  const [seconds, setSeconds] = useState(defaultSeconds);
-  const [isRunning, setIsRunning] = useState(true);
-  const [initialSeconds, setInitialSeconds] = useState(defaultSeconds);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const finishedRef = useRef(false);
+export function RestTimer({ open, clock, dispatch, aboveSaveButton = false }: RestTimerProps) {
+  const [now, setNow] = useState(() => Date.now());
+  const [selectedSeconds, setSelectedSeconds] = useState(90);
+  const notifiedDeadline = useRef<number | null>(null);
+  const seconds = clock ? Math.min(clock.remainingSeconds, getRestSeconds(clock, now)) : 0;
+  const running = clock?.endsAt != null;
 
   useEffect(() => {
-    if (isRunning && seconds > 0) {
-      intervalRef.current = setInterval(() => {
-        setSeconds((currentSeconds) => {
-          const nextSeconds = Math.max(0, currentSeconds - 1);
-
-          if (nextSeconds === 0) {
-            setIsRunning(false);
-          }
-
-          return nextSeconds;
-        });
-      }, 1000);
-    }
-
+    if (!clock?.endsAt) return;
+    const update = () => setNow(Date.now());
+    const interval = window.setInterval(update, 250);
+    window.addEventListener("focus", update);
+    document.addEventListener("visibilitychange", update);
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      window.clearInterval(interval);
+      window.removeEventListener("focus", update);
+      document.removeEventListener("visibilitychange", update);
     };
-  }, [isRunning, seconds]);
+  }, [clock?.endsAt]);
 
   useEffect(() => {
-    if (seconds !== 0 || finishedRef.current) return;
-
-    finishedRef.current = true;
-    if (navigator.vibrate) {
-      navigator.vibrate([200, 100, 200]);
+    if (!clock?.endsAt || seconds > 0 || notifiedDeadline.current === clock.endsAt) return;
+    notifiedDeadline.current = clock.endsAt;
+    if (Date.now() - clock.endsAt < 10000) {
+      navigator.vibrate?.([200, 100, 200]);
+      toast("Відпочинок завершено", { description: "Можна переходити до наступного підходу." });
     }
-  }, [seconds]);
+  }, [clock?.endsAt, seconds]);
 
-  const formatTime = useCallback((s: number) => {
-    const min = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${min}:${sec.toString().padStart(2, "0")}`;
-  }, []);
-
-  const progress = initialSeconds > 0 ? seconds / initialSeconds : 0;
-
-  const handlePreset = (preset: number) => {
-    setSeconds(preset);
-    setInitialSeconds(preset);
-    setIsRunning(true);
-  };
-
-  const handleReset = () => {
-    setSeconds(initialSeconds);
-    setIsRunning(true);
-  };
+  const onOpenChange = (nextOpen: boolean) => dispatch({ type: "SET_TIMER_OPEN", open: nextOpen });
 
   return (
-    <DialogContent className="max-w-xs">
-      <DialogHeader>
-        <DialogTitle className="text-center">Відпочинок</DialogTitle>
-      </DialogHeader>
-
-      <div className="flex flex-col items-center gap-6 py-4">
-        {/* Кругова прогрес-барка */}
-        <div className="relative flex h-40 w-40 items-center justify-center">
-          <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="4"
-              className="text-muted"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="4"
-              strokeDasharray={`${2 * Math.PI * 45}`}
-              strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress)}`}
-              strokeLinecap="round"
-              className="text-primary transition-all duration-1000"
-            />
-          </svg>
-          <span className="text-4xl font-bold tabular-nums">{formatTime(seconds)}</span>
-        </div>
-
-        {/* Пресети */}
-        <div className="flex gap-2">
-          {PRESETS.map((preset) => (
-            <Button key={preset} variant="outline" size="sm" onClick={() => handlePreset(preset)}>
-              {formatTime(preset)}
+    <>
+      {clock && (
+        <section
+          aria-label="Таймер відпочинку"
+          className={cn(
+            "fixed inset-x-0 z-40 px-4",
+            aboveSaveButton
+              ? "bottom-[calc(10.5rem+env(safe-area-inset-bottom))]"
+              : "bottom-[calc(4.75rem+env(safe-area-inset-bottom))]"
+          )}
+        >
+          <div className="border-border bg-background/95 mx-auto flex max-w-lg items-center gap-1 rounded-2xl border p-2 shadow-lg backdrop-blur">
+            <Button
+              variant="ghost"
+              className="h-11 min-w-0 flex-1 justify-start"
+              onClick={() => onOpenChange(true)}
+              aria-label={
+                seconds > 0
+                  ? `Відпочинок ${formatRestTime(seconds)}${running ? "" : ", пауза"}`
+                  : "Відпочинок завершено"
+              }
+            >
+              <Timer data-icon="inline-start" />
+              <span className="truncate">
+                {seconds > 0 ? (running ? "Відпочинок" : "Пауза") : "Відпочинок завершено"}
+              </span>
+              {seconds > 0 && (
+                <span className="ml-auto tabular-nums">{formatRestTime(seconds)}</span>
+              )}
             </Button>
-          ))}
-        </div>
-
-        {/* Контролі */}
-        <div className="flex gap-3">
-          <Button variant="outline" size="icon" onClick={handleReset}>
-            <RotateCcw className="h-4 w-4" />
+            {seconds > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11"
+                onClick={() =>
+                  dispatch({ type: "EXTEND_REST_TIMER", seconds: 15, now: Date.now() })
+                }
+                aria-label="Додати 15 секунд відпочинку"
+              >
+                +15 с
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-11"
+              onClick={() => dispatch({ type: "STOP_REST_TIMER" })}
+              aria-label={seconds > 0 ? "Пропустити відпочинок" : "Закрити таймер"}
+            >
+              <X />
+            </Button>
+          </div>
+        </section>
+      )}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Відпочинок</DialogTitle>
+            <DialogDescription>
+              Таймер продовжить працювати після закриття цього вікна.
+            </DialogDescription>
+          </DialogHeader>
+          {clock && (
+            <div className="flex flex-col items-center gap-4 py-2">
+              <span className="text-5xl font-medium tabular-nums">{formatRestTime(seconds)}</span>
+              <p className="text-muted-foreground text-sm">
+                {seconds === 0
+                  ? "Відпочинок завершено"
+                  : running
+                    ? "До наступного підходу"
+                    : "На паузі"}
+              </p>
+              {seconds > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => dispatch({ type: "TOGGLE_REST_TIMER", now: Date.now() })}
+                  >
+                    {running ? (
+                      <Pause data-icon="inline-start" />
+                    ) : (
+                      <Play data-icon="inline-start" />
+                    )}
+                    {running ? "Пауза" : "Продовжити"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      dispatch({ type: "EXTEND_REST_TIMER", seconds: 15, now: Date.now() })
+                    }
+                  >
+                    +15 с
+                  </Button>
+                </div>
+              )}
+              <Button variant="ghost" onClick={() => dispatch({ type: "STOP_REST_TIMER" })}>
+                {seconds > 0 ? "Пропустити відпочинок" : "Закрити таймер"}
+              </Button>
+            </div>
+          )}
+          <FieldGroup>
+            <Field>
+              <FieldLabel id="rest-duration-label">
+                {clock ? "Новий таймер" : "Тривалість відпочинку"}
+              </FieldLabel>
+              <ToggleGroup
+                variant="outline"
+                value={[String(selectedSeconds)]}
+                onValueChange={(values) => {
+                  if (values[0]) setSelectedSeconds(Number(values[0]));
+                }}
+                aria-labelledby="rest-duration-label"
+                className="w-full"
+              >
+                {[60, 90, 120, 180].map((preset) => (
+                  <ToggleGroupItem key={preset} value={String(preset)} className="h-11 flex-1">
+                    {formatRestTime(preset)}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </Field>
+          </FieldGroup>
+          <Button
+            onClick={() =>
+              dispatch({ type: "START_REST_TIMER", seconds: selectedSeconds, now: Date.now() })
+            }
+          >
+            <Play data-icon="inline-start" />
+            {clock ? "Почати новий відпочинок" : "Почати відпочинок"}
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setIsRunning(!isRunning)}>
-            {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
-          <Button variant="outline" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </DialogContent>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

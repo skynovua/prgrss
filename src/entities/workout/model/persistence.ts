@@ -3,13 +3,19 @@ import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/entities/wor
 import { createClient } from "@/shared/api";
 
 import { generateId } from "./reducer";
+import type { RestClock } from "./rest-clock";
+import { getExerciseTrackingType } from "./workout-logging";
 
 const ACTIVE_WORKOUT_STORAGE_KEY = "prgrss.activeWorkout";
 const ACTIVE_WORKOUT_DRAFT_EVENT = "prgrss-active-workout-draft";
 
 export interface ActiveWorkoutDraft {
+  workoutId: string;
   exercises: WorkoutExercise[];
   startedAt: string;
+  restClock: RestClock | null;
+  name: string;
+  notes: string;
   updatedAt: string;
 }
 
@@ -21,14 +27,26 @@ interface FinishResult {
 export function saveActiveWorkoutDraft({
   exercises,
   startedAt,
+  workoutId,
+  restClock,
+  name,
+  notes,
 }: {
+  workoutId: string;
   exercises: WorkoutExercise[];
   startedAt: string;
+  restClock: RestClock | null;
+  name: string;
+  notes: string;
 }) {
   try {
     const draft: ActiveWorkoutDraft = {
       exercises,
       startedAt,
+      workoutId,
+      restClock,
+      name,
+      notes,
       updatedAt: new Date().toISOString(),
     };
     localStorage.setItem(ACTIVE_WORKOUT_STORAGE_KEY, JSON.stringify(draft));
@@ -49,8 +67,18 @@ export function restoreActiveWorkoutDraft(): ActiveWorkoutDraft | null {
     }
 
     return {
-      exercises: draft.exercises,
+      workoutId: typeof draft.workoutId === "string" ? draft.workoutId : generateId(),
+      exercises: draft.exercises.map((exercise) => ({
+        ...exercise,
+        instanceId: exercise.instanceId ?? generateId(),
+        trackingType:
+          exercise.trackingType ?? getExerciseTrackingType(exercise.exercise, exercise.sets),
+        restSeconds: exercise.restSeconds ?? 90,
+      })),
       startedAt: draft.startedAt,
+      restClock: draft.restClock ?? null,
+      name: typeof draft.name === "string" ? draft.name : "",
+      notes: typeof draft.notes === "string" ? draft.notes : "",
       updatedAt: typeof draft.updatedAt === "string" ? draft.updatedAt : draft.startedAt,
     };
   } catch {
@@ -71,11 +99,12 @@ export { ACTIVE_WORKOUT_DRAFT_EVENT };
 
 export async function finishWorkout(
   workoutExercises: WorkoutExercise[],
-  startedAt: string
+  startedAt: string,
+  workoutId: string,
+  details?: { name?: string; notes?: string }
 ): Promise<FinishResult> {
   const supabase = createClient();
   const finishedAt = new Date().toISOString();
-  const workoutId = generateId();
 
   const {
     data: { session },
@@ -90,6 +119,8 @@ export async function finishWorkout(
     workoutExercises,
     startedAt,
     finishedAt,
+    name: details?.name,
+    notes: details?.notes?.trim() || null,
   });
 
   const { error } = await supabase.rpc("save_workout_with_sets", { payload }).single();
@@ -100,5 +131,5 @@ export async function finishWorkout(
 
   clearActiveWorkoutDraft();
 
-  return { success: true, redirectTo: "/dashboard" };
+  return { success: true, redirectTo: `/workout/${workoutId}` };
 }

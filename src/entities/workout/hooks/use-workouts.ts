@@ -67,11 +67,13 @@ export function useUpdateWorkout() {
       workoutId,
       exercises,
       notes,
+      name,
     }: {
       workoutId: string;
       exercises: WorkoutExercise[];
       notes?: string | null;
-    }) => updateWorkout(workoutId, exercises, notes),
+      name?: string;
+    }) => updateWorkout(workoutId, exercises, notes, name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["workout"] });

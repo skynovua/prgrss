@@ -6,9 +6,13 @@ import { Button, LoaderBar } from "@/shared/ui";
 export default function WorkoutNewPage() {
   const { data: exercises, isPending, isError, refetch } = useExercises();
 
-  const { data: previousSets } = usePreviousSets();
+  const {
+    data: previousSets,
+    isPending: historyPending,
+    isError: historyUnavailable,
+  } = usePreviousSets();
 
-  if (isPending) {
+  if (isPending || historyPending) {
     return <LoaderBar />;
   }
 
@@ -24,5 +28,11 @@ export default function WorkoutNewPage() {
     );
   }
 
-  return <WorkoutLogger exercises={exercises} previousSets={previousSets ?? {}} />;
+  return (
+    <WorkoutLogger
+      exercises={exercises}
+      previousSets={previousSets ?? {}}
+      historyUnavailable={historyUnavailable}
+    />
+  );
 }

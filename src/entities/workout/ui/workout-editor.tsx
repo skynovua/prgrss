@@ -1,233 +1,72 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check, Plus, Timer } from "lucide-react";
-import { memo, useCallback, useReducer, useState } from "react";
+import { ArrowLeft, Check, Timer } from "lucide-react";
+import { useReducer, useState } from "react";
 import { toast } from "sonner";
 
 import { useProfile } from "@/entities/profile";
-import { ExerciseCardActions } from "@/entities/workout";
-import { ExercisePicker } from "@/entities/workout";
-import { ExerciseSetIndicators } from "@/entities/workout";
-import { SetRow } from "@/entities/workout";
-import { RestTimer } from "@/entities/workout";
-import { WeightUnitLabel } from "@/entities/workout";
-import {
-  type Exercise,
-  type ExerciseData,
-  type PreviousSetData,
-  type PreviousSetsMap,
-  type SetData,
-  type WorkoutExercise,
-  type WorkoutWithSets,
-} from "@/entities/workout";
-import { type WorkoutAction, workoutReducer } from "@/entities/workout";
-import { useUpdateWorkout } from "@/entities/workout";
-import { getWorkoutVolume, usesDoubleWeight } from "@/entities/workout";
-import { cn } from "@/shared/lib";
 import { Button } from "@/shared/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { ConfirmDialog } from "@/shared/ui";
-import { Separator } from "@/shared/ui";
 
-// --- Memoized Exercise Card ---
-
-interface ExerciseCardProps {
-  cardId: string;
-  we: WorkoutExercise;
-  exerciseIndex: number;
-  previousSets?: PreviousSetData[];
-  autoRestTimer: boolean;
-  isCollapsed: boolean;
-  onToggleCollapse: (cardId: string) => void;
-  dispatch: React.ActionDispatch<[action: WorkoutAction]>;
-}
-
-const ExerciseCard = memo(function ExerciseCard({
-  cardId,
-  we,
-  exerciseIndex,
-  previousSets,
-  autoRestTimer,
-  isCollapsed,
-  onToggleCollapse,
-  dispatch,
-}: ExerciseCardProps) {
-  const setGridClassName =
-    "grid grid-cols-[2rem_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_2.75rem_2.75rem] items-center gap-2";
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  return (
-    <Card
-      size="sm"
-      className={cn(
-        "transition-[gap,padding] duration-300 ease-out",
-        isCollapsed && "cursor-pointer",
-        isCollapsed ? "gap-0 py-3" : "py-4"
-      )}
-    >
-      <CardHeader
-        className={cn("transition-[padding] duration-300 ease-out", isCollapsed ? "pb-0" : "pb-3")}
-      >
-        <div className="flex items-start justify-between gap-3">
-          {isCollapsed ? (
-            <button
-              type="button"
-              className="focus-visible:ring-ring flex min-w-0 flex-1 items-start gap-3 rounded-md text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-              onClick={() => onToggleCollapse(cardId)}
-              aria-expanded={!isCollapsed}
-              aria-label={`Розгорнути вправу ${we.exercise.name}`}
-            >
-              <div className="min-w-0 flex-1">
-                <CardTitle className="truncate text-base">{we.exercise.name}</CardTitle>
-                <div className="animate-in fade-in-0 slide-in-from-top-2 mt-2 duration-200">
-                  <ExerciseSetIndicators sets={we.sets} />
-                </div>
-              </div>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="focus-visible:ring-ring flex min-w-0 flex-1 items-start gap-3 rounded-md text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-              onClick={() => onToggleCollapse(cardId)}
-              aria-expanded={!isCollapsed}
-              aria-label={`Згорнути вправу ${we.exercise.name}`}
-            >
-              <div className="min-w-0 flex-1">
-                <CardTitle className="truncate text-base">{we.exercise.name}</CardTitle>
-              </div>
-            </button>
-          )}
-          <ExerciseCardActions
-            exerciseId={we.exercise.id}
-            exerciseName={we.exercise.name}
-            onDelete={() => setConfirmOpen(true)}
-          />
-        </div>
-      </CardHeader>
-      {!isCollapsed && (
-        <CardContent className="flex flex-col gap-1" onClick={(event) => event.stopPropagation()}>
-          <div
-            className={`${setGridClassName} text-muted-foreground px-2 pb-1 text-xs font-medium`}
-          >
-            <span className="text-center">Сет</span>
-            <WeightUnitLabel
-              isDoubleWeight={usesDoubleWeight(we.exercise)}
-              className="text-center text-xs font-medium"
-            />
-            <span className="text-center">Повт.</span>
-            <span className="text-center" title="Складність підходу від 6 до 10">
-              Зусилля
-            </span>
-            <span />
-            <span />
-          </div>
-
-          {we.sets.map((set) => {
-            const prev = previousSets?.find((ps) => ps.setNumber === set.setNumber);
-            return (
-              <SetRow
-                key={set.id}
-                set={set}
-                previousWeight={prev?.weight}
-                previousReps={prev?.reps}
-                onUpdate={(s) => dispatch({ type: "UPDATE_SET", exerciseIndex, set: s })}
-                onComplete={(s) =>
-                  dispatch({
-                    type: "COMPLETE_SET",
-                    exerciseIndex,
-                    set: s,
-                    autoTimer: autoRestTimer,
-                  })
-                }
-                onDelete={(id) => dispatch({ type: "DELETE_SET", exerciseIndex, setId: id })}
-              />
-            );
-          })}
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-1 gap-1"
-            onClick={() => dispatch({ type: "ADD_SET", exerciseIndex })}
-          >
-            <Plus className="h-3 w-3" />
-            Додати підхід
-          </Button>
-        </CardContent>
-      )}
-
-      <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title="Видалити вправу?"
-        description={`Вправа "${we.exercise.name}" буде видалена разом з усіма її сетами.`}
-        confirmText="Видалити"
-        isDestructive
-        onConfirm={() => {
-          dispatch({ type: "REMOVE_EXERCISE", index: exerciseIndex });
-          setConfirmOpen(false);
-        }}
-      />
-    </Card>
-  );
-});
-
-// --- Конвертація DB-даних у WorkoutExercise[] ---
+import { useUpdateWorkout } from "../hooks/use-workouts";
+import { getExerciseLogPreferences } from "../model/exercise-log-preferences";
+import { getWorkoutVolume } from "../model/metrics";
+import { createInitialState, workoutReducer } from "../model/reducer";
+import type {
+  Exercise,
+  ExerciseData,
+  PreviousSetsMap,
+  SetData,
+  WorkoutExercise,
+  WorkoutWithSets,
+} from "../model/types";
+import { getExerciseTrackingType, getWorkoutReview } from "../model/workout-logging";
+import { ExercisePicker } from "./exercise-picker";
+import { RestTimer } from "./rest-timer";
+import { WorkoutExerciseCard } from "./workout-exercise-card";
+import { WorkoutFinishDialog } from "./workout-finish-dialog";
 
 function workoutToEditorState(
   workout: WorkoutWithSets,
   exercises: ExerciseData[]
 ): WorkoutExercise[] {
-  const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
+  const exerciseMap = new Map(exercises.map((exercise) => [exercise.id, exercise]));
   const grouped = new Map<string, SetData[]>();
-
-  for (const set of workout.sets) {
-    const existing = grouped.get(set.exercise_id) ?? [];
-    existing.push(set);
-    grouped.set(set.exercise_id, existing);
-  }
-
-  return Array.from(grouped.entries()).map(([exerciseId, sets]) => {
-    const exercise = exerciseMap.get(exerciseId);
-    const sortedSets = [...sets].sort((a, b) => a.set_number - b.set_number);
-
-    return {
-      exercise: {
-        id: exerciseId,
-        name: exercise?.name ?? "Невідома вправа",
-        muscle_group: exercise?.muscle_group ?? null,
-        equipment: exercise?.equipment ?? null,
-      },
-      sets: sortedSets.map((s) => ({
-        id: s.id,
-        setNumber: s.set_number,
-        weight: s.weight,
-        reps: s.reps,
-        rpe: s.rpe,
-        durationS: s.duration_s,
+  for (const set of workout.sets)
+    grouped.set(set.exercise_id, [...(grouped.get(set.exercise_id) ?? []), set]);
+  return Array.from(grouped, ([exerciseId, sets]) => {
+    const exercise = exerciseMap.get(exerciseId) ?? {
+      id: exerciseId,
+      name: "Невідома вправа",
+      muscle_group: null,
+      equipment: null,
+    };
+    const localSets = [...sets]
+      .sort((a, b) => a.set_number - b.set_number)
+      .map((set) => ({
+        id: set.id,
+        setNumber: set.set_number,
+        weight: set.weight,
+        reps: set.reps,
+        rpe: set.rpe,
+        durationS: set.duration_s,
+        notes: set.notes,
         completed: true,
-      })),
+      }));
+    return {
+      instanceId: crypto.randomUUID(),
+      exercise,
+      sets: localSets,
+      // В історії показуємо фактично записані метрики, незалежно від типових полів каталогу.
+      trackingType: getExerciseTrackingType({ ...exercise, catalog_key: null }, localSets),
+      restSeconds: getExerciseLogPreferences(exerciseId).restSeconds ?? 90,
     };
   });
 }
-
-// --- Main Component ---
 
 interface WorkoutEditorProps {
   workout: WorkoutWithSets;
   exercises: ExerciseData[];
   allExercises: Exercise[];
   previousSets?: PreviousSetsMap;
-}
-
-function getInitialCollapsedCards(workoutExercises: WorkoutExercise[]) {
-  return Object.fromEntries(
-    workoutExercises
-      .map((exercise, index) => [
-        `${exercise.exercise.id}-${index}`,
-        exercise.sets.length > 0 && exercise.sets.every((set) => set.completed),
-      ])
-      .filter(([, shouldCollapse]) => shouldCollapse)
-  ) as Record<string, boolean>;
 }
 
 export function WorkoutEditor({
@@ -239,143 +78,142 @@ export function WorkoutEditor({
   const navigate = useNavigate();
   const updateMutation = useUpdateWorkout();
   const { data: profile } = useProfile();
-  const autoRestTimer = profile?.autoRestTimer ?? true;
-
-  const [state, dispatch] = useReducer(workoutReducer, {
+  const [state, dispatch] = useReducer(workoutReducer, undefined, () => ({
+    ...createInitialState(),
+    workoutId: workout.id,
     exercises: workoutToEditorState(workout, exercises),
     startedAt: workout.started_at ?? new Date().toISOString(),
-    timerOpen: false,
-    saving: false,
-  });
-  const { exercises: workoutExercises, timerOpen } = state;
+    name: workout.name ?? "",
+    notes: workout.notes ?? "",
+  }));
+  const workoutExercises = state.exercises;
   const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>(() =>
-    getInitialCollapsedCards(workoutToEditorState(workout, exercises))
+    Object.fromEntries(workoutExercises.map((we) => [we.instanceId, true]))
   );
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const review = getWorkoutReview(workoutExercises);
 
-  const addExercise = useCallback(
-    (exercise: Exercise) => {
-      const previousExerciseIndex = workoutExercises.length - 1;
-      const previousExercise = workoutExercises[previousExerciseIndex];
-
-      if (previousExercise && previousExercise.sets.length > 0) {
-        const allSetsCompleted = previousExercise.sets.every((set) => set.completed);
-        if (allSetsCompleted) {
-          const previousCardId = `${previousExercise.exercise.id}-${previousExerciseIndex}`;
-          setCollapsedCards((current) => ({
-            ...current,
-            [previousCardId]: true,
-          }));
-        }
-      }
-
-      dispatch({
-        type: "ADD_EXERCISE",
-        exercise,
-        previousSets: previousSets?.[exercise.id],
-      });
-    },
-    [previousSets, workoutExercises]
-  );
-
-  const toggleCollapse = (cardId: string) => {
-    setCollapsedCards((current) => ({
-      ...current,
-      [cardId]: !(current[cardId] ?? false),
-    }));
-  };
-
-  const totalSets = workoutExercises.reduce(
-    (acc, we) => acc + we.sets.filter((s) => s.completed).length,
-    0
-  );
-
-  const totalVolume = getWorkoutVolume(workoutExercises);
-
-  const handleSave = async () => {
+  const handleSave = async (details: { name: string; notes: string }) => {
+    if (state.saving || review.completedSets === 0 || review.invalidSets.length > 0) return;
     dispatch({ type: "SET_SAVING", saving: true });
-
     try {
       await updateMutation.mutateAsync({
         workoutId: workout.id,
         exercises: workoutExercises,
-        notes: workout.notes,
+        ...details,
       });
-
       toast.success("Тренування оновлено");
       navigate({ to: "/workout/$id", params: { id: workout.id } });
     } catch {
-      // toast обробляється в мутації
+      // Помилка показується в мутації; введені значення залишаються у формі.
     } finally {
       dispatch({ type: "SET_SAVING", saving: false });
     }
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pb-[calc(10rem+env(safe-area-inset-bottom))]">
-      {/* Хедер */}
-      <div className="flex items-center gap-3">
-        <Link to="/workout/$id" params={{ id: workout.id }}>
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold">Редагування</h1>
-          <p className="text-muted-foreground text-sm">
-            {totalSets} підходів · {Math.round(totalVolume)} кг об&apos;єм
+    <div className="flex flex-1 flex-col gap-5 p-4 pb-[calc(17rem+env(safe-area-inset-bottom))]">
+      <header className="flex items-center gap-2 border-b pb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          render={<Link to="/workout/$id" params={{ id: workout.id }} />}
+          nativeButton={false}
+          aria-label="Повернутися до тренування"
+        >
+          <ArrowLeft />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl font-medium">Редагування</h1>
+          <p className="text-muted-foreground mt-1 text-xs">
+            Підходи: {review.completedSets} ·{" "}
+            {new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 1 }).format(
+              getWorkoutVolume(workoutExercises)
+            )}{" "}
+            кг
           </p>
         </div>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}
+          aria-label="Відкрити таймер відпочинку"
         >
-          <Timer className="h-5 w-5" />
+          <Timer />
         </Button>
-      </div>
-
-      <Separator />
-
-      {/* Вправи */}
+      </header>
       {workoutExercises.map((we, exerciseIndex) => (
-        <ExerciseCard
-          key={`${we.exercise.id}-${exerciseIndex}`}
-          cardId={`${we.exercise.id}-${exerciseIndex}`}
+        <WorkoutExerciseCard
+          key={we.instanceId}
           we={we}
           exerciseIndex={exerciseIndex}
           previousSets={previousSets?.[we.exercise.id]}
-          autoRestTimer={autoRestTimer}
-          isCollapsed={collapsedCards[`${we.exercise.id}-${exerciseIndex}`] ?? false}
-          onToggleCollapse={toggleCollapse}
+          autoRestTimer={profile?.autoRestTimer ?? true}
+          isCollapsed={collapsedCards[we.instanceId] ?? false}
+          onToggleCollapse={(id) =>
+            setCollapsedCards((current) => ({ ...current, [id]: !current[id] }))
+          }
           dispatch={dispatch}
         />
       ))}
-
-      {/* Додати вправу */}
-      <ExercisePicker exercises={allExercises} onSelect={addExercise} />
-
-      {/* Таймер відпочинку */}
-      <RestTimer
-        open={timerOpen}
-        onOpenChange={(open) => dispatch({ type: "SET_TIMER_OPEN", open })}
+      <ExercisePicker
+        exercises={allExercises}
+        onSelect={(exercise) =>
+          dispatch({
+            type: "ADD_EXERCISE",
+            exercise,
+            previousSets: previousSets?.[exercise.id],
+            preferences: getExerciseLogPreferences(exercise.id),
+          })
+        }
       />
-
-      {/* Зберегти */}
-      {workoutExercises.length > 0 && (
-        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4">
-          <div className="border-border/80 bg-background/95 supports-backdrop-filter:bg-background/80 mx-auto max-w-lg rounded-2xl border p-3 shadow-lg backdrop-blur">
-            <Button
-              className="w-full gap-2"
-              size="lg"
-              onClick={handleSave}
-              disabled={state.saving || totalSets === 0}
-            >
-              <Check className="h-5 w-5" />
-              {state.saving ? "Зберігаю..." : "Зберегти зміни"}
-            </Button>
-          </div>
+      <RestTimer
+        open={state.timerOpen}
+        clock={state.restClock}
+        dispatch={dispatch}
+        aboveSaveButton
+      />
+      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4">
+        <div className="border-border bg-background/95 mx-auto max-w-lg rounded-2xl border p-3 shadow-lg backdrop-blur">
+          <Button
+            className="w-full"
+            size="lg"
+            disabled={state.saving}
+            onClick={() => setReviewOpen(true)}
+          >
+            <Check data-icon="inline-start" />
+            Перевірити й зберегти
+          </Button>
         </div>
-      )}
+      </div>
+      <WorkoutFinishDialog
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        exercises={workoutExercises}
+        saving={state.saving}
+        onSave={(details) => void handleSave(details)}
+        initialName={workout.name ?? ""}
+        initialNotes={workout.notes}
+        editing
+        onReturn={() => {
+          setReviewOpen(false);
+          setCollapsedCards((current) => ({
+            ...current,
+            ...Object.fromEntries(
+              review.invalidSets.map((issue) => [
+                workoutExercises[issue.exerciseIndex].instanceId,
+                false,
+              ])
+            ),
+          }));
+          if (review.invalidSets[0])
+            window.requestAnimationFrame(() =>
+              document
+                .getElementById(`workout-set-${review.invalidSets[0].setId}`)
+                ?.scrollIntoView({ block: "center", behavior: "smooth" })
+            );
+        }}
+      />
     </div>
   );
 }

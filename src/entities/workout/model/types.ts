@@ -1,4 +1,4 @@
-import { Database } from "@/shared/db";
+import type { Database } from "@/shared/db";
 export { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from "@/shared/config";
 export type { MuscleGroup } from "@/shared/config";
 
@@ -12,9 +12,10 @@ export type BodyMeasurement = Database["public"]["Tables"]["body_measurements"][
 // Складені типи для компонентів
 export type SetData = Pick<
   Set,
-  "id" | "set_number" | "weight" | "reps" | "rpe" | "duration_s" | "exercise_id"
+  "id" | "set_number" | "weight" | "reps" | "rpe" | "duration_s" | "exercise_id" | "notes"
 >;
-export type ExerciseData = Pick<Exercise, "id" | "name" | "muscle_group" | "equipment">;
+export type ExerciseData = Pick<Exercise, "id" | "name" | "muscle_group" | "equipment"> &
+  Partial<Pick<Exercise, "catalog_key">>;
 export type WorkoutWithSets = Pick<
   Workout,
   "id" | "name" | "started_at" | "finished_at" | "notes"
@@ -23,9 +24,14 @@ export type WorkoutWithSets = Pick<
 };
 
 export interface WorkoutExercise {
+  instanceId: string;
   exercise: ExerciseData;
   sets: LocalSet[];
+  trackingType: ExerciseTrackingType;
+  restSeconds: number;
 }
+
+export type ExerciseTrackingType = "weight-reps" | "bodyweight" | "duration";
 
 export interface LocalSet {
   id: string;
@@ -35,6 +41,8 @@ export interface LocalSet {
   rpe: number | null;
   durationS: number | null;
   completed: boolean;
+  notes?: string | null;
+  inputValues?: Partial<Record<"weight" | "reps" | "durationS", string>>;
 }
 
 export interface PreviousSetData {
@@ -42,6 +50,7 @@ export interface PreviousSetData {
   weight: number | null;
   reps: number | null;
   rpe: number | null;
+  durationS: number | null;
 }
 
 export type PreviousSetsMap = Record<string, PreviousSetData[]>;

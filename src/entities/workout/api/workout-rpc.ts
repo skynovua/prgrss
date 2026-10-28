@@ -1,11 +1,14 @@
-import type { WorkoutExercise } from "@/entities/workout";
 import type { Json } from "@/shared/db";
+
+import type { WorkoutExercise } from "../model/types";
+import { getWorkoutReview } from "../model/workout-logging";
 
 interface SaveWorkoutPayloadOptions {
   workoutId?: string;
   workoutExercises: WorkoutExercise[];
   startedAt: string;
   finishedAt: string;
+  name?: string;
   notes?: string | null;
   programId?: string | null;
   enforceEditWindow?: boolean;
@@ -13,23 +16,28 @@ interface SaveWorkoutPayloadOptions {
 
 export function buildWorkoutName(workoutExercises: WorkoutExercise[]) {
   return workoutExercises
+    .filter((we) => we.sets.some((set) => set.completed))
     .map((we) => we.exercise.name)
     .slice(0, 3)
     .join(", ");
 }
 
 export function buildWorkoutSetsPayload(workoutExercises: WorkoutExercise[]) {
+  const review = getWorkoutReview(workoutExercises);
+  if (review.invalidSets.length > 0 || review.completedSets === 0) {
+    throw new Error("Дані тренування не пройшли перевірку: перевір виконані підходи.");
+  }
   return workoutExercises.flatMap((we) =>
     we.sets
       .filter((set) => set.completed)
-      .map((set) => ({
+      .map((set, index) => ({
         exercise_id: we.exercise.id,
-        set_number: set.setNumber,
-        reps: set.reps,
-        weight: set.weight,
+        set_number: index + 1,
+        reps: we.trackingType === "duration" ? null : set.reps,
+        weight: we.trackingType === "duration" ? null : set.weight,
         rpe: set.rpe,
-        duration_s: set.durationS,
-        notes: null,
+        duration_s: we.trackingType === "duration" ? set.durationS : null,
+        notes: set.notes?.trim() || null,
       }))
   );
 }
@@ -39,6 +47,7 @@ export function buildSaveWorkoutPayload({
   workoutExercises,
   startedAt,
   finishedAt,
+  name,
   notes = null,
   programId = null,
   enforceEditWindow = false,
@@ -47,7 +56,7 @@ export function buildSaveWorkoutPayload({
     workout_id: workoutId ?? null,
     started_at: startedAt,
     finished_at: finishedAt,
-    name: buildWorkoutName(workoutExercises),
+    name: name?.trim() || buildWorkoutName(workoutExercises),
     notes,
     program_id: programId,
     enforce_edit_window: enforceEditWindow,

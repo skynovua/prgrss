@@ -43,7 +43,11 @@ function getActiveSetText(draft: ActiveWorkoutDraft) {
 
   return {
     title: activeExercise.exercise.name,
-    subtitle: nextSet?.reps ? `Далі: ${nextSet.reps} повт.` : "Повернутися до тренування",
+    subtitle: nextSet?.durationS
+      ? `Далі: ${nextSet.durationS} с`
+      : nextSet?.reps
+        ? `Далі: ${nextSet.reps} повт.`
+        : "Повернутися до тренування",
   };
 }
 

@@ -5,6 +5,7 @@ import { Button } from "@/shared/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -14,12 +15,14 @@ interface ExerciseCardActionsProps {
   exerciseId: string;
   exerciseName: string;
   onDelete?: () => void;
+  onSettings?: () => void;
 }
 
 export function ExerciseCardActions({
   exerciseId,
   exerciseName,
   onDelete,
+  onSettings,
 }: ExerciseCardActionsProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -55,16 +58,21 @@ export function ExerciseCardActions({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={handleOpenStats}>Статистика</DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={handleOpenStats}>Статистика</DropdownMenuItem>
+          {onSettings && (
+            <DropdownMenuItem onClick={onSettings}>Налаштування вправи</DropdownMenuItem>
+          )}
 
-        {onDelete && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-              Видалити
-            </DropdownMenuItem>
-          </>
-        )}
+          {onDelete && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onClick={handleDelete}>
+                Видалити
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

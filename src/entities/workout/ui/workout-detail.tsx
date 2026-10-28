@@ -7,11 +7,12 @@ import { type ExerciseData, type SetData, type WorkoutWithSets } from "@/entitie
 import { useDeleteWorkout } from "@/entities/workout";
 import { isWorkoutEditable } from "@/entities/workout";
 import { getSetVolume, usesDoubleWeight } from "@/entities/workout";
-import { WeightUnitLabel, WeightValue } from "@/entities/workout";
 import { calc1RM } from "@/shared/lib";
 import { Button } from "@/shared/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
+
+import { formatSetSummary, getExerciseTrackingType } from "../model/workout-logging";
 
 interface WorkoutDetailProps {
   workout: WorkoutWithSets;
@@ -23,8 +24,7 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
   const deleteWorkoutMutation = useDeleteWorkout();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const canEdit = isWorkoutEditable(workout.started_at);
-  const setGridClassName =
-    "grid grid-cols-[2rem_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.1fr)] items-center gap-2";
+  const setGridClassName = "grid grid-cols-[1.5rem_minmax(0,1fr)_2.5rem_3.5rem] items-center gap-2";
 
   // Групуємо сети по вправах
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
@@ -132,6 +132,10 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
       {Array.from(grouped.entries()).map(([exerciseId, sets]) => {
         const exercise = exerciseMap.get(exerciseId);
         const sortedSets = [...sets].sort((a, b) => a.set_number - b.set_number);
+        const trackingType = getExerciseTrackingType(
+          { equipment: exercise?.equipment ?? null, catalog_key: null },
+          sortedSets.map((set) => ({ durationS: set.duration_s }))
+        );
         const bestSet = sortedSets.reduce(
           (best, s) => {
             const rm = s.weight && s.reps ? calc1RM(s.weight, s.reps) : 0;
@@ -144,7 +148,7 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
           <Card key={exerciseId} size="sm" className="py-4">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
-                <CardTitle className="truncate text-base">
+                <CardTitle className="line-clamp-2 text-base leading-snug">
                   {exercise?.name ?? "Невідома вправа"}
                 </CardTitle>
                 <ExerciseCardActions
@@ -159,48 +163,55 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
                 className={`${setGridClassName} text-muted-foreground px-2 pb-1 text-xs font-medium`}
               >
                 <span className="text-center">Сет</span>
+                <span>
+                  {trackingType === "duration"
+                    ? "Тривалість"
+                    : usesDoubleWeight(exercise)
+                      ? "кг / гантель × повт."
+                      : "Результат"}
+                </span>
+                <span className="text-center" title="Зусилля RPE від 6 до 10">
+                  RPE
+                </span>
                 <span className="text-center">
-                  <WeightUnitLabel
-                    isDoubleWeight={usesDoubleWeight(exercise)}
-                    className="text-center text-xs font-medium"
-                  />
+                  {trackingType === "weight-reps" ? "Оц. 1ПМ" : ""}
                 </span>
-                <span className="text-center">Повт.</span>
-                <span className="text-center" title="Складність підходу від 1 до 10">
-                  Зусилля
-                </span>
-                <span className="text-center">Оц. 1RM</span>
               </div>
 
               {sortedSets.map((set) => {
                 const estimated1RM =
-                  set.weight && set.reps ? Math.round(calc1RM(set.weight, set.reps)) : null;
+                  trackingType === "weight-reps" && set.weight && set.reps
+                    ? Math.round(calc1RM(set.weight, set.reps))
+                    : null;
                 const isBest = bestSet.set?.id === set.id && sortedSets.length > 1;
 
                 return (
                   <div
                     key={set.id}
-                    className={`${setGridClassName} rounded-lg px-2 py-1.5 ${
-                      isBest ? "bg-accent/50" : ""
-                    }`}
+                    className={`rounded-lg px-2 py-1.5 ${isBest ? "bg-accent/50" : ""}`}
                   >
-                    <span className="text-muted-foreground text-center text-sm">
-                      {set.set_number}
-                    </span>
-                    <span className="text-center text-sm font-medium">
-                      <WeightValue
-                        weight={set.weight}
-                        isDoubleWeight={usesDoubleWeight(exercise)}
-                        className="text-sm font-medium"
-                      />
-                    </span>
-                    <span className="text-center text-sm">{set.reps ?? "—"}</span>
-                    <span className="text-muted-foreground text-center text-sm">
-                      {set.rpe ?? "—"}
-                    </span>
-                    <span className="text-muted-foreground text-center text-sm">
-                      {estimated1RM ?? "—"}
-                    </span>
+                    <div className={setGridClassName}>
+                      <span className="text-muted-foreground text-center text-sm">
+                        {set.set_number}
+                      </span>
+                      <span className="text-sm font-medium tabular-nums">
+                        {formatSetSummary(
+                          { weight: set.weight, reps: set.reps, durationS: set.duration_s },
+                          trackingType
+                        ) ?? "—"}
+                      </span>
+                      <span className="text-muted-foreground text-center text-sm">
+                        {set.rpe ?? "—"}
+                      </span>
+                      <span className="text-muted-foreground text-center text-sm">
+                        {trackingType === "weight-reps" ? (estimated1RM ?? "—") : ""}
+                      </span>
+                    </div>
+                    {set.notes && (
+                      <p className="text-muted-foreground pt-1 pl-8 text-xs leading-relaxed whitespace-pre-wrap">
+                        {set.notes}
+                      </p>
+                    )}
                   </div>
                 );
               })}
