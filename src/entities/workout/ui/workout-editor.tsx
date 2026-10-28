@@ -67,6 +67,7 @@ interface WorkoutEditorProps {
   exercises: ExerciseData[];
   allExercises: Exercise[];
   previousSets?: PreviousSetsMap;
+  returnSearch?: { from?: string };
 }
 
 export function WorkoutEditor({
@@ -74,6 +75,7 @@ export function WorkoutEditor({
   exercises,
   allExercises,
   previousSets,
+  returnSearch,
 }: WorkoutEditorProps) {
   const navigate = useNavigate();
   const updateMutation = useUpdateWorkout();
@@ -103,7 +105,7 @@ export function WorkoutEditor({
         ...details,
       });
       toast.success("Тренування оновлено");
-      navigate({ to: "/workout/$id", params: { id: workout.id } });
+      navigate({ to: "/workout/$id", params: { id: workout.id }, search: returnSearch });
     } catch {
       // Помилка показується в мутації; введені значення залишаються у формі.
     } finally {
@@ -117,7 +119,7 @@ export function WorkoutEditor({
         <Button
           variant="ghost"
           size="icon"
-          render={<Link to="/workout/$id" params={{ id: workout.id }} />}
+          render={<Link to="/workout/$id" params={{ id: workout.id }} search={returnSearch} />}
           nativeButton={false}
           aria-label="Повернутися до тренування"
         >

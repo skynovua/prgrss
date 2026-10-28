@@ -94,6 +94,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       toast.success("Тренування збережено");
 
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      await queryClient.invalidateQueries({ queryKey: ["calendar"] });
       await queryClient.invalidateQueries({ queryKey: ["achievements"] });
       await queryClient.invalidateQueries({ queryKey: ["previousSets"] });
       await queryClient.invalidateQueries({ queryKey: ["progress"] });

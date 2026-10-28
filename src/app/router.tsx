@@ -10,6 +10,7 @@ import { AppLayout } from "@/app/ui/app-layout";
 import AchievementsPage from "@/pages/achievements";
 import AuthCallbackPage from "@/pages/auth-callback";
 import CalendarPage from "@/pages/calendar";
+import { validateCalendarSearch } from "@/pages/calendar";
 import DashboardPage from "@/pages/dashboard";
 import ExercisesPage from "@/pages/exercises";
 import InstallPage from "@/pages/install";
@@ -92,6 +93,7 @@ const dashboardRoute = createRoute({
 const calendarRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/calendar",
+  validateSearch: validateCalendarSearch,
   component: CalendarPage,
 });
 
@@ -110,14 +112,25 @@ const workoutNewRoute = createRoute({
 const workoutDetailRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/workout/$id",
+  validateSearch: validateWorkoutReturnSearch,
   component: WorkoutDetailPage,
 });
 
 const workoutEditRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/workout/$id/edit",
+  validateSearch: validateWorkoutReturnSearch,
   component: WorkoutEditPage,
 });
+
+function validateWorkoutReturnSearch(search: Record<string, unknown>): { from?: string } {
+  return {
+    from:
+      typeof search.from === "string" && /^\/calendar(?:\?|$)/.test(search.from)
+        ? search.from
+        : undefined,
+  };
+}
 
 const progressRoute = createRoute({
   getParentRoute: () => appRoute,

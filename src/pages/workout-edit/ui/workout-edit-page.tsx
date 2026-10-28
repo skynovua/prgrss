@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 
 import { useExercises } from "@/entities/exercise";
 import { WorkoutEditor } from "@/entities/workout";
@@ -9,6 +9,7 @@ import { Button, LoaderBar } from "@/shared/ui";
 export default function WorkoutEditPage() {
   const { id } = useParams({ strict: false });
   const navigate = useNavigate();
+  const { from } = useSearch({ from: "/app/workout/$id/edit" });
 
   const { data, isLoading: isWorkoutLoading } = useWorkoutDetail(id);
   const {
@@ -30,7 +31,7 @@ export default function WorkoutEditPage() {
 
   // Перевірка: редагування доступне тільки протягом 24 годин
   if (!isWorkoutEditable(data.workout.started_at)) {
-    navigate({ to: "/workout/$id", params: { id: id! } });
+    navigate({ to: "/workout/$id", params: { id: id! }, search: { from } });
     return null;
   }
 
@@ -56,6 +57,7 @@ export default function WorkoutEditPage() {
       exercises={data.exercises}
       allExercises={allExercises}
       previousSets={previousSets ?? {}}
+      returnSearch={{ from }}
     />
   );
 }

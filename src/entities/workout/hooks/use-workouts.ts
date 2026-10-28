@@ -33,6 +33,7 @@ export function useDeleteWorkout() {
     mutationFn: deleteWorkout,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["calendar"] });
     },
     onError: (err) => {
       const mappedError = toWorkoutOperationError(err, "delete");
@@ -50,6 +51,7 @@ export function useDeleteSet() {
     mutationFn: deleteSetFromWorkout,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["calendar"] });
     },
     onError: (err) => {
       toast.error("Не вдалося видалити підхід", {
@@ -76,6 +78,7 @@ export function useUpdateWorkout() {
     }) => updateWorkout(workoutId, exercises, notes, name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["calendar"] });
       queryClient.invalidateQueries({ queryKey: ["workout"] });
       queryClient.invalidateQueries({ queryKey: ["previousSets"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });

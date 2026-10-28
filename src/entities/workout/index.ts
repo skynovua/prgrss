@@ -16,7 +16,6 @@ export * from "./ui/recent-workouts";
 export * from "./ui/rest-timer";
 export * from "./ui/set-row";
 export * from "./ui/weight-display";
-export * from "./ui/workout-calendar";
 export * from "./ui/workout-detail";
 export * from "./ui/workout-editor";
 export * from "./ui/workout-logger";

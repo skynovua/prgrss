@@ -17,9 +17,11 @@ import { formatSetSummary, getExerciseTrackingType } from "../model/workout-logg
 interface WorkoutDetailProps {
   workout: WorkoutWithSets;
   exercises: ExerciseData[];
+  onBack?: () => void;
+  returnSearch?: { from?: string };
 }
 
-export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
+export function WorkoutDetail({ workout, exercises, onBack, returnSearch }: WorkoutDetailProps) {
   const navigate = useNavigate();
   const deleteWorkoutMutation = useDeleteWorkout();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -51,7 +53,7 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
 
   const handleDelete = () => {
     deleteWorkoutMutation.mutate(workout.id, {
-      onSuccess: () => navigate({ to: "/dashboard" }),
+      onSuccess: () => (onBack ? onBack() : navigate({ to: "/dashboard" })),
     });
   };
 
@@ -60,17 +62,19 @@ export function WorkoutDetail({ workout, exercises }: WorkoutDetailProps) {
       {/* Навігація */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link
-            to="/dashboard"
-            className="text-muted-foreground hover:text-foreground -ml-1 flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={onBack ? "Повернутися до календаря" : "На головну"}
+            onClick={() => (onBack ? onBack() : navigate({ to: "/dashboard" }))}
           >
-            <ChevronLeft className="h-5 w-5" />
-          </Link>
+            <ChevronLeft />
+          </Button>
           <span className="text-2xl font-bold">Тренування</span>
         </div>
         {canEdit && (
           <div className="flex items-center gap-1">
-            <Link to="/workout/$id/edit" params={{ id: workout.id }}>
+            <Link to="/workout/$id/edit" params={{ id: workout.id }} search={returnSearch}>
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <Pencil className="h-4 w-4" />
               </Button>
