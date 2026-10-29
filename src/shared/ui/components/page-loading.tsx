@@ -48,11 +48,8 @@ export function LoadingNotice({ onRetry }: { onRetry?: () => void }) {
     };
   }, []);
   return (
-    <div className="flex flex-col items-start gap-3">
-      <p
-        role="status"
-        className={cn("text-muted-foreground text-sm", online && !slow && "sr-only")}
-      >
+    <div className={cn("flex flex-col items-start gap-3", online && !slow && "sr-only")}>
+      <p role="status" className="text-muted-foreground text-sm">
         {!online
           ? "Немає з’єднання. Продовжимо завантаження, коли мережа відновиться."
           : slow

@@ -115,7 +115,7 @@ export function WorkoutLogger({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 pb-[calc(11rem+env(safe-area-inset-bottom))] sm:px-5 md:px-8">
+    <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 pb-[calc(11rem+env(safe-area-inset-bottom))] sm:px-5 md:px-8">
       <header className="bg-background/95 sticky top-0 z-30 -mx-1 flex items-center justify-between gap-2 border-b px-1 pt-5 pb-4 backdrop-blur">
         <div className="min-w-0">
           <h1 className="text-2xl font-medium tracking-tight">Тренування</h1>

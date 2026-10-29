@@ -33,9 +33,10 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  LoadingNotice,
   PageError,
-  PageLoading,
   RefreshNotice,
+  Skeleton,
 } from "@/shared/ui";
 
 const LOCALE = "uk-UA";
@@ -77,11 +78,7 @@ export default function DashboardPage() {
   const { data: achievements } = useAchievements();
   const { resolvedTheme, setTheme } = useTheme();
 
-  if (isPending)
-    return <PageLoading title="Головна" layout="stats" onRetry={() => void refetch()} />;
-  if (!data) return <PageError title="Головна не завантажилася" onRetry={() => void refetch()} />;
-
-  const { profile, recentWorkouts, weekStats, prevWeekStats, calendarWorkouts, streak } = data;
+  const profile = data?.profile;
   const newAchievementsCount = new Set(
     (achievements ?? [])
       .filter(
@@ -94,14 +91,10 @@ export default function DashboardPage() {
     day: "numeric",
     month: "long",
   });
-  const volume =
-    weekStats.volume >= 1000
-      ? `${(weekStats.volume / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 1 })} т`
-      : `${Math.round(weekStats.volume)} кг`;
 
   return (
     <div className="flex flex-1 flex-col gap-7 px-5 pt-6 pb-6 md:px-8 md:pt-8">
-      {isError && <RefreshNotice onRetry={() => void refetch()} />}
+      {isError && data && <RefreshNotice onRetry={() => void refetch()} />}
       <header className="flex items-center justify-between gap-4">
         <span className="font-logo text-xl tracking-normal" aria-label="PRGRSS">
           PR<span className="text-primary">G</span>RSS
@@ -134,12 +127,14 @@ export default function DashboardPage() {
             aria-label="Відкрити профіль"
             className="ml-2 flex size-11 shrink-0 items-center justify-center"
           >
-            {profile.avatarUrl ? (
+            {profile?.avatarUrl ? (
               <img src={profile.avatarUrl} alt="" className="size-9 rounded-full object-cover" />
-            ) : (
+            ) : profile ? (
               <span className="bg-secondary text-secondary-foreground flex size-9 items-center justify-center rounded-full text-sm font-medium">
                 {profile.displayName.charAt(0).toUpperCase()}
               </span>
+            ) : (
+              <Skeleton className="size-9 rounded-full" aria-hidden="true" />
             )}
           </Link>
         </div>
@@ -147,9 +142,13 @@ export default function DashboardPage() {
 
       <section className="flex flex-col gap-2">
         <p className="text-muted-foreground text-sm first-letter:uppercase">{date}</p>
-        <h1 className="font-heading text-3xl leading-tight font-medium tracking-tight">
-          Привіт, {profile.displayName}.
-        </h1>
+        {isPending && !profile ? (
+          <Skeleton className="h-9 w-64 max-w-full" aria-hidden="true" />
+        ) : (
+          <h1 className="font-heading text-3xl leading-tight font-medium tracking-tight">
+            {profile ? `Привіт, ${profile.displayName}.` : "Привіт!"}
+          </h1>
+        )}
       </section>
 
       <Card className="gap-4 py-5">
@@ -171,6 +170,26 @@ export default function DashboardPage() {
         </CardFooter>
       </Card>
 
+      {isPending ? (
+        <DashboardDataLoading onRetry={() => void refetch()} />
+      ) : data ? (
+        <DashboardData data={data} />
+      ) : (
+        <PageError title="Не вдалося завантажити дані" onRetry={() => void refetch()} />
+      )}
+    </div>
+  );
+}
+
+function DashboardData({ data }: { data: NonNullable<ReturnType<typeof useDashboard>["data"]> }) {
+  const { recentWorkouts, weekStats, prevWeekStats, calendarWorkouts, streak } = data;
+  const volume =
+    weekStats.volume >= 1000
+      ? `${(weekStats.volume / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 1 })} т`
+      : `${Math.round(weekStats.volume)} кг`;
+
+  return (
+    <>
       <section className="flex flex-col gap-4" aria-labelledby="week-stats-title">
         <div className="flex items-baseline justify-between gap-3">
           <h2 id="week-stats-title" className="text-base font-semibold">
@@ -199,6 +218,51 @@ export default function DashboardPage() {
 
       <WeekCalendar workouts={calendarWorkouts} streak={streak} />
       <RecentWorkouts workouts={recentWorkouts.slice(0, 3)} />
+    </>
+  );
+}
+
+function DashboardDataLoading({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-col gap-7">
+      <LoadingNotice onRetry={onRetry} />
+      <section className="flex flex-col gap-4" aria-busy="true" aria-labelledby="week-stats-title">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="week-stats-title" className="text-base font-semibold">
+            Цього тижня
+          </h2>
+          <span className="text-muted-foreground text-xs">до минулого тижня</span>
+        </div>
+        <div className="divide-border grid grid-cols-3 divide-x">
+          {["Тренування", "Об’єм", "Підходи"].map((label) => (
+            <div
+              key={label}
+              className="flex min-w-0 flex-col gap-2 px-3 first:pl-0 last:pr-0 sm:px-5"
+            >
+              <Skeleton className="h-8 w-16 max-w-full" aria-hidden="true" />
+              <span className="text-muted-foreground text-xs">{label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+      <Card className="gap-4 py-5" aria-busy="true">
+        <CardHeader className="px-5">
+          <CardTitle>Мій тиждень</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-7 gap-2 px-5" aria-hidden="true">
+          {Array.from({ length: 7 }, (_, index) => (
+            <Skeleton key={index} className="h-20 rounded-xl" />
+          ))}
+        </CardContent>
+      </Card>
+      <section className="flex flex-col gap-4" aria-busy="true" aria-label="Останні тренування">
+        <h2 className="text-base font-semibold">Останні тренування</h2>
+        <div className="flex flex-col gap-3" aria-hidden="true">
+          {[0, 1, 2].map((index) => (
+            <Skeleton key={index} className="h-16 rounded-xl" />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
