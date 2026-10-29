@@ -187,6 +187,18 @@ test("reducer не завершує порожній підхід і не зап
   assert.equal(next.restClock, null);
 });
 
+test("історія для доданої пізніше вправи не змінює вже введені підходи", () => {
+  const exercise = { id: "bench", name: "Жим", equipment: "barbell" };
+  let state = workoutReducer(createInitialState(), { type: "ADD_EXERCISE", exercise });
+  const entered = { ...state.exercises[0].sets[0], weight: 37.5, reps: 9 };
+  state = workoutReducer(state, { type: "UPDATE_SET", exerciseIndex: 0, set: entered });
+  const previous = { setNumber: 1, weight: 40, reps: 8, rpe: null, durationS: null };
+  const next = workoutReducer(state, { type: "ADD_EXERCISE", exercise, previousSets: [previous] });
+  assert.deepEqual(next.exercises[0].sets[0], entered);
+  assert.equal(next.exercises[1].sets[0].weight, 40);
+  assert.equal(next.exercises[1].sets[0].completed, false);
+});
+
 test("автоматичний таймер запускається на виконанні, а редагування його не перезапускає", () => {
   let state = workoutReducer(createInitialState(), {
     type: "ADD_EXERCISE",

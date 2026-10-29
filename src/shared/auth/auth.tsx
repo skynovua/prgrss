@@ -1,37 +1,30 @@
-import type { User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { supabase } from "@/shared/api";
 
-export interface AuthContextType {
-  user: User | null;
-  loading: boolean;
+import { type SessionState, subscribeToSession } from "./session-bootstrap";
+
+export interface AuthContextType extends SessionState {
+  retry: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const INITIAL_STATE: SessionState = { user: null, loading: true, error: null };
+const AuthContext = createContext<AuthContextType>({ ...INITIAL_STATE, retry: () => {} });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<SessionState>(INITIAL_STATE);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    // getSession() читає поточну сесію з browser storage.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    return subscribeToSession(supabase.auth, setState);
+  }, [attempt]);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+  const retry = () => {
+    setState(INITIAL_STATE);
+    setAttempt((value) => value + 1);
+  };
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ ...state, retry }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

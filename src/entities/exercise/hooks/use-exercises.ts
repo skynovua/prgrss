@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { withQueryTimeout } from "@/shared/api";
 import { useAuth } from "@/shared/auth";
 
 import {
@@ -26,15 +27,16 @@ interface ExerciseQueryOptions {
   enabled?: boolean;
 }
 
-export function useExercises({ enabled = true }: ExerciseQueryOptions = {}) {
-  const { user } = useAuth();
-
-  return useQuery({
-    queryKey: exerciseQueryKeys.catalog(user?.id),
-    queryFn: fetchExercises,
-    enabled: enabled && Boolean(user),
+export const exerciseCatalogOptions = (userId: string) =>
+  queryOptions({
+    queryKey: exerciseQueryKeys.catalog(userId),
+    queryFn: () => withQueryTimeout(fetchExercises),
     staleTime: 30 * 60 * 1000,
   });
+
+export function useExercises({ enabled = true }: ExerciseQueryOptions = {}) {
+  const { user } = useAuth();
+  return useQuery({ ...exerciseCatalogOptions(user?.id ?? ""), enabled: enabled && Boolean(user) });
 }
 
 export function useAnatomicalMuscles() {

@@ -7,6 +7,8 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <meta name="theme-color" content="#f7f8f5" />
+    <link rel="stylesheet" href="/src/app/styles/globals.css" />
+    <link rel="preload" href="/fonts/ethnocentric.woff2" as="font" type="font/woff2" crossorigin />
     <script>
       try {
         const theme = localStorage.getItem("prgrss-color-scheme");
@@ -109,7 +111,15 @@
     <title>PRGRSS — Трекер тренувань</title>
   </head>
   <body class="flex min-h-full flex-col">
-    <div id="root"></div>
+    <div id="root">
+      <main
+        class="bg-background text-foreground flex min-h-dvh flex-col items-center justify-center gap-4 px-5"
+        role="status"
+      >
+        <p class="font-logo text-2xl">PR<span class="text-primary">G</span>RSS</p>
+      </main>
+    </div>
+    <noscript>Для роботи PRGRSS увімкни JavaScript у браузері.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

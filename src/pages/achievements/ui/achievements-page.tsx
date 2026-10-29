@@ -35,7 +35,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  LoaderBar,
+  PageLoading,
+  RefreshNotice,
   Sheet,
   SheetClose,
   SheetContent,
@@ -383,7 +384,7 @@ function RewardDetails({ track }: { track: AchievementTrack }) {
 }
 
 export default function AchievementsPage() {
-  const { data: achievements = [], isLoading, isError, refetch } = useAchievements();
+  const { data: achievements = [], isPending, isError, refetch } = useAchievements();
   const markSeen = useMarkAchievementsSeen();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [filter, setFilter] = useState<CollectionFilter>("all");
@@ -409,7 +410,8 @@ export default function AchievementsPage() {
       void markSeen(ids).catch(() => toast.error("Не вдалося позначити нагороду переглянутою"));
   }
 
-  if (isLoading) return <LoaderBar />;
+  if (isPending)
+    return <PageLoading title="Досягнення" layout="list" onRetry={() => void refetch()} />;
 
   return (
     <Sheet
@@ -420,7 +422,8 @@ export default function AchievementsPage() {
     >
       <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
         <PageHeader />
-        {isError ? (
+        {isError && achievements.length > 0 && <RefreshNotice onRetry={() => void refetch()} />}
+        {isError && achievements.length === 0 ? (
           <section className="flex flex-col items-center gap-4 py-12 text-center" role="alert">
             <Award className="text-muted-foreground size-10" />
             <div className="flex flex-col gap-2">

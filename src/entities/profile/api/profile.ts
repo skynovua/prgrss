@@ -59,12 +59,13 @@ export async function fetchProfile() {
   if (!session) return null;
 
   const user = session.user;
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("users")
     .select("name, avatar_url, auto_rest_timer")
     .eq("id", user.id)
     .single();
 
+  if (error) throw error;
   return {
     name: profile?.name ?? user.user_metadata?.name ?? "",
     email: user.email ?? "",

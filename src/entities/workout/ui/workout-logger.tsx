@@ -60,12 +60,14 @@ interface WorkoutLoggerProps {
   exercises: Exercise[];
   previousSets?: PreviousSetsMap;
   historyUnavailable?: boolean;
+  historyPending?: boolean;
 }
 
 export function WorkoutLogger({
   exercises,
   previousSets,
   historyUnavailable = false,
+  historyPending = false,
 }: WorkoutLoggerProps) {
   const { data: profile } = useProfile();
   const {
@@ -142,6 +144,11 @@ export function WorkoutLogger({
           )}
         </div>
       </header>
+      {historyPending && (
+        <p role="status" className="text-muted-foreground text-sm">
+          Підвантажуємо минулі підходи. Уже можна додавати вправи й записувати значення вручну.
+        </p>
+      )}
       {historyUnavailable && (
         <p role="status" className="text-muted-foreground text-sm">
           Історію підходів не вдалося завантажити. Можна записати тренування вручну.
@@ -155,8 +162,8 @@ export function WorkoutLogger({
             </EmptyMedia>
             <EmptyTitle>Твоє наступне тренування</EmptyTitle>
             <EmptyDescription>
-              Обери першу вправу — тоді почнеться відлік часу. Підходи з минулої сесії підставимо
-              автоматично.
+              Обери першу вправу — тоді почнеться відлік часу. Якщо історія вже завантажена,
+              підставимо минулі підходи під час додавання вправи.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>

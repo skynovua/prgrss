@@ -1,13 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { fetchProfile, updateProfile, uploadAvatar } from "@/entities/profile";
+import { withQueryTimeout } from "@/shared/api";
+
+export const profileQueryOptions = queryOptions({
+  queryKey: ["profile"],
+  queryFn: () => withQueryTimeout(fetchProfile),
+});
 
 export function useProfile() {
-  return useQuery({
-    queryKey: ["profile"],
-    queryFn: fetchProfile,
-  });
+  return useQuery(profileQueryOptions);
 }
 
 export function useUpdateProfile() {

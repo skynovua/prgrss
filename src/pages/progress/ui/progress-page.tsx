@@ -12,7 +12,9 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-  LoaderBar,
+  LoadingBlocks,
+  LoadingNotice,
+  RefreshNotice,
   ToggleGroup,
   ToggleGroupItem,
 } from "@/shared/ui";
@@ -24,7 +26,7 @@ import { LoadDistribution } from "./load-distribution";
 
 export default function ProgressPage() {
   const [period, setPeriod] = useState<Period>("30d");
-  const { data, isLoading, isFetching, isPlaceholderData, isError, refetch } =
+  const { data, isPending, isFetching, isPlaceholderData, isError, refetch } =
     useStatistics(period);
   const timeline = data
     ? buildActivityTimeline(data.workouts, data.period, new Date(data.asOf))
@@ -69,15 +71,18 @@ export default function ProgressPage() {
           {isFetching && <Loader2 className="size-3 animate-spin" aria-hidden="true" />}
           {isPlaceholderData
             ? "Оновлюємо період. Нижче — попередні дані."
-            : isLoading
+            : isPending
               ? "Збираємо твою статистику…"
               : timeline?.range}
         </p>
       </div>
 
-      {isLoading ? (
-        <LoaderBar />
-      ) : isError || !data ? (
+      {isPending ? (
+        <>
+          <LoadingNotice onRetry={() => void refetch()} />
+          <LoadingBlocks layout="stats" />
+        </>
+      ) : !data ? (
         <Empty className="px-0 py-10">
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -118,6 +123,7 @@ export default function ProgressPage() {
         </Empty>
       ) : (
         <div className="flex flex-col gap-6" aria-busy={isFetching}>
+          {isError && <RefreshNotice onRetry={() => void refetch()} />}
           <section
             className="divide-border grid grid-cols-3 divide-x"
             aria-label="Підсумок періоду"

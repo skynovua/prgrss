@@ -6,11 +6,12 @@ import {
   fetchAchievements,
   markAchievementStatesSeen,
 } from "@/entities/achievement";
+import { withQueryTimeout } from "@/shared/api";
 
 export function useAchievements() {
   return useQuery({
     queryKey: ["achievements"],
-    queryFn: fetchAchievements,
+    queryFn: () => withQueryTimeout(fetchAchievements),
     staleTime: 5 * 60 * 1000,
   });
 }

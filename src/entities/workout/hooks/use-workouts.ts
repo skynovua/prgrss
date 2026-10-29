@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { WorkoutExercise } from "@/entities/workout";
@@ -10,20 +10,23 @@ import {
   updateWorkout,
 } from "@/entities/workout";
 import { toWorkoutOperationError } from "@/entities/workout";
+import { withQueryTimeout } from "@/shared/api";
 
 export function useWorkoutDetail(id: string | undefined) {
   return useQuery({
     queryKey: ["workout", id],
-    queryFn: () => fetchWorkoutDetail(id!),
+    queryFn: () => withQueryTimeout(() => fetchWorkoutDetail(id!)),
     enabled: !!id,
   });
 }
 
+export const previousSetsQueryOptions = queryOptions({
+  queryKey: ["previousSets"],
+  queryFn: () => withQueryTimeout(fetchPreviousSets),
+});
+
 export function usePreviousSets() {
-  return useQuery({
-    queryKey: ["previousSets"],
-    queryFn: fetchPreviousSets,
-  });
+  return useQuery(previousSetsQueryOptions);
 }
 
 export function useDeleteWorkout() {

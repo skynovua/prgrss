@@ -86,14 +86,15 @@ export async function deleteSetFromWorkout(setId: string) {
 }
 
 export async function fetchWorkoutDetail(id: string) {
-  const { data: workout } = await supabase
+  const { data: workout, error } = await supabase
     .from("workouts")
     .select(
       "id, name, started_at, finished_at, notes, sets(id, set_number, weight, reps, rpe, duration_s, notes, exercise_id, exercises(id, name, muscle_group, equipment, catalog_key))"
     )
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
+  if (error) throw error;
   if (!workout) return null;
 
   const exerciseMap = new Map<string, ExerciseData>();

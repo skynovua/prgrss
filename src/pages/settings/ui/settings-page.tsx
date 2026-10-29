@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui";
-import { LoaderBar } from "@/shared/ui";
+import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
 
 const THEMES = [
   { value: "light", label: "Світла" },
@@ -32,15 +32,16 @@ const THEMES = [
 ];
 
 export default function SettingsPage() {
-  const { data: profile, isLoading } = useProfile();
+  const { data: profile, isPending, isError, refetch } = useProfile();
   const { theme, setTheme } = useTheme();
 
-  if (isLoading || !profile) {
-    return <LoaderBar data-testid="loader-bar" />;
-  }
+  if (isPending)
+    return <PageLoading title="Налаштування" layout="form" onRetry={() => void refetch()} />;
+  if (!profile) return <PageError title="Профіль не завантажився" onRetry={() => void refetch()} />;
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
+      {isError && <RefreshNotice onRetry={() => void refetch()} />}
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-medium tracking-tight">Налаштування</h1>
         <p className="text-muted-foreground text-sm">Твій профіль і комфортний ритм тренувань.</p>

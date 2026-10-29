@@ -1,17 +1,21 @@
-import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
+import { Navigate, useParams, useSearch } from "@tanstack/react-router";
 
 import { useExercises } from "@/entities/exercise";
 import { WorkoutEditor } from "@/entities/workout";
 import { usePreviousSets, useWorkoutDetail } from "@/entities/workout";
 import { isWorkoutEditable } from "@/entities/workout";
-import { Button, LoaderBar } from "@/shared/ui";
+import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
 
 export default function WorkoutEditPage() {
   const { id } = useParams({ strict: false });
-  const navigate = useNavigate();
   const { from } = useSearch({ from: "/app/workout/$id/edit" });
 
-  const { data, isLoading: isWorkoutLoading } = useWorkoutDetail(id);
+  const {
+    data,
+    isPending: isWorkoutPending,
+    isError: isWorkoutError,
+    refetch: refetchWorkout,
+  } = useWorkoutDetail(id);
   const {
     data: allExercises,
     isPending: isExercisesPending,
@@ -20,44 +24,68 @@ export default function WorkoutEditPage() {
   } = useExercises();
   const { data: previousSets } = usePreviousSets();
 
-  if (isWorkoutLoading) {
-    return <LoaderBar />;
-  }
+  if (!id)
+    return (
+      <PageError title="Тренування не знайдено" description="Перевір посилання на тренування." />
+    );
+  if (isWorkoutPending)
+    return (
+      <PageLoading
+        key={id}
+        title="Редагування тренування"
+        layout="form"
+        onRetry={() => void refetchWorkout()}
+      />
+    );
+  if (isWorkoutError && !data)
+    return <PageError title="Тренування не завантажилося" onRetry={() => void refetchWorkout()} />;
 
   if (!data) {
-    navigate({ to: "/dashboard" });
-    return null;
+    return (
+      <PageError
+        title="Тренування не знайдено"
+        description="Його видалено або воно недоступне для цього акаунта."
+      />
+    );
   }
 
   // Перевірка: редагування доступне тільки протягом 24 годин
   if (!isWorkoutEditable(data.workout.started_at)) {
-    navigate({ to: "/workout/$id", params: { id: id! }, search: { from } });
-    return null;
+    return <Navigate to="/workout/$id" params={{ id }} search={{ from }} replace />;
   }
 
   if (isExercisesPending) {
-    return <LoaderBar />;
-  }
-
-  if (isExercisesError || !allExercises) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
-        <p className="text-muted-foreground text-lg">Не вдалося завантажити вправи</p>
-        <p className="text-muted-foreground text-sm">Перевірте з'єднання з інтернетом</p>
-        <Button variant="outline" onClick={() => void refetchExercises()}>
-          Спробувати ще раз
-        </Button>
-      </div>
+      <PageLoading
+        key={id}
+        title="Редагування тренування"
+        layout="form"
+        onRetry={() => void refetchExercises()}
+      />
     );
   }
 
+  if (!allExercises)
+    return <PageError title="Вправи не завантажилися" onRetry={() => void refetchExercises()} />;
+
   return (
-    <WorkoutEditor
-      workout={data.workout}
-      exercises={data.exercises}
-      allExercises={allExercises}
-      previousSets={previousSets ?? {}}
-      returnSearch={{ from }}
-    />
+    <>
+      {(isWorkoutError || isExercisesError) && (
+        <RefreshNotice
+          onRetry={() => {
+            void refetchWorkout();
+            void refetchExercises();
+          }}
+        />
+      )}
+      <WorkoutEditor
+        key={id}
+        workout={data.workout}
+        exercises={data.exercises}
+        allExercises={allExercises}
+        previousSets={previousSets ?? {}}
+        returnSearch={{ from }}
+      />
+    </>
   );
 }

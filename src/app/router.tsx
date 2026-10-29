@@ -1,32 +1,35 @@
+import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Outlet,
   redirect,
 } from "@tanstack/react-router";
 
 import { AppLayout } from "@/app/ui/app-layout";
-import AchievementsPage from "@/pages/achievements";
+import { exerciseCatalogOptions } from "@/entities/exercise";
+import { profileQueryOptions } from "@/entities/profile";
+import { previousSetsQueryOptions } from "@/entities/workout";
 import AuthCallbackPage from "@/pages/auth-callback";
 import CalendarPage from "@/pages/calendar";
 import { validateCalendarSearch } from "@/pages/calendar";
-import DashboardPage from "@/pages/dashboard";
+import DashboardPage, { dashboardQueryOptions } from "@/pages/dashboard";
 import ExercisesPage from "@/pages/exercises";
 import InstallPage from "@/pages/install";
 import LoginPage from "@/pages/login";
 import ProgramsPage from "@/pages/programs";
-import ProgressPage from "@/pages/progress";
-import ExerciseProgressPage from "@/pages/progress-exercise";
 import SettingsPage from "@/pages/settings";
 import WorkoutDetailPage from "@/pages/workout-detail";
 import WorkoutEditPage from "@/pages/workout-edit";
 import WorkoutNewPage from "@/pages/workout-new";
 import type { AuthContextType } from "@/shared/auth";
-import { Toaster } from "@/shared/ui";
+import { PageError, PageLoading, Toaster } from "@/shared/ui";
 
 interface RouterContext {
   auth: AuthContextType;
+  queryClient: QueryClient;
 }
 
 // --- Root layout ---
@@ -88,6 +91,9 @@ const dashboardRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/dashboard",
   component: DashboardPage,
+  loader: ({ context }) => {
+    if (context.auth.user) void context.queryClient.prefetchQuery(dashboardQueryOptions);
+  },
 });
 
 const calendarRoute = createRoute({
@@ -101,12 +107,21 @@ const exercisesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/exercises",
   component: ExercisesPage,
+  loader: ({ context }) => {
+    if (context.auth.user)
+      void context.queryClient.prefetchQuery(exerciseCatalogOptions(context.auth.user.id));
+  },
 });
 
 const workoutNewRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/workout/new",
   component: WorkoutNewPage,
+  loader: ({ context }) => {
+    if (!context.auth.user) return;
+    void context.queryClient.prefetchQuery(exerciseCatalogOptions(context.auth.user.id));
+    void context.queryClient.prefetchQuery(previousSetsQueryOptions);
+  },
 });
 
 const workoutDetailRoute = createRoute({
@@ -135,7 +150,8 @@ function validateWorkoutReturnSearch(search: Record<string, unknown>): { from?: 
 const progressRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/progress",
-  component: ProgressPage,
+  component: lazyRouteComponent(() => import("@/pages/progress")),
+  pendingComponent: () => <PageLoading title="Статистика" layout="stats" />,
 });
 
 const exerciseProgressRoute = createRoute({
@@ -144,13 +160,17 @@ const exerciseProgressRoute = createRoute({
   validateSearch: (search: Record<string, unknown>) => ({
     from: typeof search.from === "string" ? search.from : undefined,
   }),
-  component: ExerciseProgressPage,
+  component: lazyRouteComponent(() => import("@/pages/progress-exercise")),
+  pendingComponent: () => <PageLoading title="Статистика вправи" layout="stats" />,
 });
 
 const settingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/settings",
   component: SettingsPage,
+  loader: ({ context }) => {
+    if (context.auth.user) void context.queryClient.prefetchQuery(profileQueryOptions);
+  },
 });
 
 const programsRoute = createRoute({
@@ -162,7 +182,8 @@ const programsRoute = createRoute({
 const achievementsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/achievements",
-  component: AchievementsPage,
+  component: lazyRouteComponent(() => import("@/pages/achievements")),
+  pendingComponent: () => <PageLoading title="Досягнення" layout="list" />,
 });
 
 const installRoute = createRoute({
@@ -194,8 +215,16 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
+  defaultPreload: "intent",
+  defaultPreloadStaleTime: 0,
+  defaultPendingMs: 150,
+  defaultPendingMinMs: 0,
+  defaultErrorComponent: () => (
+    <PageError title="Сторінка не відкрилася" onRetry={() => window.location.reload()} />
+  ),
   context: {
     auth: undefined!,
+    queryClient: undefined!,
   },
 });
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronDown, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { toDateKey } from "@/shared/lib";
@@ -10,7 +10,9 @@ import {
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-  LoaderBar,
+  LoadingBlocks,
+  LoadingNotice,
+  RefreshNotice,
   Tabs,
   TabsContent,
   TabsList,
@@ -41,13 +43,7 @@ export default function CalendarPage() {
   const dateKey = search.date ?? todayKey;
   const view: CalendarView = search.view === "week" ? "week" : "month";
   const dayOnly = view === "month" || search.day === true;
-  const {
-    data: workouts,
-    isPending,
-    isError,
-    isFetching,
-    refetch,
-  } = useCalendarWorkouts(dateKey, view);
+  const { data: workouts, isPending, isError, refetch } = useCalendarWorkouts(dateKey, view);
   const [pickerOpen, setPickerOpen] = useState(false);
   const workoutMap = useMemo(() => groupCalendarWorkouts(workouts ?? []), [workouts]);
   const period = getCalendarPeriod(dateKey, view);
@@ -114,13 +110,13 @@ export default function CalendarPage() {
             Тренування {view === "month" ? "за місяць" : "за тиждень"}
           </dt>
           <dd className="mt-1 text-2xl font-medium tabular-nums">
-            {isPending || isError || !workouts ? "—" : workouts.length}
+            {isPending || !workouts ? "—" : workouts.length}
           </dd>
         </div>
         <div>
           <dt className="text-muted-foreground text-xs">Час у записах</dt>
           <dd className="mt-1 text-xl font-medium tabular-nums sm:text-2xl">
-            {isPending || isError || !workouts ? "—" : durationLabel}
+            {isPending || !workouts ? "—" : durationLabel}
           </dd>
         </div>
       </dl>
@@ -135,7 +131,7 @@ export default function CalendarPage() {
             view={view}
             selected={dayOnly}
             workouts={workoutMap}
-            status={isPending ? "loading" : isError ? "error" : "ready"}
+            status={isPending ? "loading" : isError && !workouts ? "error" : "ready"}
             onSelect={selectDate}
           />
           <div
@@ -165,21 +161,18 @@ export default function CalendarPage() {
               >
                 Увесь тиждень
               </Button>
-            ) : dayOnly && !isPending && !isError ? (
+            ) : dayOnly && !isPending && workouts !== undefined ? (
               <span className="text-muted-foreground text-xs">
                 Сесії: {selectedWorkouts.length}
               </span>
             ) : null}
           </div>
           {isPending ? (
-            <div
-              role="status"
-              className="text-muted-foreground flex min-h-32 items-center justify-center gap-2 text-sm"
-            >
-              <Loader2 className="size-4 animate-spin" />
-              <span>Завантажую тренування…</span>
-            </div>
-          ) : isError ? (
+            <>
+              <LoadingNotice key={period.startKey} onRetry={() => void refetch()} />
+              <LoadingBlocks layout="list" />
+            </>
+          ) : isError && !workouts ? (
             <Empty className="px-2 py-8">
               <EmptyHeader>
                 <EmptyTitle>Не вдалося завантажити тренування</EmptyTitle>
@@ -212,7 +205,7 @@ export default function CalendarPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-6 pb-6 sm:px-6 md:px-8">
-      {isFetching && <LoaderBar />}
+      {isError && workouts && <RefreshNotice onRetry={() => void refetch()} />}
       <header className="flex items-center gap-2">
         <Button
           variant="ghost"

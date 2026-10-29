@@ -33,7 +33,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-  LoaderBar,
+  PageError,
+  PageLoading,
+  RefreshNotice,
 } from "@/shared/ui";
 
 const LOCALE = "uk-UA";
@@ -71,11 +73,13 @@ function StatDiff({ current, previous }: { current: number; previous: number }) 
 }
 
 export default function DashboardPage() {
-  const { data, isLoading } = useDashboard();
+  const { data, isPending, isError, refetch } = useDashboard();
   const { data: achievements } = useAchievements();
   const { resolvedTheme, setTheme } = useTheme();
 
-  if (isLoading || !data) return <LoaderBar />;
+  if (isPending)
+    return <PageLoading title="Головна" layout="stats" onRetry={() => void refetch()} />;
+  if (!data) return <PageError title="Головна не завантажилася" onRetry={() => void refetch()} />;
 
   const { profile, recentWorkouts, weekStats, prevWeekStats, calendarWorkouts, streak } = data;
   const newAchievementsCount = new Set(
@@ -97,6 +101,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-7 px-5 pt-6 pb-6 md:px-8 md:pt-8">
+      {isError && <RefreshNotice onRetry={() => void refetch()} />}
       <header className="flex items-center justify-between gap-4">
         <span className="font-logo text-xl tracking-normal" aria-label="PRGRSS">
           PR<span className="text-primary">G</span>RSS

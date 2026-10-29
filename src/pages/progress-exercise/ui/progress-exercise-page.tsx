@@ -18,7 +18,7 @@ import { ExerciseProgressChart } from "@/entities/progress";
 import { useExerciseProgress } from "@/entities/progress";
 import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui";
-import { LoaderBar } from "@/shared/ui";
+import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: "7d", label: "7 днів" },
@@ -34,16 +34,29 @@ export default function ExerciseProgressPage() {
   const [period, setPeriod] = useState<Period>("30d");
   const {
     data: exerciseProgress,
-    isLoading,
+    isPending,
     isFetching,
+    isError,
+    isPlaceholderData,
+    refetch,
   } = useExerciseProgress(exerciseId ?? "", period);
   const { data: exercises } = useExercises({
-    enabled: Boolean(exerciseId) && !isLoading && !exerciseProgress,
+    enabled: Boolean(exerciseId) && !isPending && !exerciseProgress,
   });
 
-  if (!exerciseId || isLoading) {
-    return <LoaderBar />;
-  }
+  if (!exerciseId)
+    return <PageError title="Вправу не знайдено" description="Перевір посилання на вправу." />;
+  if (isPending)
+    return (
+      <PageLoading
+        key={exerciseId}
+        title="Статистика вправи"
+        layout="stats"
+        onRetry={() => void refetch()}
+      />
+    );
+  if (isError && !exerciseProgress)
+    return <PageError title="Статистика не завантажилася" onRetry={() => void refetch()} />;
 
   const fallbackName = exercises?.find((exercise) => exercise.id === exerciseId)?.name ?? "Вправа";
   const exerciseName = exerciseProgress?.exerciseName ?? fallbackName;
@@ -74,6 +87,12 @@ export default function ExerciseProgressPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
+      {isError && <RefreshNotice onRetry={() => void refetch()} />}
+      {isPlaceholderData && (
+        <p role="status" className="text-muted-foreground text-sm">
+          Оновлюємо період. Нижче — попередні дані.
+        </p>
+      )}
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <Button

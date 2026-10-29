@@ -8,6 +8,7 @@ import {
   type Period,
   periodToDate,
 } from "@/entities/progress";
+import { withQueryTimeout } from "@/shared/api";
 
 // Період-незалежні дані — не рефетчаться при зміні фільтра
 export function useGlobalStats() {
@@ -37,8 +38,10 @@ export function usePeriodProgress(period: Period) {
 export function useExerciseProgress(exerciseId: string, period: Period) {
   return useQuery({
     queryKey: ["progress", "exercise", exerciseId, period],
-    queryFn: () => fetchExerciseProgressById(exerciseId, periodToDate(period)),
+    queryFn: () =>
+      withQueryTimeout(() => fetchExerciseProgressById(exerciseId, periodToDate(period))),
     enabled: Boolean(exerciseId),
-    placeholderData: keepPreviousData,
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === exerciseId ? previous : undefined,
   });
 }
