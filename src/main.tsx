@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function AppRouter() {
+export function AppRouter() {
   const auth = useAuth();
 
   useMobileGestureGuard();

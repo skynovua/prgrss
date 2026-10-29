@@ -98,7 +98,7 @@ export default function LoginPage() {
         <div className="flex flex-1 flex-col justify-center gap-8 pb-12">
           <div className="flex flex-col gap-5">
             <span className="text-primary text-sm font-medium">Маленькі кроки. Помітні зміни.</span>
-            <h1 className="text-5xl leading-[1.12] font-medium tracking-tight">
+            <h1 className="font-heading text-4xl leading-[1.12] font-medium tracking-tight sm:text-5xl">
               Твій ритм.
               <br />
               Твій прогрес.
@@ -123,7 +123,11 @@ export default function LoginPage() {
               Увійти з Google
             </Button>
 
-            {error && <p className="text-destructive text-center text-sm">{error}</p>}
+            {error && (
+              <p role="alert" className="text-destructive text-center text-sm">
+                {error}
+              </p>
+            )}
           </div>
 
           <p className="text-muted-foreground text-xs leading-5">
@@ -145,6 +149,8 @@ export default function LoginPage() {
               </span>
             </Link>
             <button
+              type="button"
+              aria-label="Закрити пропозицію встановлення"
               onClick={() => {
                 setShowInstall(false);
                 localStorage.setItem("pwa-banner-dismissed", "1");

@@ -17,7 +17,7 @@ export function ExerciseSetIndicators({ sets, className }: ExerciseSetIndicators
           key={set.id}
           className={cn(
             "h-1 w-6 rounded-full transition-colors",
-            set.completed ? "bg-green-500" : "bg-muted-foreground/30"
+            set.completed ? "bg-primary" : "bg-muted-foreground/30"
           )}
           aria-hidden="true"
         />

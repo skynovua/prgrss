@@ -326,7 +326,7 @@ function DiffBadge({ diff }: { diff: number | null }) {
   return (
     <div
       className={`mt-1 flex items-center justify-center gap-1 text-[11px] font-medium ${
-        isZero ? "text-muted-foreground" : isPositive ? "text-green-500" : "text-red-500"
+        isZero ? "text-muted-foreground" : isPositive ? "text-primary" : "text-red-500"
       }`}
     >
       {isZero ? (

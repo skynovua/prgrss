@@ -142,7 +142,7 @@ export default function DashboardPage() {
 
       <section className="flex flex-col gap-2">
         <p className="text-muted-foreground text-sm first-letter:uppercase">{date}</p>
-        <h1 className="text-3xl leading-tight font-medium tracking-tight">
+        <h1 className="font-heading text-3xl leading-tight font-medium tracking-tight">
           Привіт, {profile.displayName}.
         </h1>
       </section>
