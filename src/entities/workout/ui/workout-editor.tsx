@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Timer } from "lucide-react";
-import { useReducer, useState } from "react";
+import { lazy, Suspense, useReducer, useState } from "react";
 import { toast } from "sonner";
 
 import { useProfile } from "@/entities/profile";
-import { Button } from "@/shared/ui";
+import { Button, Skeleton } from "@/shared/ui";
 
 import { useUpdateWorkout } from "../hooks/use-workouts";
 import { getExerciseLogPreferences } from "../model/exercise-log-preferences";
@@ -21,8 +21,13 @@ import type {
 import { getExerciseTrackingType, getWorkoutReview } from "../model/workout-logging";
 import { ExercisePicker } from "./exercise-picker";
 import { RestTimer } from "./rest-timer";
-import { WorkoutExerciseCard } from "./workout-exercise-card";
 import { WorkoutFinishDialog } from "./workout-finish-dialog";
+
+const WorkoutExerciseList = lazy(() =>
+  import("./workout-exercise-list").then(({ WorkoutExerciseList }) => ({
+    default: WorkoutExerciseList,
+  }))
+);
 
 function workoutToEditorState(
   workout: WorkoutWithSets,
@@ -115,7 +120,7 @@ export function WorkoutEditor({
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 pb-[calc(17rem+env(safe-area-inset-bottom))]">
-      <header className="flex items-center gap-2 border-b pb-4">
+      <header className="border-border/30 bg-background/50 sticky top-0 z-30 -mx-4 -mt-4 flex items-center gap-2 border-b px-4 pt-4 pb-4 backdrop-blur-md">
         <Button
           variant="ghost"
           size="icon"
@@ -144,29 +149,34 @@ export function WorkoutEditor({
           <Timer />
         </Button>
       </header>
-      {workoutExercises.map((we, exerciseIndex) => (
-        <WorkoutExerciseCard
-          key={we.instanceId}
-          we={we}
-          exerciseIndex={exerciseIndex}
-          previousSets={previousSets?.[we.exercise.id]}
+      <Suspense fallback={<Skeleton className="h-20 w-full rounded-2xl" />}>
+        <WorkoutExerciseList
+          exercises={workoutExercises}
+          previousSets={previousSets}
           autoRestTimer={profile?.autoRestTimer ?? true}
-          isCollapsed={collapsedCards[we.instanceId] ?? false}
+          collapsedCards={collapsedCards}
           onToggleCollapse={(id) =>
             setCollapsedCards((current) => ({ ...current, [id]: !current[id] }))
           }
+          onCollapseAll={() =>
+            setCollapsedCards(
+              Object.fromEntries(workoutExercises.map((we) => [we.instanceId, true]))
+            )
+          }
           dispatch={dispatch}
         />
-      ))}
+      </Suspense>
       <ExercisePicker
         exercises={allExercises}
-        onSelect={(exercise) =>
-          dispatch({
-            type: "ADD_EXERCISE",
-            exercise,
-            previousSets: previousSets?.[exercise.id],
-            preferences: getExerciseLogPreferences(exercise.id),
-          })
+        onSelect={(exercises) =>
+          exercises.forEach((exercise) =>
+            dispatch({
+              type: "ADD_EXERCISE",
+              exercise,
+              previousSets: previousSets?.[exercise.id],
+              preferences: getExerciseLogPreferences(exercise.id),
+            })
+          )
         }
       />
       <RestTimer

@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronDown, ChevronLeft, Dumbbell, Pencil, Timer, Trash2 } from "lucide-react";
+import { ChevronLeft, Pencil, Trash2 } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
 
+import { ExerciseDetailsById } from "@/entities/exercise/@x/workout";
 import { ExerciseCardActions } from "@/entities/workout";
 import { type ExerciseData, type SetData, type WorkoutWithSets } from "@/entities/workout";
 import { useDeleteWorkout } from "@/entities/workout";
@@ -9,10 +10,11 @@ import { isWorkoutEditable } from "@/entities/workout";
 import { getSetVolume, usesDoubleWeight } from "@/entities/workout";
 import { calc1RM, cn } from "@/shared/lib";
 import { Button } from "@/shared/ui";
-import { Card, CardContent, CardHeader } from "@/shared/ui";
+import { Card, CardContent } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
 
 import { formatSetSummary, getExerciseTrackingType } from "../model/workout-logging";
+import { ExerciseCardHeading } from "./exercise-card-heading";
 
 interface WorkoutDetailProps {
   workout: WorkoutWithSets;
@@ -32,6 +34,7 @@ export function WorkoutDetail({
   const navigate = useNavigate();
   const deleteWorkoutMutation = useDeleteWorkout();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [detailsTarget, setDetailsTarget] = useState<ExerciseData | null>(null);
   const [expandedExercises, setExpandedExercises] = useState<Set<string>>(() => new Set());
   const panelIdPrefix = useId();
   const canEdit = isWorkoutEditable(workout.started_at);
@@ -100,6 +103,10 @@ export function WorkoutDetail({
         )}
       </div>
 
+      {detailsTarget && (
+        <ExerciseDetailsById exercise={detailsTarget} onClose={() => setDetailsTarget(null)} />
+      )}
+
       {/* Назва та дата */}
       <div className="space-y-1">
         <p className="text-muted-foreground text-sm">
@@ -161,53 +168,37 @@ export function WorkoutDetail({
         );
 
         return (
-          <Card key={exerciseId} size="sm" className="gap-0 rounded-3xl py-4 data-[size=sm]:gap-0">
-            <CardHeader className="gap-0">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left focus-visible:ring-2 focus-visible:outline-none"
-                  onClick={() =>
-                    setExpandedExercises((previous) => {
-                      const next = new Set(previous);
-                      if (next.has(exerciseId)) next.delete(exerciseId);
-                      else next.add(exerciseId);
-                      return next;
-                    })
+          <Card
+            key={exerciseId}
+            size="sm"
+            className="gap-0 rounded-2xl data-[size=sm]:gap-0 data-[size=sm]:py-2"
+          >
+            <ExerciseCardHeading
+              name={exerciseName}
+              timed={trackingType === "duration"}
+              expanded={isExpanded}
+              panelId={panelId}
+              sets={sets.map(() => true)}
+              onOpenDetails={() =>
+                setDetailsTarget(
+                  exercise ?? {
+                    id: exerciseId,
+                    name: exerciseName,
+                    equipment: null,
+                    muscle_group: null,
                   }
-                  aria-expanded={isExpanded}
-                  aria-controls={panelId}
-                  aria-label={`${isExpanded ? "Згорнути" : "Розгорнути"} вправу ${exerciseName}`}
-                >
-                  <span
-                    className="bg-secondary text-secondary-foreground flex size-14 shrink-0 items-center justify-center rounded-xl"
-                    aria-hidden="true"
-                  >
-                    {trackingType === "duration" ? (
-                      <Timer className="size-6" />
-                    ) : (
-                      <Dumbbell className="size-6" />
-                    )}
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-2">
-                    <span className="line-clamp-2 text-base leading-snug font-semibold">
-                      {exerciseName}
-                    </span>
-                    <span className="text-muted-foreground flex items-center gap-2 text-xs">
-                      <span className="tabular-nums">{sets.length} підходів</span>
-                      <ChevronDown
-                        className={cn(
-                          "size-3.5 shrink-0 transition-transform duration-250 motion-reduce:transition-none",
-                          isExpanded && "rotate-180"
-                        )}
-                        aria-hidden="true"
-                      />
-                    </span>
-                  </span>
-                </button>
-                <ExerciseCardActions exerciseId={exerciseId} exerciseName={exerciseName} />
-              </div>
-            </CardHeader>
+                )
+              }
+              onToggle={() =>
+                setExpandedExercises((previous) => {
+                  const next = new Set(previous);
+                  if (next.has(exerciseId)) next.delete(exerciseId);
+                  else next.add(exerciseId);
+                  return next;
+                })
+              }
+              actions={<ExerciseCardActions exerciseId={exerciseId} exerciseName={exerciseName} />}
+            />
             <div
               id={panelId}
               className={cn(
@@ -218,7 +209,7 @@ export function WorkoutDetail({
               inert={!isExpanded}
             >
               <div className="min-h-0 overflow-hidden">
-                <CardContent className="flex flex-col gap-1 pt-4">
+                <CardContent className="flex flex-col gap-1 pt-3 group-data-[size=sm]/card:px-3">
                   {/* Заголовки */}
                   <div
                     className={`${setGridClassName} text-muted-foreground px-2 pb-1 text-xs font-medium`}

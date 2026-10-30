@@ -35,7 +35,10 @@ function DrawerOverlay({
   return (
     <DrawerPrimitive.Overlay
       data-slot="drawer-overlay"
-      className={cn("fixed inset-0 z-50 bg-black/50", className)}
+      className={cn(
+        "fixed inset-0 z-50 bg-black/50 motion-reduce:!animate-none motion-reduce:!transition-none",
+        className
+      )}
       {...props}
     />
   );
@@ -52,12 +55,17 @@ function DrawerContent({
       <DrawerPrimitive.Content
         data-slot="drawer-content"
         className={cn(
-          "bg-popover fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[96vh] flex-col rounded-t-xl border",
+          "bg-popover fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[96vh] flex-col rounded-t-xl border motion-reduce:!animate-none motion-reduce:!transition-none",
           className
         )}
         {...props}
       >
-        <div className="bg-muted mx-auto mt-4 h-1.5 w-12 shrink-0 rounded-full" />
+        <div className="flex h-10 shrink-0 items-center justify-center">
+          <DrawerPrimitive.Handle className="bg-muted-foreground/50" />
+        </div>
+        <DrawerPrimitive.Close className="sr-only focus:not-sr-only focus:mx-auto focus:rounded-lg focus:px-3 focus:py-2">
+          Закрити
+        </DrawerPrimitive.Close>
         {children}
       </DrawerPrimitive.Content>
     </DrawerPortal>

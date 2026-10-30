@@ -3,6 +3,8 @@ import type { ExerciseData, PreviousSetsMap, WorkoutExercise } from "@/entities/
 import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/entities/workout";
 import { supabase } from "@/shared/api";
 
+import { orderWorkoutSets } from "../model/workout-order";
+
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 години
 
 type ExerciseSummary = ExerciseData;
@@ -90,7 +92,7 @@ export async function fetchWorkoutDetail(id: string) {
   const { data: workout, error } = await supabase
     .from("workouts")
     .select(
-      "id, name, started_at, finished_at, notes, sets(id, set_number, weight, reps, rpe, duration_s, notes, exercise_id, exercises(id, name, muscle_group, equipment, catalog_key, exercise_muscles(activation_score, anatomical_muscles(key, name, muscle_group, sort_order))))"
+      "*, sets(id, set_number, weight, reps, rpe, duration_s, notes, exercise_id, exercises(id, name, muscle_group, equipment, catalog_key, exercise_muscles(activation_score, anatomical_muscles(key, name, muscle_group, sort_order))))"
     )
     .eq("id", id)
     .maybeSingle();
@@ -100,7 +102,8 @@ export async function fetchWorkoutDetail(id: string) {
 
   const exerciseMap = new Map<string, ExerciseData>();
 
-  const sets = (workout.sets ?? []).map((set) => {
+  const orderedSets = orderWorkoutSets(workout.sets ?? [], Reflect.get(workout, "exercise_order"));
+  const sets = orderedSets.map((set) => {
     const exercise = readExerciseSummary(set.exercises);
     if (exercise?.id && !exerciseMap.has(exercise.id)) {
       exerciseMap.set(exercise.id, exercise);

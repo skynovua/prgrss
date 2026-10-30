@@ -60,6 +60,13 @@ export function buildSaveWorkoutPayload({
     notes,
     program_id: programId,
     enforce_edit_window: enforceEditWindow,
+    exercise_order: [
+      ...new Set(
+        workoutExercises
+          .filter((exercise) => exercise.sets.some((set) => set.completed))
+          .map((exercise) => exercise.exercise.id)
+      ),
+    ],
     sets: buildWorkoutSetsPayload(workoutExercises),
   };
 }

@@ -8,4 +8,4 @@ export {
 } from "../hooks/use-exercises";
 export { combineTricepsTargets } from "../model/anatomy-targets";
 export type { ExerciseCatalogItem } from "../model/exercise-catalog";
-export { ExerciseDetailsDialog } from "../ui/exercise-details-dialog";
+export { ExerciseDetailsById, ExerciseDetailsDialog } from "../ui/exercise-details-dialog";

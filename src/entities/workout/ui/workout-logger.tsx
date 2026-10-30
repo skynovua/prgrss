@@ -1,6 +1,6 @@
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Dumbbell, Flag, Plus, Timer } from "lucide-react";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { useProfile } from "@/entities/profile";
 import {
@@ -11,6 +11,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
+  Skeleton,
 } from "@/shared/ui";
 
 import type { Exercise, PreviousSetsMap } from "../model/types";
@@ -18,8 +19,13 @@ import { useWorkout } from "../model/use-workout";
 import { getWorkoutReview } from "../model/workout-logging";
 import { ExercisePicker } from "./exercise-picker";
 import { RestTimer } from "./rest-timer";
-import { WorkoutExerciseCard } from "./workout-exercise-card";
 import { WorkoutFinishDialog } from "./workout-finish-dialog";
+
+const WorkoutExerciseList = lazy(() =>
+  import("./workout-exercise-list").then(({ WorkoutExerciseList }) => ({
+    default: WorkoutExerciseList,
+  }))
+);
 
 function WorkoutDurationTimer({ startedAt }: { startedAt: string }) {
   const [now, setNow] = useState(() => Date.now());
@@ -89,12 +95,12 @@ export function WorkoutLogger({
 
   const toggleCollapse = (id: string) =>
     setCollapsedCards((current) => ({ ...current, [id]: !current[id] }));
-  const handleAddExercise = (exercise: Exercise) => {
+  const handleAddExercises = (exercises: Exercise[]) => {
     const previousExercise = workoutExercises.at(-1);
     if (previousExercise?.sets.every((set) => set.completed)) {
       setCollapsedCards((current) => ({ ...current, [previousExercise.instanceId]: true }));
     }
-    addExercise(exercise);
+    exercises.forEach(addExercise);
   };
   const returnToWorkout = () => {
     setReviewOpen(false);
@@ -116,7 +122,7 @@ export function WorkoutLogger({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 pb-[calc(11rem+env(safe-area-inset-bottom))] sm:px-5 md:px-8">
-      <header className="bg-background/95 sticky top-0 z-30 -mx-1 flex items-center justify-between gap-3 px-1 pt-4 pb-3 backdrop-blur">
+      <header className="border-border/30 bg-background/50 sticky top-0 z-30 -mx-4 flex items-center justify-between gap-3 border-b px-4 pt-4 pb-3 backdrop-blur-md sm:-mx-5 sm:px-5 md:-mx-8 md:px-8">
         <Button
           variant="secondary"
           size="icon-lg"
@@ -172,7 +178,7 @@ export function WorkoutLogger({
           <EmptyContent>
             <ExercisePicker
               exercises={exercises}
-              onSelect={handleAddExercise}
+              onSelect={handleAddExercises}
               trigger={
                 <Button variant="primary" size="lg">
                   <Plus data-icon="inline-start" />
@@ -196,19 +202,22 @@ export function WorkoutLogger({
               об’єму
             </span>
           </div>
-          {workoutExercises.map((we, exerciseIndex) => (
-            <WorkoutExerciseCard
-              key={we.instanceId}
-              we={we}
-              exerciseIndex={exerciseIndex}
-              previousSets={previousSets?.[we.exercise.id]}
+          <Suspense fallback={<Skeleton className="h-20 w-full rounded-2xl" />}>
+            <WorkoutExerciseList
+              exercises={workoutExercises}
+              previousSets={previousSets}
               autoRestTimer={profile?.autoRestTimer ?? true}
-              isCollapsed={collapsedCards[we.instanceId] ?? false}
+              collapsedCards={collapsedCards}
               onToggleCollapse={toggleCollapse}
+              onCollapseAll={() =>
+                setCollapsedCards(
+                  Object.fromEntries(workoutExercises.map((we) => [we.instanceId, true]))
+                )
+              }
               dispatch={dispatch}
             />
-          ))}
-          <ExercisePicker exercises={exercises} onSelect={handleAddExercise} />
+          </Suspense>
+          <ExercisePicker exercises={exercises} onSelect={handleAddExercises} />
           <p className="text-muted-foreground px-1 text-center text-xs leading-relaxed">
             Чернетка зберігається на цьому пристрої
           </p>

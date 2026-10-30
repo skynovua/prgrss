@@ -16,6 +16,8 @@ interface ExerciseCardActionsProps {
   exerciseName: string;
   onDelete?: () => void;
   onSettings?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 export function ExerciseCardActions({
@@ -23,6 +25,8 @@ export function ExerciseCardActions({
   exerciseName,
   onDelete,
   onSettings,
+  onMoveUp,
+  onMoveDown,
 }: ExerciseCardActionsProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -62,6 +66,17 @@ export function ExerciseCardActions({
           <DropdownMenuItem onClick={handleOpenStats}>Статистика</DropdownMenuItem>
           {onSettings && (
             <DropdownMenuItem onClick={onSettings}>Налаштування вправи</DropdownMenuItem>
+          )}
+          {(onMoveUp || onMoveDown) && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled={!onMoveUp} onClick={onMoveUp}>
+                Перемістити вище
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!onMoveDown} onClick={onMoveDown}>
+                Перемістити нижче
+              </DropdownMenuItem>
+            </>
           )}
 
           {onDelete && (

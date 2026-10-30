@@ -26,6 +26,7 @@ export type WorkoutAction =
       preferences?: ExerciseLogPreferences;
     }
   | { type: "REMOVE_EXERCISE"; index: number }
+  | { type: "REORDER_EXERCISE"; instanceId: string; toIndex: number }
   | { type: "ADD_SET"; exerciseIndex: number }
   | { type: "UPDATE_SET"; exerciseIndex: number; set: LocalSet }
   | { type: "COMPLETE_SET"; exerciseIndex: number; set: LocalSet; autoTimer: boolean }
@@ -74,6 +75,23 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
           },
         ],
       };
+    }
+
+    case "REORDER_EXERCISE": {
+      const fromIndex = state.exercises.findIndex((item) => item.instanceId === action.instanceId);
+      if (
+        fromIndex < 0 ||
+        !Number.isInteger(action.toIndex) ||
+        action.toIndex < 0 ||
+        action.toIndex >= state.exercises.length ||
+        fromIndex === action.toIndex
+      )
+        return state;
+
+      const exercises = [...state.exercises];
+      const [exercise] = exercises.splice(fromIndex, 1);
+      exercises.splice(action.toIndex, 0, exercise);
+      return { ...state, exercises };
     }
 
     case "REMOVE_EXERCISE":

@@ -1,4 +1,4 @@
-import { EyeOff, Info, Plus, Search, Trash2 } from "lucide-react";
+import { EyeOff, Plus, Search, Trash2 } from "lucide-react";
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/shared/config";
@@ -298,7 +298,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       )}
 
       {Array.from(grouped.entries()).map(([group, exs]) => (
-        <div key={group} className="flex flex-col gap-3">
+        <div key={group} className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3 px-1">
             <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
               {MUSCLE_GROUP_LABELS[group as MuscleGroup] ?? group}
@@ -306,15 +306,19 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             <Badge variant="secondary">{exs.length}</Badge>
           </div>
           {exs.map((exercise) => (
-            <Card key={exercise.id} size="sm" className="active:bg-muted/60 p-0 transition-colors">
-              <CardContent className="flex items-center gap-3 p-3">
+            <Card
+              key={exercise.id}
+              size="sm"
+              className="active:bg-muted/60 p-0 transition-colors data-[size=sm]:py-0"
+            >
+              <CardContent className="flex items-center gap-2 px-3 py-1">
                 <button
                   type="button"
-                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left"
                   onClick={() => setDetailsTarget(exercise)}
                 >
                   {exercise.muscle_group && (
-                    <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="md" />
+                    <MuscleGroupIcon group={exercise.muscle_group as MuscleGroup} size="sm" />
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">{exercise.name}</p>
@@ -330,7 +334,6 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
                       )}
                     </div>
                   </div>
-                  <Info className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
                 </button>
                 {exercise.is_custom && (
                   <Button

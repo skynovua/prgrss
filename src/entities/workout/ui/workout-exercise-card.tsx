@@ -1,13 +1,13 @@
-import { ChevronDown, Clock3, Dumbbell, Plus, Settings2, Timer } from "lucide-react";
+import { Clock3, Plus, Settings2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 
+import { ExerciseDetailsById } from "@/entities/exercise/@x/workout";
 import { cn } from "@/shared/lib";
 import {
   Button,
   Card,
   CardContent,
-  CardHeader,
   ConfirmDialog,
   Dialog,
   DialogContent,
@@ -33,6 +33,7 @@ import { formatRestTime } from "../model/rest-clock";
 import type { ExerciseTrackingType, PreviousSetData, WorkoutExercise } from "../model/types";
 import { TRACKING_TYPES } from "../model/workout-logging";
 import { ExerciseCardActions } from "./exercise-card-actions";
+import { ExerciseCardHeading } from "./exercise-card-heading";
 import { SET_ROW_GRID, SetRow, TIMED_SET_ROW_GRID } from "./set-row";
 
 const REST_OPTIONS = [
@@ -132,8 +133,11 @@ interface WorkoutExerciseCardProps {
   previousSets?: PreviousSetData[];
   autoRestTimer: boolean;
   isCollapsed: boolean;
+  collapseImmediately?: boolean;
   onToggleCollapse: (id: string) => void;
   dispatch: React.ActionDispatch<[action: WorkoutAction]>;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
@@ -142,14 +146,17 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   previousSets,
   autoRestTimer,
   isCollapsed,
+  collapseImmediately = false,
   onToggleCollapse,
   dispatch,
+  onMoveUp,
+  onMoveDown,
 }: WorkoutExerciseCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const timed = we.trackingType === "duration";
   const panelId = `exercise-panel-${we.instanceId}`;
-  const completedSets = we.sets.filter((set) => set.completed).length;
   const weightLabel =
     we.trackingType === "bodyweight"
       ? "Дод. кг"
@@ -158,61 +165,39 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         : "кг";
 
   return (
-    <Card size="sm" className="gap-0 rounded-3xl py-4 data-[size=sm]:gap-0">
-      <CardHeader className="gap-0">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left focus-visible:ring-2 focus-visible:outline-none"
-            onClick={() => onToggleCollapse(we.instanceId)}
-            aria-expanded={!isCollapsed}
-            aria-controls={panelId}
-            aria-label={`${isCollapsed ? "Розгорнути" : "Згорнути"} вправу ${we.exercise.name}`}
-          >
-            <span
-              className="bg-secondary text-secondary-foreground flex size-14 shrink-0 items-center justify-center rounded-xl"
-              aria-hidden="true"
-            >
-              {timed ? <Timer className="size-6" /> : <Dumbbell className="size-6" />}
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-2">
-              <span className="line-clamp-2 text-base leading-snug font-semibold">
-                {we.exercise.name}
-              </span>
-              <span className="text-muted-foreground flex items-center gap-2 text-xs">
-                <span className="tabular-nums">
-                  {completedSets}/{we.sets.length} підходів
-                </span>
-                <ChevronDown
-                  className={cn(
-                    "size-3.5 shrink-0 transition-transform duration-250 motion-reduce:transition-none",
-                    !isCollapsed && "rotate-180"
-                  )}
-                  aria-hidden="true"
-                />
-              </span>
-            </span>
-          </button>
+    <Card size="sm" className="gap-0 rounded-2xl data-[size=sm]:gap-0 data-[size=sm]:py-2">
+      <ExerciseCardHeading
+        name={we.exercise.name}
+        timed={timed}
+        expanded={!isCollapsed}
+        panelId={panelId}
+        sets={we.sets.map((set) => set.completed)}
+        onOpenDetails={() => setDetailsOpen(true)}
+        onToggle={() => onToggleCollapse(we.instanceId)}
+        actions={
           <ExerciseCardActions
             exerciseId={we.exercise.id}
             exerciseName={we.exercise.name}
             onDelete={() => setConfirmOpen(true)}
             onSettings={() => setOptionsOpen(true)}
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
           />
-        </div>
-      </CardHeader>
+        }
+      />
       <div
         id={panelId}
         className={cn(
           "grid transition-[grid-template-rows,opacity] duration-250 ease-out motion-reduce:transition-none",
+          collapseImmediately && "transition-none",
           isCollapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100"
         )}
         aria-hidden={isCollapsed}
         inert={isCollapsed}
       >
         <div className="min-h-0 overflow-hidden">
-          <CardContent className="flex flex-col gap-1 pt-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1">
+          <CardContent className="flex flex-col gap-1 pt-3 group-data-[size=sm]/card:px-3">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1">
               <span className="text-muted-foreground text-xs">
                 {timed
                   ? "Тривалість у секундах"
@@ -298,6 +283,9 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
           </CardContent>
         </div>
       </div>
+      {detailsOpen && (
+        <ExerciseDetailsById exercise={we.exercise} onClose={() => setDetailsOpen(false)} />
+      )}
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

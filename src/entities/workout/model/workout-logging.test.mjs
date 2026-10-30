@@ -238,16 +238,21 @@ test("скасування видалення відновлює потрібн�
   const original = state.exercises[0];
   const set = original.sets[0];
   state = workoutReducer(state, { type: "DELETE_SET", exerciseIndex: 0, setId: set.id });
+  state = workoutReducer(state, {
+    type: "REORDER_EXERCISE",
+    instanceId: original.instanceId,
+    toIndex: 1,
+  });
   state = workoutReducer(state, { type: "RESTORE_SET", exercise: original, exerciseIndex: 0, set });
   assert.deepEqual(
-    state.exercises[0].sets.map((item) => item.id),
+    state.exercises[1].sets.map((item) => item.id),
     original.sets.map((item) => item.id)
   );
   assert.deepEqual(
-    state.exercises[0].sets.map((item) => item.setNumber),
+    state.exercises[1].sets.map((item) => item.setNumber),
     [1, 2]
   );
-  assert.equal(state.exercises[1].sets.length, 1);
+  assert.equal(state.exercises[0].sets.length, 1);
 });
 
 test("payload містить лише виконане, перенумеровує підходи та зберігає секунди й нотатки", () => {
@@ -301,4 +306,104 @@ test("payload відхиляє невалідне виконане та поро
   };
   assert.throws(() => buildWorkoutSetsPayload([exercise]), /не пройшли перевірку/);
   assert.throws(() => buildWorkoutSetsPayload([]), /не пройшли перевірку/);
+});
+
+test("послідовне додавання вибраних вправ зберігає порядок та історію кожної", () => {
+  const selected = [
+    { id: "bench", name: "Жим", equipment: "barbell" },
+    { id: "squat", name: "Присідання", equipment: "barbell" },
+  ];
+  const history = {
+    bench: [{ setNumber: 1, weight: 40, reps: 8, rpe: null, durationS: null }],
+    squat: [{ setNumber: 1, weight: 60, reps: 5, rpe: null, durationS: null }],
+  };
+  const result = selected.reduce(
+    (state, exercise) =>
+      workoutReducer(state, {
+        type: "ADD_EXERCISE",
+        exercise,
+        previousSets: history[exercise.id],
+      }),
+    createInitialState()
+  );
+  assert.deepEqual(
+    result.exercises.map((item) => item.exercise.id),
+    ["bench", "squat"]
+  );
+  assert.deepEqual(
+    result.exercises.map((item) => item.sets[0].weight),
+    [40, 60]
+  );
+  assert.notEqual(result.exercises[0].instanceId, result.exercises[1].instanceId);
+});
+
+test("перестановка зберігає підходи, порядок і стани окремих екземплярів", () => {
+  let state = createInitialState();
+  for (const id of ["first", "second", "third"]) {
+    state = workoutReducer(state, {
+      type: "ADD_EXERCISE",
+      exercise: { id, name: id, equipment: "barbell" },
+    });
+  }
+  const first = state.exercises[0];
+  const edited = { ...first.sets[0], inputValues: { weight: "37,5" }, reps: 8 };
+  state = workoutReducer(state, { type: "UPDATE_SET", exerciseIndex: 0, set: edited });
+  const moved = workoutReducer(state, {
+    type: "REORDER_EXERCISE",
+    instanceId: first.instanceId,
+    toIndex: 2,
+  });
+  assert.deepEqual(
+    moved.exercises.map((item) => item.exercise.id),
+    ["second", "third", "first"]
+  );
+  assert.deepEqual(moved.exercises[2].sets[0], edited);
+  assert.equal(moved.exercises[2].instanceId, first.instanceId);
+  assert.equal(
+    workoutReducer(moved, { type: "REORDER_EXERCISE", instanceId: "missing", toIndex: 1 }),
+    moved
+  );
+  assert.equal(
+    workoutReducer(moved, { type: "REORDER_EXERCISE", instanceId: first.instanceId, toIndex: -1 }),
+    moved
+  );
+});
+
+test("збереження та відновлення зберігають порядок вправ і стару історію", async () => {
+  const { orderWorkoutSets } = await import("./workout-order.ts");
+  const sets = [
+    { exercise_id: "a", set_number: 1 },
+    { exercise_id: "b", set_number: 1 },
+    { exercise_id: "a", set_number: 2 },
+    { exercise_id: "c", set_number: 1 },
+  ];
+  assert.deepEqual(
+    orderWorkoutSets(sets, ["b", "a"]).map((set) => set.exercise_id),
+    ["b", "a", "a", "c"]
+  );
+  assert.deepEqual(orderWorkoutSets(sets, null), sets);
+  assert.deepEqual(
+    sets.map((set) => set.exercise_id),
+    ["a", "b", "a", "c"]
+  );
+  let state = createInitialState();
+  for (const id of ["b", "a"]) {
+    state = workoutReducer(state, {
+      type: "ADD_EXERCISE",
+      exercise: { id, name: id, equipment: "barbell" },
+    });
+    const i = state.exercises.length - 1;
+    state = workoutReducer(state, {
+      type: "COMPLETE_SET",
+      exerciseIndex: i,
+      autoTimer: false,
+      set: { ...state.exercises[i].sets[0], completed: true, weight: 10, reps: 5 },
+    });
+  }
+  const payload = buildSaveWorkoutPayload({
+    workoutExercises: state.exercises,
+    startedAt: state.startedAt,
+    finishedAt: state.startedAt,
+  });
+  assert.deepEqual(payload.exercise_order, ["b", "a"]);
 });
