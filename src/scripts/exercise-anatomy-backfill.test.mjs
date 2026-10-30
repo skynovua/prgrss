@@ -132,7 +132,9 @@ test("профілі використовують наявні м’язи сх�
       )
     )
     .join("");
-  const svgKeys = new Set([...svg.matchAll(/data-muscle-key="([^"]+)"/g)].map((m) => m[1]));
+  const svgKeys = new Set(
+    [...svg.matchAll(/data-muscle-(?:parent-)?key="([^"]+)"/g)].map((m) => m[1])
+  );
   const knownKeys = new Set(anatomicalMuscles.map((m) => m.key));
   const profiles = systemExercises.map((e) => e.muscles);
   for (const muscles of profiles) {
@@ -167,6 +169,63 @@ test("мапа містить усі м’язи каталогу та дост�
       assert.match(interactive[0][0], /role="button"/);
       assert.match(interactive[0][0], /aria-label="[^"]+"/);
     }
+    for (const match of svg.matchAll(/data-muscle-parent-key="([^"]+)"/g)) {
+      mapKeys.add(match[1]);
+    }
   }
   assert.deepEqual(mapKeys, new Set(anatomicalMuscles.map((muscle) => muscle.key)));
+});
+
+test("профілі зберігають трицепс цілісним і розрізняють частини дельт", () => {
+  const profile = (key) =>
+    new Map(
+      systemExercises
+        .find((item) => item.key === key)
+        .muscles.map((target) => [target.muscle_key, target.activation_score])
+    );
+  for (const key of ["overhead-cable-extension", "triceps-pushdown"]) {
+    assert.ok(profile(key).has("triceps_brachii"));
+    assert.equal(profile(key).has("triceps_long_head"), false);
+    assert.equal(profile(key).has("triceps_lateral_head"), false);
+  }
+  assert.ok(profile("front-raise").has("deltoid_anterior"));
+  assert.equal(profile("front-raise").has("deltoid_posterior"), false);
+  assert.ok(profile("rear-delt-fly").has("deltoid_posterior"));
+  assert.equal(profile("rear-delt-fly").has("deltoid_anterior"), false);
+  assert.equal(
+    resolveExerciseAnatomy(exercise({ is_custom: true, catalog_key: "triceps-pushdown" })),
+    null
+  );
+});
+
+test("розгинання ніг має більший акцент на прямому м’язі стегна, ніж присідання", () => {
+  const score = (key) =>
+    systemExercises
+      .find((item) => item.key === key)
+      .muscles.find((target) => target.muscle_key === "rectus_femoris").activation_score;
+  assert.ok(score("leg-extension") > score("back-squat"));
+  assert.ok(score("leg-extension") > score("leg-press"));
+});
+
+test("міграція містить актуальні профілі ділянок для всіх системних вправ", () => {
+  const migration = readFileSync(
+    new URL("../../supabase/migrations/00032_exercise_muscle_regions.sql", import.meta.url),
+    "utf8"
+  );
+  const rows = [
+    ...migration.matchAll(
+      /\('([^']+)', '[^']+', '[^']+', '(deltoid_anterior|deltoid_posterior)', (\d+)\)/g
+    ),
+  ];
+  const actual = new Map(
+    rows.map(([, exerciseKey, muscleKey, score]) => [`${exerciseKey}:${muscleKey}`, Number(score)])
+  );
+  for (const exercise of systemExercises) {
+    for (const target of exercise.muscles.filter((muscle) =>
+      /^(deltoid_(anterior|posterior))$/.test(muscle.muscle_key)
+    )) {
+      assert.equal(actual.get(`${exercise.key}:${target.muscle_key}`), target.activation_score);
+    }
+  }
+  assert.match(migration, /e\.is_custom = false and e\.user_id is null/);
 });

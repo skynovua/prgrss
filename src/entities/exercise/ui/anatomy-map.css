@@ -1,27 +1,28 @@
-:where(
-  .anatomy-map__figure[data-interactive="true"] .anatomy-muscle
-) {
+:where(.anatomy-map__figure > div > svg > path:first-child) {
+  opacity: 0.72;
+}
+
+:where(.anatomy-map__figure > div > svg > path:not(:first-child)) {
+  fill: transparent;
+}
+
+:where(.anatomy-map__figure[data-interactive="true"] .anatomy-muscle) {
   cursor: pointer;
   pointer-events: all;
 }
 
-:where(
-  .anatomy-map__figure[data-interactive="true"] .anatomy-muscle:hover
-) {
-  fill: var(--primary) !important;
-  fill-opacity: 0.2 !important;
-  stroke: var(--primary) !important;
+:where(.anatomy-map__figure[data-interactive="true"] .anatomy-muscle:hover) {
+  fill: var(--foreground) !important;
+  fill-opacity: 0.14 !important;
+  stroke: var(--muted-foreground) !important;
   stroke-opacity: 1 !important;
 }
 
-:where(
-  .anatomy-map__figure[data-interactive="true"]
-    .anatomy-muscle:focus-visible
-) {
-  fill: var(--primary) !important;
-  fill-opacity: 0.25 !important;
+:where(.anatomy-map__figure[data-interactive="true"] .anatomy-muscle:focus-visible) {
+  fill: var(--foreground) !important;
+  fill-opacity: 0.2 !important;
   outline: none;
-  stroke: var(--primary) !important;
+  stroke: var(--foreground) !important;
   stroke-opacity: 1 !important;
   stroke-width: 3px;
 }

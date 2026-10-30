@@ -30,13 +30,14 @@ interface AnatomyFigureProps {
   selectedMuscleKey?: string | null;
   onMuscleSelect?: (muscleKey: string) => void;
   compact: boolean;
+  availableMuscleKeys: Set<string>;
 }
 
 function collectMuscleKeys(...sources: string[]) {
   const muscleKeys = new Set<string>();
 
   for (const source of sources) {
-    for (const match of source.matchAll(/data-muscle-key="([^"]+)"/g)) {
+    for (const match of source.matchAll(/data-muscle-(?:parent-)?key="([^"]+)"/g)) {
       muscleKeys.add(match[1]);
     }
   }
@@ -56,33 +57,31 @@ function isAnatomyMuscleKey(value: string) {
   return ANATOMY_MUSCLE_KEYS.has(value);
 }
 
-function getMuscleKey(target: EventTarget | null) {
+function getMuscleKey(target: EventTarget | null, availableMuscleKeys: Set<string>) {
   if (!(target instanceof Element)) {
     return null;
   }
 
-  return target.closest<SVGElement>("[data-muscle-key]")?.dataset.muscleKey ?? null;
+  const region = target.closest<SVGElement>("[data-muscle-key]");
+  const key = region?.dataset.muscleKey;
+  if (key && availableMuscleKeys.has(key)) return key;
+  const parentKey = region?.dataset.muscleParentKey;
+  return parentKey && availableMuscleKeys.has(parentKey) ? parentKey : null;
 }
 
-function getHighlightOpacity(score: number) {
-  if (score >= 8) {
-    return 0.7;
-  }
-
-  if (score >= 4) {
-    return 0.35;
-  }
-
-  return 0.15;
-}
-
-function createHighlightRule(scopeId: string, muscleKey: string, opacity: number) {
+function createHighlightRule(
+  scopeId: string,
+  muscleKey: string,
+  score: number,
+  includeChildren: boolean
+) {
+  const level = Math.round(Math.min(10, Math.max(1, score)));
   return `
-    #${scopeId} .anatomy-muscle[data-muscle-key="${muscleKey}"] {
-      fill: var(--primary) !important;
-      fill-opacity: ${opacity} !important;
-      stroke: var(--primary) !important;
-      stroke-opacity: 1 !important;
+    #${scopeId} .anatomy-muscle[data-muscle-key="${muscleKey}"]${includeChildren ? `, #${scopeId} .anatomy-muscle[data-muscle-parent-key="${muscleKey}"]` : ""} {
+      fill: url(#${scopeId}-gradient-${level}) !important;
+      fill-opacity: 1 !important;
+      stroke: var(--muted-foreground) !important;
+      stroke-opacity: 0.8 !important;
     }
   `;
 }
@@ -106,12 +105,20 @@ function createHighlightStyles({
     highlightByKey.set(highlight.muscleKey, highlight.activationScore);
   }
 
+  const childKeysByParent: Record<string, string[]> = {
+    deltoids: ["deltoid_anterior", "deltoid_posterior"],
+  };
   const rules = Array.from(highlightByKey, ([muscleKey, score]) =>
-    createHighlightRule(scopeId, muscleKey, getHighlightOpacity(score))
+    createHighlightRule(
+      scopeId,
+      muscleKey,
+      score,
+      !childKeysByParent[muscleKey]?.some((key) => highlightByKey.has(key))
+    )
   );
 
   if (selectedMuscleKey && isAnatomyMuscleKey(selectedMuscleKey)) {
-    rules.push(createHighlightRule(scopeId, selectedMuscleKey, 0.78));
+    rules.push(createHighlightRule(scopeId, selectedMuscleKey, 10, true));
   }
 
   return rules.join("\n");
@@ -124,6 +131,7 @@ function AnatomyFigure({
   selectedMuscleKey,
   onMuscleSelect,
   compact,
+  availableMuscleKeys,
 }: AnatomyFigureProps) {
   const reactId = useId();
   const scopeId = `anatomy-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
@@ -140,7 +148,7 @@ function AnatomyFigure({
   );
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
-    const muscleKey = getMuscleKey(event.target);
+    const muscleKey = getMuscleKey(event.target, availableMuscleKeys);
 
     if (muscleKey) {
       onMuscleSelect?.(muscleKey);
@@ -152,7 +160,7 @@ function AnatomyFigure({
       return;
     }
 
-    const muscleKey = getMuscleKey(event.target);
+    const muscleKey = getMuscleKey(event.target, availableMuscleKeys);
 
     if (!muscleKey) {
       return;
@@ -180,6 +188,35 @@ function AnatomyFigure({
     >
       {highlightStyles && <style>{highlightStyles}</style>}
 
+      <svg aria-hidden="true" className="absolute size-0" focusable="false">
+        <defs>
+          {Array.from({ length: 10 }, (_, index) => {
+            const level = index + 1;
+            return (
+              <linearGradient
+                key={level}
+                id={`${scopeId}-gradient-${level}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  stopColor="var(--foreground)"
+                  stopOpacity={0.06 + level * 0.025}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--foreground)"
+                  stopOpacity={0.12 + level * 0.045}
+                />
+              </linearGradient>
+            );
+          })}
+        </defs>
+      </svg>
+
       <div className="w-full" dangerouslySetInnerHTML={{ __html: source }} />
     </div>
   );
@@ -196,6 +233,10 @@ export const AnatomyMap = memo(function AnatomyMap({
 }: AnatomyMapProps) {
   const [view, setView] = useState<AnatomyView>("front");
 
+  const availableMuscleKeys = useMemo(
+    () => new Set(muscles.map((muscle) => muscle.key)),
+    [muscles]
+  );
   const selectedMuscle = muscles.find((muscle) => muscle.key === selectedMuscleKey);
 
   const handleViewChange = (value: string) => {
@@ -220,6 +261,7 @@ export const AnatomyMap = memo(function AnatomyMap({
                 selectedMuscleKey={selectedMuscleKey}
                 onMuscleSelect={onMuscleSelect}
                 compact={compact}
+                availableMuscleKeys={availableMuscleKeys}
               />
               <figcaption className="text-muted-foreground text-center text-xs">{label}</figcaption>
             </figure>
@@ -240,6 +282,7 @@ export const AnatomyMap = memo(function AnatomyMap({
               selectedMuscleKey={selectedMuscleKey}
               onMuscleSelect={onMuscleSelect}
               compact={compact}
+              availableMuscleKeys={availableMuscleKeys}
             />
           </TabsContent>
 
@@ -251,6 +294,7 @@ export const AnatomyMap = memo(function AnatomyMap({
               selectedMuscleKey={selectedMuscleKey}
               onMuscleSelect={onMuscleSelect}
               compact={compact}
+              availableMuscleKeys={availableMuscleKeys}
             />
           </TabsContent>
         </Tabs>

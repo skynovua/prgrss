@@ -293,6 +293,10 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         Знайдено {filtered.length} із {exercises.length} вправ
       </p>
 
+      {selectedMuscleKey && (
+        <p className="text-muted-foreground text-xs">Оцінки залучення орієнтовні.</p>
+      )}
+
       {Array.from(grouped.entries()).map(([group, exs]) => (
         <div key={group} className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3 px-1">

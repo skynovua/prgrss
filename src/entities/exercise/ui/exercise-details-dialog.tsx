@@ -53,8 +53,9 @@ export function ExerciseDetailsDialog({
   open,
   onOpenChange,
 }: ExerciseDetailsDialogProps) {
-  const primaryMuscles = exercise?.muscles.filter((muscle) => muscle.activationScore >= 8) ?? [];
-  const secondaryMuscles = exercise?.muscles.filter((muscle) => muscle.activationScore < 8) ?? [];
+  const muscles = exercise?.muscles ?? [];
+  const primaryMuscles = muscles.filter((muscle) => muscle.activationScore >= 8);
+  const secondaryMuscles = muscles.filter((muscle) => muscle.activationScore < 8);
   const mapMuscles =
     exercise?.muscles.map((muscle) => ({ key: muscle.muscleKey, name: muscle.name })) ?? [];
 
@@ -94,6 +95,12 @@ export function ExerciseDetailsDialog({
 
             <MuscleList title="Основні" muscles={primaryMuscles} />
             <MuscleList title="Додаткові" muscles={secondaryMuscles} />
+            {exercise.muscles.length > 0 && (
+              <p className="text-muted-foreground text-xs">
+                Ділянки входять до складу відповідного м’яза. Оцінки та зони умовні: техніка й
+                індивідуальні особливості змінюють навантаження.
+              </p>
+            )}
           </div>
         )}
       </DialogContent>

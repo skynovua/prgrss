@@ -18,7 +18,7 @@
     "db:sync-achievements": "node scripts/sync-achievement-config.mjs",
     "db:sync-exercises": "node --env-file-if-exists=.env.local src/scripts/sync-exercise-catalog.mjs",
     "db:backfill-exercise-anatomy": "node --env-file-if-exists=.env.local src/scripts/backfill-exercise-anatomy.mjs",
-    "test:exercise-catalog": "node --test src/scripts/exercise-anatomy-backfill.test.mjs"
+    "test:exercise-catalog": "node --experimental-strip-types --test src/scripts/exercise-anatomy-backfill.test.mjs src/entities/exercise/model/anatomy-targets.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

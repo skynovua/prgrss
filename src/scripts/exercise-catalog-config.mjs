@@ -25,6 +25,8 @@ export const anatomicalMuscles = [
   { key: "adductors", name: "Привідні м'язи", muscle_group: "legs", sort_order: 16 },
   { key: "calves", name: "Литкові", muscle_group: "legs", sort_order: 17 },
   { key: "tibialis_anterior", name: "Передня гомілка", muscle_group: "legs", sort_order: 18 },
+  { key: "deltoid_anterior", name: "Передня дельта", muscle_group: "shoulders", sort_order: 21 },
+  { key: "deltoid_posterior", name: "Задня дельта", muscle_group: "shoulders", sort_order: 22 },
 ];
 
 export const systemExercises = [
@@ -653,3 +655,62 @@ export const systemExercises = [
     muscles: targets(["external_obliques", 10], ["rectus_abdominis", 7], ["serratus_anterior", 4]),
   },
 ];
+
+// Орієнтовний акцент, а не вимірювання EMG або прогноз росту м’язів.
+// Загальні ключі залишаються для сумісності з власними та старими вправами.
+const frontDeltoid = new Set([
+  "barbell-bench-press",
+  "dumbbell-bench-press",
+  "incline-barbell-bench-press",
+  "incline-dumbbell-bench-press",
+  "decline-dumbbell-bench-press",
+  "dumbbell-fly",
+  "cable-fly",
+  "machine-chest-press",
+  "machine-incline-chest-press",
+  "pec-deck",
+  "push-up",
+  "chest-dip",
+  "barbell-overhead-press",
+  "dumbbell-shoulder-press",
+  "machine-shoulder-press",
+  "arnold-press",
+  "front-raise",
+  "close-grip-bench-press",
+  "ab-wheel-rollout",
+]);
+const rearDeltoid = new Set([
+  "seated-cable-row",
+  "chest-supported-row",
+  "rear-delt-fly",
+  "reverse-pec-deck",
+  "face-pull",
+]);
+
+for (const exercise of systemExercises) {
+  const deltoid = exercise.muscles.find((target) => target.muscle_key === "deltoids");
+  if (deltoid && frontDeltoid.has(exercise.key)) {
+    exercise.muscles.push(...targets(["deltoid_anterior", deltoid.activation_score]));
+  }
+  if (deltoid && rearDeltoid.has(exercise.key)) {
+    exercise.muscles.push(...targets(["deltoid_posterior", deltoid.activation_score]));
+  }
+}
+
+// Прямий м’яз стегна працює і в багатосуглобових рухах, але його акцент
+// зазвичай нижчий, ніж у розгинанні коліна; значення умовні.
+const rectusFemorisScores = {
+  "back-squat": 6,
+  "front-squat": 7,
+  "goblet-squat": 7,
+  "leg-press": 6,
+  "hack-squat": 7,
+  "bulgarian-split-squat": 7,
+  "barbell-lunge": 7,
+  "step-up": 7,
+};
+for (const exercise of systemExercises) {
+  const score = rectusFemorisScores[exercise.key];
+  const target = exercise.muscles.find((muscle) => muscle.muscle_key === "rectus_femoris");
+  if (target && score) target.activation_score = score;
+}

@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/api";
 
+import { combineTricepsTargets, isTricepsHead } from "../model/anatomy-targets";
 import type {
   CreateExerciseInput,
   ExerciseCatalogItem,
@@ -57,8 +58,8 @@ export async function fetchExercises(): Promise<ExerciseCatalogItem[]> {
 
   return (data ?? []).map(({ exercise_muscles, ...exercise }) => ({
     ...exercise,
-    muscles: exercise_muscles
-      .flatMap(({ activation_score, anatomical_muscles }) =>
+    muscles: combineTricepsTargets(
+      exercise_muscles.flatMap(({ activation_score, anatomical_muscles }) =>
         anatomical_muscles
           ? [
               {
@@ -71,10 +72,10 @@ export async function fetchExercises(): Promise<ExerciseCatalogItem[]> {
             ]
           : []
       )
-      .sort(
-        (left, right) =>
-          right.activationScore - left.activationScore || left.sortOrder - right.sortOrder
-      ),
+    ).sort(
+      (left, right) =>
+        right.activationScore - left.activationScore || left.sortOrder - right.sortOrder
+    ),
   }));
 }
 
@@ -86,7 +87,7 @@ export async function fetchAnatomicalMuscles() {
     .order("sort_order");
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).filter((muscle) => !isTricepsHead(muscle.key));
 }
 
 export async function createExercise(formData: CreateExerciseInput) {
