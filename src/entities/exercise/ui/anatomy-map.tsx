@@ -179,7 +179,7 @@ function AnatomyFigure({
       inert={interactive ? undefined : true}
       data-interactive={interactive ? "true" : "false"}
       className={cn(
-        "anatomy-map__figure mx-auto w-full touch-manipulation select-none",
+        "anatomy-map__figure mx-auto w-full touch-manipulation select-none [&>div>svg>path:first-child]:opacity-95",
         compact ? "max-w-44" : "max-w-72"
       )}
       onClick={interactive ? handleClick : undefined}
@@ -201,15 +201,11 @@ function AnatomyFigure({
                 x2="0"
                 y2="1"
               >
-                <stop
-                  offset="0%"
-                  stopColor="var(--foreground)"
-                  stopOpacity={0.06 + level * 0.025}
-                />
+                <stop offset="0%" stopColor="var(--foreground)" stopOpacity={0.14 + level * 0.02} />
                 <stop
                   offset="100%"
                   stopColor="var(--foreground)"
-                  stopOpacity={0.12 + level * 0.045}
+                  stopOpacity={0.2 + level * 0.044}
                 />
               </linearGradient>
             );
@@ -263,7 +259,7 @@ export const AnatomyMap = memo(function AnatomyMap({
                 compact={compact}
                 availableMuscleKeys={availableMuscleKeys}
               />
-              <figcaption className="text-muted-foreground text-center text-xs">{label}</figcaption>
+              <figcaption className="sr-only">{label}</figcaption>
             </figure>
           ))}
         </div>

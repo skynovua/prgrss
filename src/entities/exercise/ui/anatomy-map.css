@@ -1,7 +1,3 @@
-:where(.anatomy-map__figure > div > svg > path:first-child) {
-  opacity: 0.72;
-}
-
 :where(.anatomy-map__figure > div > svg > path:not(:first-child)) {
   fill: transparent;
 }
