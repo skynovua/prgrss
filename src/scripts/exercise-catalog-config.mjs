@@ -16,7 +16,7 @@ export const anatomicalMuscles = [
   { key: "gluteus_maximus", name: "Сідниці", muscle_group: "legs", sort_order: 12 },
   {
     key: "quadriceps",
-    name: "Квадрицепси (зовнішня частина)",
+    name: "Квадрицепси (широкі м’язи)",
     muscle_group: "legs",
     sort_order: 13,
   },

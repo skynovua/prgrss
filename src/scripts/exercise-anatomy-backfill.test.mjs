@@ -148,3 +148,25 @@ test("профілі використовують наявні м’язи сх�
     }
   }
 });
+
+test("мапа містить усі м’язи каталогу та доступний вибір для кожного ключа", () => {
+  const mapKeys = new Set();
+  for (const view of ["front", "back"]) {
+    const svg = readFileSync(
+      new URL(`../entities/exercise/ui/anatomy-assets/${view}-organized.svg`, import.meta.url),
+      "utf8"
+    );
+    const paths = [...svg.matchAll(/<path\b[^>]*data-muscle-key="([^"]+)"[^>]*>/g)];
+    const keys = new Set(paths.map((match) => match[1]));
+    for (const key of keys) {
+      mapKeys.add(key);
+      const interactive = paths.filter(
+        (match) => match[1] === key && /tabindex="0"/.test(match[0])
+      );
+      assert.equal(interactive.length, 1, `${view}: ${key}`);
+      assert.match(interactive[0][0], /role="button"/);
+      assert.match(interactive[0][0], /aria-label="[^"]+"/);
+    }
+  }
+  assert.deepEqual(mapKeys, new Set(anatomicalMuscles.map((muscle) => muscle.key)));
+});

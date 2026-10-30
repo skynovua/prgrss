@@ -171,7 +171,7 @@ function AnatomyFigure({
       inert={interactive ? undefined : true}
       data-interactive={interactive ? "true" : "false"}
       className={cn(
-        "anatomy-map__figure [&_path]:stroke-muted-foreground mx-auto aspect-[792/1427] touch-manipulation select-none",
+        "anatomy-map__figure mx-auto w-full touch-manipulation select-none",
         compact ? "max-w-44" : "max-w-72"
       )}
       onClick={interactive ? handleClick : undefined}
@@ -180,7 +180,7 @@ function AnatomyFigure({
     >
       {highlightStyles && <style>{highlightStyles}</style>}
 
-      <div className="h-full w-full" dangerouslySetInnerHTML={{ __html: source }} />
+      <div className="w-full" dangerouslySetInnerHTML={{ __html: source }} />
     </div>
   );
 }

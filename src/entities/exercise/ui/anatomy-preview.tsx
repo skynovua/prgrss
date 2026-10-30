@@ -15,7 +15,6 @@ export function AnatomyPreview({ highlights }: { highlights: ExerciseMuscleTarge
         muscles={highlights.map((muscle) => ({ key: muscle.muscleKey, name: muscle.name }))}
         highlights={highlights}
         layout="both"
-        className="[&_path]:stroke-muted-foreground"
         compact
       />
     </Suspense>
