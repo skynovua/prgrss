@@ -1,5 +1,5 @@
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
-import { Check, Clock3, Dumbbell, Plus, Timer } from "lucide-react";
+import { Dumbbell, Flag, Plus, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useProfile } from "@/entities/profile";
@@ -116,33 +116,36 @@ export function WorkoutLogger({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 pb-[calc(11rem+env(safe-area-inset-bottom))] sm:px-5 md:px-8">
-      <header className="bg-background/95 sticky top-0 z-30 -mx-1 flex items-center justify-between gap-2 border-b px-1 pt-5 pb-4 backdrop-blur">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-medium tracking-tight">Тренування</h1>
-          {hasExercises && (
-            <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-xs">
-              <Clock3 className="size-3.5" />
+      <header className="bg-background/95 sticky top-0 z-30 -mx-1 flex items-center justify-between gap-3 px-1 pt-4 pb-3 backdrop-blur">
+        <Button
+          variant="secondary"
+          size="icon-lg"
+          className="rounded-full"
+          onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}
+          aria-label="Відкрити таймер відпочинку"
+        >
+          <Timer />
+        </Button>
+        <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
+          <h1 className="text-muted-foreground text-xs font-medium">Тренування</h1>
+          <div className="h-8 overflow-hidden text-2xl leading-8 tracking-tight">
+            {hasExercises ? (
               <WorkoutDurationTimer startedAt={startedAt} />
-            </p>
-          )}
+            ) : (
+              <span className="font-medium tabular-nums">00:00</span>
+            )}
+          </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-11"
-            onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}
-            aria-label="Відкрити таймер відпочинку"
-          >
-            <Timer />
-          </Button>
-          {hasExercises && (
-            <Button variant="outline" onClick={() => setReviewOpen(true)} disabled={saving}>
-              <Check data-icon="inline-start" />
-              Завершити
-            </Button>
-          )}
-        </div>
+        <Button
+          variant="secondary"
+          size="icon-lg"
+          className="rounded-full"
+          onClick={() => setReviewOpen(true)}
+          disabled={saving || !hasExercises}
+          aria-label="Перевірити й завершити тренування"
+        >
+          <Flag />
+        </Button>
       </header>
       {historyPending && (
         <p role="status" className="text-muted-foreground text-sm">

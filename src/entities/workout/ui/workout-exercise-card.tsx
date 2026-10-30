@@ -1,4 +1,4 @@
-import { Clock3, Plus, Settings2 } from "lucide-react";
+import { ChevronDown, Clock3, Dumbbell, Plus, Settings2, Timer } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 
@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
   ConfirmDialog,
   Dialog,
   DialogContent,
@@ -34,7 +33,6 @@ import { formatRestTime } from "../model/rest-clock";
 import type { ExerciseTrackingType, PreviousSetData, WorkoutExercise } from "../model/types";
 import { TRACKING_TYPES } from "../model/workout-logging";
 import { ExerciseCardActions } from "./exercise-card-actions";
-import { ExerciseSetIndicators } from "./exercise-set-indicators";
 import { SET_ROW_GRID, SetRow, TIMED_SET_ROW_GRID } from "./set-row";
 
 const REST_OPTIONS = [
@@ -150,6 +148,8 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const timed = we.trackingType === "duration";
+  const panelId = `exercise-panel-${we.instanceId}`;
+  const completedSets = we.sets.filter((set) => set.completed).length;
   const weightLabel =
     we.trackingType === "bodyweight"
       ? "Дод. кг"
@@ -158,24 +158,40 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         : "кг";
 
   return (
-    <Card size="sm" className="gap-3 py-4">
-      <CardHeader className="gap-2">
-        <div className="flex items-start justify-between gap-2">
+    <Card size="sm" className="gap-0 rounded-3xl py-4 data-[size=sm]:gap-0">
+      <CardHeader className="gap-0">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            className="focus-visible:ring-ring min-w-0 flex-1 rounded-md text-left focus-visible:ring-2 focus-visible:outline-none"
+            className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left focus-visible:ring-2 focus-visible:outline-none"
             onClick={() => onToggleCollapse(we.instanceId)}
             aria-expanded={!isCollapsed}
+            aria-controls={panelId}
             aria-label={`${isCollapsed ? "Розгорнути" : "Згорнути"} вправу ${we.exercise.name}`}
           >
-            <CardTitle className="line-clamp-2 text-base leading-snug">
-              {we.exercise.name}
-            </CardTitle>
-            {isCollapsed && (
-              <div className="mt-2">
-                <ExerciseSetIndicators sets={we.sets} />
-              </div>
-            )}
+            <span
+              className="bg-secondary text-secondary-foreground flex size-14 shrink-0 items-center justify-center rounded-xl"
+              aria-hidden="true"
+            >
+              {timed ? <Timer className="size-6" /> : <Dumbbell className="size-6" />}
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-2">
+              <span className="line-clamp-2 text-base leading-snug font-semibold">
+                {we.exercise.name}
+              </span>
+              <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                <span className="tabular-nums">
+                  {completedSets}/{we.sets.length} підходів
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "size-3.5 shrink-0 transition-transform duration-250 motion-reduce:transition-none",
+                    !isCollapsed && "rotate-180"
+                  )}
+                  aria-hidden="true"
+                />
+              </span>
+            </span>
           </button>
           <ExerciseCardActions
             exerciseId={we.exercise.id}
@@ -184,94 +200,104 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
             onSettings={() => setOptionsOpen(true)}
           />
         </div>
-        {!isCollapsed && (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-muted-foreground text-xs">
-              {timed
-                ? "Тривалість у секундах"
-                : we.trackingType === "bodyweight"
-                  ? "Додаткова вага необов’язкова"
-                  : usesDoubleWeight(we.exercise)
-                    ? "Вага однієї гантелі"
-                    : "Вага снаряда"}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="-ml-2"
-              onClick={() => setOptionsOpen(true)}
-              aria-label={`Налаштувати відпочинок · ${we.exercise.name}`}
-            >
-              <Clock3 data-icon="inline-start" />
-              {we.restSeconds > 0 ? formatRestTime(we.restSeconds) : "Без таймера"}
-            </Button>
-          </div>
-        )}
       </CardHeader>
-      {!isCollapsed && (
-        <CardContent className="flex flex-col gap-1">
-          <div
-            className={cn(
-              timed ? TIMED_SET_ROW_GRID : SET_ROW_GRID,
-              "text-muted-foreground px-1 text-center text-xs font-medium"
-            )}
-            aria-hidden="true"
-          >
-            <span>№</span>
-            <span>{timed ? "Час, с" : weightLabel}</span>
-            {!timed && <span>Повт.</span>}
-            <span className="sr-only">Виконано</span>
-          </div>
-          {we.sets.map((set) => (
-            <SetRow
-              key={`${set.id}-${we.trackingType}`}
-              set={set}
-              trackingType={we.trackingType}
-              exerciseName={we.exercise.name}
-              previousSet={previousSets?.find((previous) => previous.setNumber === set.setNumber)}
-              onUpdate={(updated) => dispatch({ type: "UPDATE_SET", exerciseIndex, set: updated })}
-              onComplete={(updated) =>
-                dispatch({
-                  type: "COMPLETE_SET",
-                  exerciseIndex,
-                  set: updated,
-                  autoTimer: autoRestTimer,
-                })
-              }
-              onDelete={() => {
-                dispatch({ type: "DELETE_SET", exerciseIndex, setId: set.id });
-                toast("Підхід видалено", {
-                  action: {
-                    label: "Скасувати",
-                    onClick: () =>
-                      dispatch({ type: "RESTORE_SET", exercise: we, exerciseIndex, set }),
-                  },
-                });
-              }}
-            />
-          ))}
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-11 flex-1"
-              onClick={() => dispatch({ type: "ADD_SET", exerciseIndex })}
+      <div
+        id={panelId}
+        className={cn(
+          "grid transition-[grid-template-rows,opacity] duration-250 ease-out motion-reduce:transition-none",
+          isCollapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100"
+        )}
+        aria-hidden={isCollapsed}
+        inert={isCollapsed}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <CardContent className="flex flex-col gap-1 pt-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1">
+              <span className="text-muted-foreground text-xs">
+                {timed
+                  ? "Тривалість у секундах"
+                  : we.trackingType === "bodyweight"
+                    ? "Додаткова вага необов’язкова"
+                    : usesDoubleWeight(we.exercise)
+                      ? "Вага однієї гантелі"
+                      : "Вага снаряда"}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="rounded-full"
+                onClick={() => setOptionsOpen(true)}
+                aria-label={`Налаштувати відпочинок · ${we.exercise.name}`}
+              >
+                <Clock3 data-icon="inline-start" />
+                {we.restSeconds > 0 ? formatRestTime(we.restSeconds) : "Без таймера"}
+              </Button>
+            </div>
+            <div
+              className={cn(
+                timed ? TIMED_SET_ROW_GRID : SET_ROW_GRID,
+                "text-muted-foreground px-1 text-center text-xs font-medium"
+              )}
+              aria-hidden="true"
             >
-              <Plus data-icon="inline-start" />
-              Додати підхід
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-11"
-              onClick={() => setOptionsOpen(true)}
-              aria-label={`Налаштування вправи ${we.exercise.name}`}
-            >
-              <Settings2 />
-            </Button>
-          </div>
-        </CardContent>
-      )}
+              <span>Сет</span>
+              <span>{timed ? "Час, с" : weightLabel}</span>
+              {!timed && <span>Повт.</span>}
+              <span className="sr-only">Виконано</span>
+            </div>
+            {we.sets.map((set) => (
+              <SetRow
+                key={`${set.id}-${we.trackingType}`}
+                set={set}
+                trackingType={we.trackingType}
+                exerciseName={we.exercise.name}
+                previousSet={previousSets?.find((previous) => previous.setNumber === set.setNumber)}
+                onUpdate={(updated) =>
+                  dispatch({ type: "UPDATE_SET", exerciseIndex, set: updated })
+                }
+                onComplete={(updated) =>
+                  dispatch({
+                    type: "COMPLETE_SET",
+                    exerciseIndex,
+                    set: updated,
+                    autoTimer: autoRestTimer,
+                  })
+                }
+                onDelete={() => {
+                  dispatch({ type: "DELETE_SET", exerciseIndex, setId: set.id });
+                  toast("Підхід видалено", {
+                    action: {
+                      label: "Скасувати",
+                      onClick: () =>
+                        dispatch({ type: "RESTORE_SET", exercise: we, exerciseIndex, set }),
+                    },
+                  });
+                }}
+              />
+            ))}
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-11 flex-1 rounded-full"
+                onClick={() => dispatch({ type: "ADD_SET", exerciseIndex })}
+              >
+                <Plus data-icon="inline-start" />
+                Додати підхід
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-11 rounded-full"
+                onClick={() => setOptionsOpen(true)}
+                aria-label={`Налаштування вправи ${we.exercise.name}`}
+              >
+                <Settings2 />
+              </Button>
+            </div>
+          </CardContent>
+        </div>
+      </div>
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

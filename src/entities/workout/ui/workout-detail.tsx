@@ -1,15 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, ChevronLeft, Dumbbell, Pencil, Timer, Trash2 } from "lucide-react";
+import { type ReactNode, useId, useState } from "react";
 
 import { ExerciseCardActions } from "@/entities/workout";
 import { type ExerciseData, type SetData, type WorkoutWithSets } from "@/entities/workout";
 import { useDeleteWorkout } from "@/entities/workout";
 import { isWorkoutEditable } from "@/entities/workout";
 import { getSetVolume, usesDoubleWeight } from "@/entities/workout";
-import { calc1RM } from "@/shared/lib";
+import { calc1RM, cn } from "@/shared/lib";
 import { Button } from "@/shared/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { Card, CardContent, CardHeader } from "@/shared/ui";
 import { ConfirmDialog } from "@/shared/ui";
 
 import { formatSetSummary, getExerciseTrackingType } from "../model/workout-logging";
@@ -19,12 +19,21 @@ interface WorkoutDetailProps {
   exercises: ExerciseData[];
   onBack?: () => void;
   returnSearch?: { from?: string };
+  children?: ReactNode;
 }
 
-export function WorkoutDetail({ workout, exercises, onBack, returnSearch }: WorkoutDetailProps) {
+export function WorkoutDetail({
+  workout,
+  exercises,
+  onBack,
+  returnSearch,
+  children,
+}: WorkoutDetailProps) {
   const navigate = useNavigate();
   const deleteWorkoutMutation = useDeleteWorkout();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expandedExercises, setExpandedExercises] = useState<Set<string>>(() => new Set());
+  const panelIdPrefix = useId();
   const canEdit = isWorkoutEditable(workout.started_at);
   const setGridClassName = "grid grid-cols-[1.5rem_minmax(0,1fr)_2.5rem_3.5rem] items-center gap-2";
 
@@ -135,6 +144,9 @@ export function WorkoutDetail({ workout, exercises, onBack, returnSearch }: Work
       {/* Вправи з підходами */}
       {Array.from(grouped.entries()).map(([exerciseId, sets]) => {
         const exercise = exerciseMap.get(exerciseId);
+        const exerciseName = exercise?.name ?? "Невідома вправа";
+        const isExpanded = expandedExercises.has(exerciseId);
+        const panelId = `${panelIdPrefix}-${exerciseId}`;
         const sortedSets = [...sets].sort((a, b) => a.set_number - b.set_number);
         const trackingType = getExerciseTrackingType(
           { equipment: exercise?.equipment ?? null, catalog_key: null },
@@ -149,77 +161,124 @@ export function WorkoutDetail({ workout, exercises, onBack, returnSearch }: Work
         );
 
         return (
-          <Card key={exerciseId} size="sm" className="py-4">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-3">
-                <CardTitle className="line-clamp-2 text-base leading-snug">
-                  {exercise?.name ?? "Невідома вправа"}
-                </CardTitle>
-                <ExerciseCardActions
-                  exerciseId={exerciseId}
-                  exerciseName={exercise?.name ?? "Невідома вправа"}
-                />
+          <Card key={exerciseId} size="sm" className="gap-0 rounded-3xl py-4 data-[size=sm]:gap-0">
+            <CardHeader className="gap-0">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left focus-visible:ring-2 focus-visible:outline-none"
+                  onClick={() =>
+                    setExpandedExercises((previous) => {
+                      const next = new Set(previous);
+                      if (next.has(exerciseId)) next.delete(exerciseId);
+                      else next.add(exerciseId);
+                      return next;
+                    })
+                  }
+                  aria-expanded={isExpanded}
+                  aria-controls={panelId}
+                  aria-label={`${isExpanded ? "Згорнути" : "Розгорнути"} вправу ${exerciseName}`}
+                >
+                  <span
+                    className="bg-secondary text-secondary-foreground flex size-14 shrink-0 items-center justify-center rounded-xl"
+                    aria-hidden="true"
+                  >
+                    {trackingType === "duration" ? (
+                      <Timer className="size-6" />
+                    ) : (
+                      <Dumbbell className="size-6" />
+                    )}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-2">
+                    <span className="line-clamp-2 text-base leading-snug font-semibold">
+                      {exerciseName}
+                    </span>
+                    <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                      <span className="tabular-nums">{sets.length} підходів</span>
+                      <ChevronDown
+                        className={cn(
+                          "size-3.5 shrink-0 transition-transform duration-250 motion-reduce:transition-none",
+                          isExpanded && "rotate-180"
+                        )}
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </span>
+                </button>
+                <ExerciseCardActions exerciseId={exerciseId} exerciseName={exerciseName} />
               </div>
             </CardHeader>
-            <CardContent className="flex flex-col gap-1">
-              {/* Заголовки */}
-              <div
-                className={`${setGridClassName} text-muted-foreground px-2 pb-1 text-xs font-medium`}
-              >
-                <span className="text-center">Сет</span>
-                <span>
-                  {trackingType === "duration"
-                    ? "Тривалість"
-                    : usesDoubleWeight(exercise)
-                      ? "кг / гантель × повт."
-                      : "Результат"}
-                </span>
-                <span className="text-center" title="Зусилля RPE від 6 до 10">
-                  RPE
-                </span>
-                <span className="text-center">
-                  {trackingType === "weight-reps" ? "Оц. 1ПМ" : ""}
-                </span>
-              </div>
-
-              {sortedSets.map((set) => {
-                const estimated1RM =
-                  trackingType === "weight-reps" && set.weight && set.reps
-                    ? Math.round(calc1RM(set.weight, set.reps))
-                    : null;
-                const isBest = bestSet.set?.id === set.id && sortedSets.length > 1;
-
-                return (
+            <div
+              id={panelId}
+              className={cn(
+                "grid transition-[grid-template-rows,opacity] duration-250 ease-out motion-reduce:transition-none",
+                isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+              )}
+              aria-hidden={!isExpanded}
+              inert={!isExpanded}
+            >
+              <div className="min-h-0 overflow-hidden">
+                <CardContent className="flex flex-col gap-1 pt-4">
+                  {/* Заголовки */}
                   <div
-                    key={set.id}
-                    className={`rounded-lg px-2 py-1.5 ${isBest ? "bg-accent/50" : ""}`}
+                    className={`${setGridClassName} text-muted-foreground px-2 pb-1 text-xs font-medium`}
                   >
-                    <div className={setGridClassName}>
-                      <span className="text-muted-foreground text-center text-sm">
-                        {set.set_number}
-                      </span>
-                      <span className="text-sm font-medium tabular-nums">
-                        {formatSetSummary(
-                          { weight: set.weight, reps: set.reps, durationS: set.duration_s },
-                          trackingType
-                        ) ?? "—"}
-                      </span>
-                      <span className="text-muted-foreground text-center text-sm">
-                        {set.rpe ?? "—"}
-                      </span>
-                      <span className="text-muted-foreground text-center text-sm">
-                        {trackingType === "weight-reps" ? (estimated1RM ?? "—") : ""}
-                      </span>
-                    </div>
-                    {set.notes && (
-                      <p className="text-muted-foreground pt-1 pl-8 text-xs leading-relaxed whitespace-pre-wrap">
-                        {set.notes}
-                      </p>
-                    )}
+                    <span className="text-center">Сет</span>
+                    <span>
+                      {trackingType === "duration"
+                        ? "Тривалість"
+                        : usesDoubleWeight(exercise)
+                          ? "кг / гантель × повт."
+                          : "Результат"}
+                    </span>
+                    <span className="text-center" title="Зусилля RPE від 6 до 10">
+                      RPE
+                    </span>
+                    <span className="text-center">
+                      {trackingType === "weight-reps" ? "Оц. 1ПМ" : ""}
+                    </span>
                   </div>
-                );
-              })}
-            </CardContent>
+
+                  {sortedSets.map((set) => {
+                    const estimated1RM =
+                      trackingType === "weight-reps" && set.weight && set.reps
+                        ? Math.round(calc1RM(set.weight, set.reps))
+                        : null;
+                    const isBest = bestSet.set?.id === set.id && sortedSets.length > 1;
+
+                    return (
+                      <div
+                        key={set.id}
+                        className={`rounded-lg px-2 py-1.5 ${isBest ? "bg-accent/50" : ""}`}
+                      >
+                        <div className={setGridClassName}>
+                          <span className="text-muted-foreground text-center text-sm">
+                            {set.set_number}
+                          </span>
+                          <span className="text-sm font-medium tabular-nums">
+                            {formatSetSummary(
+                              { weight: set.weight, reps: set.reps, durationS: set.duration_s },
+                              trackingType
+                            ) ?? "—"}
+                          </span>
+                          <span className="text-muted-foreground text-center text-sm">
+                            {set.rpe ?? "—"}
+                          </span>
+                          <span className="text-muted-foreground text-center text-sm">
+                            {trackingType === "weight-reps" ? (estimated1RM ?? "—") : ""}
+                          </span>
+                        </div>
+                        {set.notes && (
+                          <p className="text-muted-foreground pt-1 pl-8 text-xs leading-relaxed whitespace-pre-wrap">
+                            {set.notes}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </div>
+            </div>
           </Card>
         );
       })}
@@ -232,6 +291,8 @@ export function WorkoutDetail({ workout, exercises, onBack, returnSearch }: Work
           </CardContent>
         </Card>
       )}
+
+      {children}
 
       {/* Діалог видалення */}
       <ConfirmDialog

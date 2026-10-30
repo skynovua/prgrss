@@ -19,6 +19,7 @@ interface AnatomyMapProps {
   selectedMuscleKey?: string | null;
   onMuscleSelect?: (muscleKey: string) => void;
   compact?: boolean;
+  layout?: "tabs" | "both";
   className?: string;
 }
 
@@ -190,6 +191,7 @@ export const AnatomyMap = memo(function AnatomyMap({
   selectedMuscleKey,
   onMuscleSelect,
   compact = false,
+  layout = "tabs",
   className,
 }: AnatomyMapProps) {
   const [view, setView] = useState<AnatomyView>("front");
@@ -204,34 +206,55 @@ export const AnatomyMap = memo(function AnatomyMap({
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <Tabs value={view} onValueChange={handleViewChange}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="front">Перед</TabsTrigger>
-          <TabsTrigger value="back">Спина</TabsTrigger>
-        </TabsList>
+      {layout === "both" ? (
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { source: frontAnatomySvg, label: "Спереду" },
+            { source: backAnatomySvg, label: "Ззаду" },
+          ].map(({ source, label }) => (
+            <figure key={label} className="flex min-w-0 flex-col gap-2">
+              <AnatomyFigure
+                source={source}
+                label={`Анатомічна мапа: ${label.toLowerCase()}`}
+                highlights={highlights}
+                selectedMuscleKey={selectedMuscleKey}
+                onMuscleSelect={onMuscleSelect}
+                compact={compact}
+              />
+              <figcaption className="text-muted-foreground text-center text-xs">{label}</figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : (
+        <Tabs value={view} onValueChange={handleViewChange}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="front">Перед</TabsTrigger>
+            <TabsTrigger value="back">Спина</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="front">
-          <AnatomyFigure
-            source={frontAnatomySvg}
-            label="Інтерактивна анатомічна мапа, вигляд спереду"
-            highlights={highlights}
-            selectedMuscleKey={selectedMuscleKey}
-            onMuscleSelect={onMuscleSelect}
-            compact={compact}
-          />
-        </TabsContent>
+          <TabsContent value="front">
+            <AnatomyFigure
+              source={frontAnatomySvg}
+              label="Інтерактивна анатомічна мапа, вигляд спереду"
+              highlights={highlights}
+              selectedMuscleKey={selectedMuscleKey}
+              onMuscleSelect={onMuscleSelect}
+              compact={compact}
+            />
+          </TabsContent>
 
-        <TabsContent value="back">
-          <AnatomyFigure
-            source={backAnatomySvg}
-            label="Інтерактивна анатомічна мапа, вигляд зі спини"
-            highlights={highlights}
-            selectedMuscleKey={selectedMuscleKey}
-            onMuscleSelect={onMuscleSelect}
-            compact={compact}
-          />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="back">
+            <AnatomyFigure
+              source={backAnatomySvg}
+              label="Інтерактивна анатомічна мапа, вигляд зі спини"
+              highlights={highlights}
+              selectedMuscleKey={selectedMuscleKey}
+              onMuscleSelect={onMuscleSelect}
+              compact={compact}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
 
       {onMuscleSelect && (
         <p className="text-muted-foreground text-center text-xs">

@@ -89,7 +89,7 @@ export async function fetchWorkoutDetail(id: string) {
   const { data: workout, error } = await supabase
     .from("workouts")
     .select(
-      "id, name, started_at, finished_at, notes, sets(id, set_number, weight, reps, rpe, duration_s, notes, exercise_id, exercises(id, name, muscle_group, equipment, catalog_key))"
+      "id, name, started_at, finished_at, notes, sets(id, set_number, weight, reps, rpe, duration_s, notes, exercise_id, exercises(id, name, muscle_group, equipment, catalog_key, exercise_muscles(activation_score, anatomical_muscles(key, name, muscle_group, sort_order))))"
     )
     .eq("id", id)
     .maybeSingle();
@@ -109,9 +109,33 @@ export async function fetchWorkoutDetail(id: string) {
     return setData;
   });
 
+  // Повторні підходи однієї вправи не дублюють її анатомічну розмітку.
+  const exerciseTargets = new Map(
+    workout.sets.map((set) => [set.exercise_id, set.exercises?.exercise_muscles ?? []])
+  );
+  const muscles = Array.from(exerciseTargets.values()).flatMap((targets) =>
+    targets.flatMap(({ activation_score, anatomical_muscles: muscle }) =>
+      muscle
+        ? [
+            {
+              muscleKey: muscle.key,
+              name: muscle.name,
+              muscleGroup: muscle.muscle_group,
+              sortOrder: muscle.sort_order,
+              activationScore: activation_score,
+            },
+          ]
+        : []
+    )
+  );
+
   return {
     workout: { ...workout, sets },
     exercises: Array.from(exerciseMap.values()),
+    muscles,
+    hasUnmappedExercises: Array.from(exerciseTargets.values()).some(
+      (targets) => !targets.some((target) => target.anatomical_muscles)
+    ),
   };
 }
 

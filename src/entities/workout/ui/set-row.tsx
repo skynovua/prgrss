@@ -1,4 +1,4 @@
-import { Check, MoreHorizontal, PencilLine, Trash2 } from "lucide-react";
+import { Check, PencilLine, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { cn } from "@/shared/lib";
@@ -198,15 +198,14 @@ export function SetRow({
           <DropdownMenuTrigger
             render={
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="size-11"
+                className="size-11 rounded-lg"
                 aria-label={`Дії для підходу ${set.setNumber} · ${exerciseName}`}
               />
             }
           >
             <span className="tabular-nums">{set.setNumber}</span>
-            <MoreHorizontal className="text-muted-foreground size-3" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuGroup>

@@ -4,6 +4,8 @@ import { WorkoutDetail } from "@/entities/workout";
 import { useWorkoutDetail } from "@/entities/workout";
 import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
 
+import { WorkoutMuscleDetails } from "./workout-muscle-details";
+
 export default function WorkoutDetailPage() {
   const { id } = useParams({ strict: false });
   const navigate = useNavigate();
@@ -33,6 +35,7 @@ export default function WorkoutDetailPage() {
     <>
       {isError && <RefreshNotice onRetry={() => void refetch()} />}
       <WorkoutDetail
+        key={id}
         workout={data.workout}
         exercises={data.exercises}
         returnSearch={{ from }}
@@ -50,7 +53,12 @@ export default function WorkoutDetailPage() {
               }
             : undefined
         }
-      />
+      >
+        <WorkoutMuscleDetails
+          muscles={data.muscles}
+          hasUnmappedExercises={data.hasUnmappedExercises}
+        />
+      </WorkoutDetail>
     </>
   );
 }
