@@ -20,8 +20,8 @@ export default defineConfig({
         scope: "/",
         lang: "uk",
         display: "standalone",
-        background_color: "#f7f8f5",
-        theme_color: "#f7f8f5",
+        background_color: "#fafafa",
+        theme_color: "#fafafa",
         orientation: "portrait",
         categories: ["fitness", "health"],
         icons: [

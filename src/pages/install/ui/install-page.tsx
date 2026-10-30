@@ -49,9 +49,9 @@ export default function InstallPage() {
       <div className="flex min-h-screen flex-col justify-center gap-6 p-4">
         <Card className="overflow-hidden p-0">
           <CardContent className="relative px-4 py-5 text-center">
-            <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
+            <div className="from-muted absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
             <div className="relative flex flex-col items-center gap-3">
-              <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-2xl">
+              <div className="bg-muted text-muted-foreground flex h-14 w-14 items-center justify-center rounded-2xl">
                 <Download className="h-6 w-6" />
               </div>
               <div className="space-y-1.5">
@@ -71,14 +71,14 @@ export default function InstallPage() {
     <div className="flex flex-1 flex-col gap-6 p-4">
       <Card className="overflow-hidden p-0">
         <CardContent className="relative px-4 py-5 text-center">
-          <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
+          <div className="from-muted absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
           <div className="relative flex flex-col items-center gap-4">
-            <div className="bg-primary text-primary-foreground flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm">
+            <div className="bg-foreground text-background flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm">
               <span className="text-2xl font-black">P</span>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-2">
-                <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
                   App Install
                 </span>
               </div>
@@ -100,9 +100,14 @@ export default function InstallPage() {
 
       {/* Нативний prompt (Chrome / Edge / Samsung) */}
       {deferredPrompt && (
-        <Card className="border-primary/30 bg-primary/5 p-0">
+        <Card className="border-border bg-card p-0">
           <CardContent className="flex flex-col items-center gap-3 p-4">
-            <Button onClick={handleInstallClick} size="lg" className="w-full justify-center gap-2">
+            <Button
+              variant="primary"
+              onClick={handleInstallClick}
+              size="lg"
+              className="w-full justify-center gap-2"
+            >
               <Download className="mr-2 h-5 w-5" />
               Встановити додаток
             </Button>
@@ -205,19 +210,19 @@ export default function InstallPage() {
         <CardContent>
           <ul className="text-muted-foreground flex flex-col gap-2 text-sm">
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
+              <span className="text-foreground mt-0.5">✓</span>
               Повноекранний режим без адресного рядка
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
+              <span className="text-foreground mt-0.5">✓</span>
               Іконка на головному екрані
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
+              <span className="text-foreground mt-0.5">✓</span>
               Зручний запуск з головного екрана
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">✓</span>
+              <span className="text-foreground mt-0.5">✓</span>
               Миттєвий запуск як нативний додаток
             </li>
           </ul>
@@ -230,7 +235,7 @@ export default function InstallPage() {
 function BenefitPill({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="bg-background/70 rounded-2xl border px-3 py-3 text-center backdrop-blur-sm">
-      <div className="text-primary mb-2 flex justify-center">{icon}</div>
+      <div className="text-foreground mb-2 flex justify-center">{icon}</div>
       <p className="text-xs font-medium">{label}</p>
     </div>
   );
@@ -239,7 +244,7 @@ function BenefitPill({ icon, label }: { icon: React.ReactNode; label: string }) 
 function Step({ number, children }: { number: number; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="bg-primary text-primary-foreground flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+      <div className="bg-foreground text-background flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
         {number}
       </div>
       <p className="text-sm leading-relaxed">{children}</p>

@@ -222,6 +222,7 @@ export function ExerciseProgressChart({
               }
             />
             <Tooltip
+              itemStyle={{ color: "var(--popover-foreground)" }}
               contentStyle={{
                 background: "var(--popover)",
                 border: "1px solid var(--border)",

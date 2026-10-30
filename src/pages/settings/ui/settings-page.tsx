@@ -105,7 +105,7 @@ export default function SettingsPage() {
               to="/install"
               className="hover:bg-muted/70 flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors"
             >
-              <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full">
+              <div className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-full">
                 <Download className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
@@ -121,7 +121,7 @@ export default function SettingsPage() {
       <Card className="p-0">
         <CardHeader className="px-4 pt-4">
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="text-primary size-4" />
+            <ShieldCheck className="text-muted-foreground size-4" />
             Сесія
           </CardTitle>
         </CardHeader>

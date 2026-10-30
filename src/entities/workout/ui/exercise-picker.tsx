@@ -139,7 +139,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                 aria-pressed={sortMode === mode}
                 className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   sortMode === mode
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-foreground text-background"
                     : "bg-muted text-muted-foreground active:bg-accent"
                 }`}
               >
@@ -162,7 +162,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                 aria-pressed={activeGroup === "all"}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeGroup === "all"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-foreground text-background"
                     : "bg-muted text-muted-foreground active:bg-accent"
                 }`}
               >
@@ -176,7 +176,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                   aria-pressed={activeGroup === group}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     activeGroup === group
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-foreground text-background"
                       : "bg-muted text-muted-foreground active:bg-accent"
                   }`}
                 >
@@ -238,7 +238,7 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                     >
                       <Heart
                         className={cn(
-                          isFav ? "fill-primary text-primary" : "text-muted-foreground"
+                          isFav ? "fill-foreground text-foreground" : "text-muted-foreground"
                         )}
                       />
                     </Button>

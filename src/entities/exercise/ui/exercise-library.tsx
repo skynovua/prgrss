@@ -348,7 +348,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
       {filtered.length === 0 && (
         <Card className="p-0">
           <CardContent className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">
-            <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full">
+            <div className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
               <Search className="size-5" />
             </div>
             <div>

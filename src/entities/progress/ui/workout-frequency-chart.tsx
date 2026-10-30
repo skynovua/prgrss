@@ -29,14 +29,19 @@ export function WorkoutFrequencyChart({ data }: Props) {
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis dataKey="week" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+            <XAxis
+              dataKey="week"
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+              className="fill-muted-foreground"
+            />
             <YAxis
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               className="fill-muted-foreground"
               allowDecimals={false}
               width={30}
             />
             <Tooltip
+              itemStyle={{ color: "var(--popover-foreground)" }}
               contentStyle={{
                 backgroundColor: "var(--card)",
                 border: "1px solid var(--border)",

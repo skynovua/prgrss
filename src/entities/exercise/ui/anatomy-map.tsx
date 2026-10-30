@@ -171,7 +171,7 @@ function AnatomyFigure({
       inert={interactive ? undefined : true}
       data-interactive={interactive ? "true" : "false"}
       className={cn(
-        "anatomy-map__figure mx-auto aspect-[792/1427] touch-manipulation select-none",
+        "anatomy-map__figure [&_path]:stroke-muted-foreground mx-auto aspect-[792/1427] touch-manipulation select-none",
         compact ? "max-w-44" : "max-w-72"
       )}
       onClick={interactive ? handleClick : undefined}

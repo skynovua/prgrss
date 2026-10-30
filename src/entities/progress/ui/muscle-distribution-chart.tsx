@@ -27,18 +27,19 @@ export function MuscleDistributionChart({ data }: Props) {
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
             <XAxis
               type="number"
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               className="fill-muted-foreground"
               tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}т` : `${v}`)}
             />
             <YAxis
               type="category"
               dataKey="label"
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
               className="fill-muted-foreground"
               width={55}
             />
             <Tooltip
+              itemStyle={{ color: "var(--popover-foreground)" }}
               contentStyle={{
                 backgroundColor: "var(--card)",
                 border: "1px solid var(--border)",

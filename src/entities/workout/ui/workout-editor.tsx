@@ -178,6 +178,7 @@ export function WorkoutEditor({
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4">
         <div className="border-border bg-background/95 mx-auto max-w-lg rounded-2xl border p-3 shadow-lg backdrop-blur">
           <Button
+            variant="primary"
             className="w-full"
             size="lg"
             disabled={state.saving}

@@ -144,7 +144,7 @@ export function WorkoutFinishDialog({
             </Field>
           </FieldGroup>
           <div className="flex flex-col gap-2">
-            <Button type="submit" disabled={!canSave || saving}>
+            <Button type="submit" variant="primary" disabled={!canSave || saving}>
               <Check data-icon="inline-start" />
               {saving
                 ? "Зберігаю…"

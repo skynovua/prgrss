@@ -9,11 +9,11 @@ export default function ProgramsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4">
       <Card className="overflow-hidden p-0">
         <CardContent className="relative px-4 py-4">
-          <div className="from-primary/10 absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
+          <div className="from-muted absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
           <div className="relative flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
                   Soon
                 </span>
                 <h1 className="mt-2 text-2xl font-bold tracking-tight">Програми</h1>
@@ -23,7 +23,7 @@ export default function ProgramsPage() {
                 </p>
               </div>
 
-              <div className="bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
+              <div className="bg-muted text-muted-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
                 <Layers3 className="h-5 w-5" />
               </div>
             </div>

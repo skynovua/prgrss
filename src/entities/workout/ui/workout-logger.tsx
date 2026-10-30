@@ -174,7 +174,7 @@ export function WorkoutLogger({
               exercises={exercises}
               onSelect={handleAddExercise}
               trigger={
-                <Button size="lg">
+                <Button variant="primary" size="lg">
                   <Plus data-icon="inline-start" />
                   Почати тренування
                 </Button>

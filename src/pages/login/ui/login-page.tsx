@@ -97,7 +97,9 @@ export default function LoginPage() {
 
         <div className="flex flex-1 flex-col justify-center gap-8 pb-12">
           <div className="flex flex-col gap-5">
-            <span className="text-primary text-sm font-medium">Маленькі кроки. Помітні зміни.</span>
+            <span className="text-muted-foreground text-sm font-medium">
+              Маленькі кроки. Помітні зміни.
+            </span>
             <h1 className="font-heading text-4xl leading-[1.12] font-medium tracking-tight sm:text-5xl">
               Твій ритм.
               <br />
@@ -110,6 +112,7 @@ export default function LoginPage() {
 
           <div className="flex w-full flex-col gap-3">
             <Button
+              variant="primary"
               size="lg"
               className="w-full"
               onClick={() => handleLogin("google")}
@@ -139,7 +142,7 @@ export default function LoginPage() {
       {showInstall && (
         <div className="animate-in slide-in-from-bottom fixed inset-x-0 bottom-0 z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] duration-300">
           <div className="bg-card border-border mx-auto flex max-w-sm items-center gap-3 rounded-xl border p-4 shadow-lg">
-            <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+            <div className="bg-muted text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
               <Download className="h-5 w-5" />
             </div>
             <Link to="/install" className="flex min-w-0 flex-col">

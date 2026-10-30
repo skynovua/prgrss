@@ -151,7 +151,7 @@ function TierStars({ track }: { track: AchievementTrack }) {
           aria-hidden="true"
           className={cn(
             "size-3.5",
-            isEarned(achievement) ? "text-primary fill-current" : "text-muted-foreground/40"
+            isEarned(achievement) ? "text-foreground fill-current" : "text-muted-foreground/40"
           )}
         />
       ))}
@@ -253,7 +253,7 @@ function CollectionItem({ track, onSelect }: { track: AchievementTrack; onSelect
           </span>
         </span>
       ) : (
-        <span className="text-primary flex items-center justify-center gap-1.5 py-1 text-xs">
+        <span className="text-foreground flex items-center justify-center gap-1.5 py-1 text-xs">
           <Check />
           Усі рівні здобуто
         </span>
@@ -306,7 +306,7 @@ function RewardDetails({ track }: { track: AchievementTrack }) {
                     earned
                       ? TIER_TONES[achievement.tier]
                       : isNext
-                        ? "bg-accent text-accent-foreground border-primary/30"
+                        ? "bg-accent text-accent-foreground border-border"
                         : "bg-background text-muted-foreground"
                   )}
                   aria-hidden="true"
@@ -325,7 +325,7 @@ function RewardDetails({ track }: { track: AchievementTrack }) {
                     <span
                       className={cn(
                         "text-xs",
-                        earned || isNext ? "text-primary" : "text-muted-foreground"
+                        earned || isNext ? "text-foreground" : "text-muted-foreground"
                       )}
                     >
                       {earned ? "Здобуто" : isNext ? "Наступна ціль" : "Попереду"}
@@ -443,7 +443,7 @@ export default function AchievementsPage() {
             <p className="text-muted-foreground max-w-xs text-sm leading-6">
               Коли нагороди стануть доступними, тут з’являться цілі та твій прогрес.
             </p>
-            <Link to="/workout/new" className={buttonVariants()}>
+            <Link to="/workout/new" className={buttonVariants({ variant: "primary" })}>
               Почати тренування
             </Link>
           </section>

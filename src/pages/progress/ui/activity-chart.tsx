@@ -54,6 +54,7 @@ export function ActivityChart({ timeline }: { timeline: Timeline }) {
               tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
             />
             <Tooltip
+              itemStyle={{ color: "var(--popover-foreground)" }}
               contentStyle={{
                 background: "var(--popover)",
                 border: "1px solid var(--border)",

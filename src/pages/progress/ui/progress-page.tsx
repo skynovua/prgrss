@@ -116,7 +116,7 @@ export default function ProgressPage() {
                 Подивитися за весь час
               </Button>
             )}
-            <Link to="/workout/new" className={buttonVariants()}>
+            <Link to="/workout/new" className={buttonVariants({ variant: "primary" })}>
               Почати тренування
             </Link>
           </EmptyContent>

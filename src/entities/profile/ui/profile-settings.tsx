@@ -97,7 +97,7 @@ export function ProfileSettings({
       <Card className="p-0">
         <CardHeader className="px-4 pt-4">
           <CardTitle className="flex items-center gap-2">
-            <UserRound className="text-primary size-4" />
+            <UserRound className="text-muted-foreground size-4" />
             Профіль
           </CardTitle>
         </CardHeader>
@@ -131,7 +131,7 @@ export function ProfileSettings({
       <Card className="p-0">
         <CardHeader className="px-4 pt-4">
           <CardTitle className="flex items-center gap-2">
-            <Dumbbell className="text-primary size-4" />
+            <Dumbbell className="text-muted-foreground size-4" />
             Тренування
           </CardTitle>
         </CardHeader>

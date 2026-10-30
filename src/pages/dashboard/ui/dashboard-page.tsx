@@ -163,7 +163,10 @@ export default function DashboardPage() {
           <CardDescription>Крок за кроком. Підхід за підходом.</CardDescription>
         </CardHeader>
         <CardFooter className="px-5">
-          <Link to="/workout/new" className={cn(buttonVariants({ size: "lg" }), "w-full")}>
+          <Link
+            to="/workout/new"
+            className={cn(buttonVariants({ variant: "primary", size: "lg" }), "w-full")}
+          >
             <Plus data-icon="inline-start" />
             Почати тренування
           </Link>
