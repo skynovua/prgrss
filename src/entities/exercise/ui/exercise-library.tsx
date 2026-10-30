@@ -363,7 +363,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
 
       {/* Діалог створення вправи */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="max-h-[calc(100vh-2rem)] max-w-sm overflow-y-auto">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-[min(24rem,calc(100%-2rem))] overflow-y-auto sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Нова вправа</DialogTitle>
             <DialogDescription>Додайте кастомну вправу до бібліотеки.</DialogDescription>
@@ -472,7 +472,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
                                   ?.name ?? "М'яз"}
                               </SelectValue>
                             </SelectTrigger>
-                            <SelectContent alignItemWithTrigger={false}>
+                            <SelectContent align="start" className="w-72 max-w-[calc(100vw-2rem)]">
                               <SelectGroup>
                                 {rowMuscleItems.map((item) => (
                                   <SelectItem key={item.value} value={item.value}>

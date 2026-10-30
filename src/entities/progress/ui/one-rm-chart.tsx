@@ -55,9 +55,11 @@ const number = (value: number) => value.toLocaleString("uk-UA", { maximumFractio
 export function ExerciseProgressChart({
   data,
   onShowAll,
+  showExercisePicker = true,
 }: {
   data: ExerciseProgressData[];
   onShowAll?: () => void;
+  showExercisePicker?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [metric, setMetric] = useState<ExerciseMetric>("bestWeight");
@@ -104,35 +106,44 @@ export function ExerciseProgressChart({
   return (
     <Card className="gap-4 py-5">
       <CardHeader className="gap-1 px-5">
-        <CardTitle>Сила у вправах</CardTitle>
-        <CardDescription>Порівнюй свої записи, помічай зміни</CardDescription>
+        <CardTitle>{showExercisePicker ? "Сила у вправах" : "Динаміка"}</CardTitle>
+        <CardDescription>
+          {showExercisePicker
+            ? "Порівнюй свої записи, помічай зміни"
+            : "Вага, об’єм і розрахунковий 1ПМ"}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex min-w-0 flex-col gap-4 px-5">
-        <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor={selectId}>Вправа</FieldLabel>
-            <Select
-              items={data.map((entry) => ({ value: entry.exerciseId, label: entry.exerciseName }))}
-              value={exercise.exerciseId}
-              onValueChange={(value) => {
-                if (value) setSelectedId(value);
-              }}
-            >
-              <SelectTrigger id={selectId}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {data.map((entry) => (
-                    <SelectItem key={entry.exerciseId} value={entry.exerciseId}>
-                      {entry.exerciseName}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </Field>
-        </FieldGroup>
+        {showExercisePicker && (
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor={selectId}>Вправа</FieldLabel>
+              <Select
+                items={data.map((entry) => ({
+                  value: entry.exerciseId,
+                  label: entry.exerciseName,
+                }))}
+                value={exercise.exerciseId}
+                onValueChange={(value) => {
+                  if (value) setSelectedId(value);
+                }}
+              >
+                <SelectTrigger id={selectId}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {data.map((entry) => (
+                      <SelectItem key={entry.exerciseId} value={entry.exerciseId}>
+                        {entry.exerciseName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+          </FieldGroup>
+        )}
         <ToggleGroup
           value={[metric]}
           spacing={1}
