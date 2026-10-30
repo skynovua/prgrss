@@ -71,7 +71,7 @@ export function WorkoutDetail({
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4">
-      <header className="border-border/30 bg-background/50 sticky top-0 z-30 -mx-4 -mt-4 grid grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] items-center border-b px-4 pt-4 pb-3 backdrop-blur-md">
+      <header className="border-border/30 bg-background/50 before:bg-background sticky top-[env(safe-area-inset-top,0px)] z-30 -mx-4 -mt-4 grid grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] items-center border-b px-4 pt-4 pb-3 backdrop-blur-md before:pointer-events-none before:absolute before:inset-x-0 before:-top-[env(safe-area-inset-top,0px)] before:h-[env(safe-area-inset-top,0px)] before:content-['']">
         <Button
           variant="secondary"
           size="icon-lg"

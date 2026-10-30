@@ -1,10 +1,10 @@
 import { Navigate, useParams, useSearch } from "@tanstack/react-router";
 
 import { useExercises } from "@/entities/exercise";
-import { WorkoutEditor } from "@/entities/workout";
+import { WorkoutEditor, WorkoutLoading } from "@/entities/workout";
 import { usePreviousSets, useWorkoutDetail } from "@/entities/workout";
 import { isWorkoutEditable } from "@/entities/workout";
-import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
+import { PageError, RefreshNotice } from "@/shared/ui";
 
 export default function WorkoutEditPage() {
   const { id } = useParams({ strict: false });
@@ -29,14 +29,7 @@ export default function WorkoutEditPage() {
       <PageError title="Тренування не знайдено" description="Перевір посилання на тренування." />
     );
   if (isWorkoutPending)
-    return (
-      <PageLoading
-        key={id}
-        title="Редагування тренування"
-        layout="form"
-        onRetry={() => void refetchWorkout()}
-      />
-    );
+    return <WorkoutLoading key={id} view="edit" onRetry={() => void refetchWorkout()} />;
   if (isWorkoutError && !data)
     return <PageError title="Тренування не завантажилося" onRetry={() => void refetchWorkout()} />;
 
@@ -55,14 +48,7 @@ export default function WorkoutEditPage() {
   }
 
   if (isExercisesPending) {
-    return (
-      <PageLoading
-        key={id}
-        title="Редагування тренування"
-        layout="form"
-        onRetry={() => void refetchExercises()}
-      />
-    );
+    return <WorkoutLoading key={id} view="edit" onRetry={() => void refetchExercises()} />;
   }
 
   if (!allExercises)

@@ -23,7 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui";
-import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
+import { PageError, RefreshNotice } from "@/shared/ui";
+
+import { ProfileLoading } from "./profile-loading";
 
 const THEMES = [
   { value: "light", label: "Світла" },
@@ -35,13 +37,9 @@ export default function SettingsPage() {
   const { data: profile, isPending, isError, refetch } = useProfile();
   const { theme, setTheme } = useTheme();
 
-  if (isPending)
-    return <PageLoading title="Налаштування" layout="form" onRetry={() => void refetch()} />;
-  if (!profile) return <PageError title="Профіль не завантажився" onRetry={() => void refetch()} />;
-
   return (
     <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
-      {isError && <RefreshNotice onRetry={() => void refetch()} />}
+      {isError && profile && <RefreshNotice onRetry={() => void refetch()} />}
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-medium tracking-tight">Налаштування</h1>
         <p className="text-muted-foreground text-sm">Твій профіль і комфортний ритм тренувань.</p>
@@ -86,12 +84,18 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <ProfileSettings
-        name={profile.name}
-        email={profile.email}
-        avatarUrl={profile.avatarUrl}
-        autoRestTimer={profile.autoRestTimer}
-      />
+      {isPending ? (
+        <ProfileLoading onRetry={() => void refetch()} />
+      ) : profile ? (
+        <ProfileSettings
+          name={profile.name}
+          email={profile.email}
+          avatarUrl={profile.avatarUrl}
+          autoRestTimer={profile.autoRestTimer}
+        />
+      ) : (
+        <PageError title="Профіль не завантажився" onRetry={() => void refetch()} />
+      )}
 
       {/* <PushNotificationsCard /> */}
 

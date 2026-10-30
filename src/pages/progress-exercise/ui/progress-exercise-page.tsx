@@ -134,7 +134,7 @@ export default function ExerciseProgressPage() {
       {isPending ? (
         <>
           <LoadingNotice onRetry={() => void refetch()} />
-          <LoadingBlocks layout="stats" />
+          <LoadingBlocks layout="exercise-stats" />
         </>
       ) : isError && !exerciseProgress ? (
         <PageError title="Статистика не завантажилася" onRetry={() => void refetch()} />

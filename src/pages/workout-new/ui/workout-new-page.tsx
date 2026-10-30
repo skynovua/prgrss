@@ -1,7 +1,7 @@
 import { useExercises } from "@/entities/exercise";
-import { WorkoutLogger } from "@/entities/workout";
+import { WorkoutLoading, WorkoutLogger } from "@/entities/workout";
 import { usePreviousSets } from "@/entities/workout";
-import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
+import { PageError, RefreshNotice } from "@/shared/ui";
 
 export default function WorkoutNewPage() {
   const { data: exercises, isPending, isError, refetch } = useExercises();
@@ -12,7 +12,7 @@ export default function WorkoutNewPage() {
     isError: historyUnavailable,
   } = usePreviousSets();
 
-  if (isPending) return <PageLoading title="Тренування" onRetry={() => void refetch()} />;
+  if (isPending) return <WorkoutLoading view="new" onRetry={() => void refetch()} />;
 
   if (!exercises)
     return <PageError title="Вправи не завантажилися" onRetry={() => void refetch()} />;

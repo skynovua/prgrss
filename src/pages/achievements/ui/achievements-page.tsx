@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import {
-  ArrowLeft,
   ArrowRight,
   Award,
   BarChart3,
@@ -35,7 +34,6 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  PageLoading,
   RefreshNotice,
   Sheet,
   SheetClose,
@@ -62,6 +60,7 @@ import {
   isEarned,
   TIER_LABELS,
 } from "../model/achievement-tracks";
+import { AchievementsHeader, AchievementsLoading } from "./achievements-loading";
 
 const TIER_TONES = {
   bronze: "achievement-tier-bronze",
@@ -156,24 +155,6 @@ function TierStars({ track }: { track: AchievementTrack }) {
         />
       ))}
     </span>
-  );
-}
-
-function PageHeader() {
-  return (
-    <header className="flex items-start gap-3">
-      <Link
-        to="/dashboard"
-        aria-label="На головну"
-        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "-ml-2 shrink-0")}
-      >
-        <ArrowLeft />
-      </Link>
-      <div className="flex min-w-0 flex-col gap-2">
-        <h1 className="text-3xl font-medium tracking-tight">Досягнення</h1>
-        <p className="text-muted-foreground text-sm leading-6">Твої зусилля стають нагородами.</p>
-      </div>
-    </header>
   );
 }
 
@@ -410,8 +391,7 @@ export default function AchievementsPage() {
       void markSeen(ids).catch(() => toast.error("Не вдалося позначити нагороду переглянутою"));
   }
 
-  if (isPending)
-    return <PageLoading title="Досягнення" layout="list" onRetry={() => void refetch()} />;
+  if (isPending) return <AchievementsLoading onRetry={() => void refetch()} />;
 
   return (
     <Sheet
@@ -421,7 +401,7 @@ export default function AchievementsPage() {
       }}
     >
       <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
-        <PageHeader />
+        <AchievementsHeader />
         {isError && achievements.length > 0 && <RefreshNotice onRetry={() => void refetch()} />}
         {isError && achievements.length === 0 ? (
           <section className="flex flex-col items-center gap-4 py-12 text-center" role="alert">

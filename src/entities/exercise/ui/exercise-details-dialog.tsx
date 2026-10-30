@@ -11,10 +11,12 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
+  Skeleton,
 } from "@/shared/ui";
 
 import { useExercises } from "../hooks/use-exercises";
 import type { ExerciseCatalogItem, ExerciseMuscleTarget } from "../model/exercise-catalog";
+import { AnatomyLoading } from "./anatomy-loading";
 
 const LazyAnatomyMap = lazy(() =>
   import("./anatomy-map").then(({ AnatomyMap }) => ({ default: AnatomyMap }))
@@ -86,9 +88,23 @@ export function ExerciseDetailsDialog({
             {exercise && (
               <div className="flex flex-col gap-6">
                 {loading ? (
-                  <p className="text-muted-foreground text-sm" role="status">
-                    Завантажуємо дані вправи…
-                  </p>
+                  <div
+                    className="flex flex-col gap-6"
+                    role="status"
+                    aria-label="Завантажуємо дані вправи"
+                    aria-busy="true"
+                  >
+                    <div className="bg-muted rounded-3xl p-3">
+                      <AnatomyLoading compact />
+                    </div>
+                    {[0, 1].map((group) => (
+                      <div key={group} className="flex flex-col gap-2" aria-hidden="true">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-12 w-full rounded-2xl" />
+                        <Skeleton className="h-12 w-full rounded-2xl" />
+                      </div>
+                    ))}
+                  </div>
                 ) : loadError ? (
                   <p className="text-muted-foreground text-sm" role="alert">
                     Не вдалося завантажити дані вправи.
@@ -96,10 +112,9 @@ export function ExerciseDetailsDialog({
                 ) : muscles.length > 0 ? (
                   <Suspense
                     fallback={
-                      <div
-                        className="bg-muted mx-auto aspect-[792/1427] w-full max-w-44 rounded-3xl"
-                        aria-busy="true"
-                      />
+                      <div className="bg-muted rounded-3xl p-3">
+                        <AnatomyLoading compact />
+                      </div>
                     }
                   >
                     <LazyAnatomyMap

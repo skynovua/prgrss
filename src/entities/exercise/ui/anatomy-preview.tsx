@@ -1,8 +1,7 @@
 import { lazy, Suspense } from "react";
 
-import { Skeleton } from "@/shared/ui";
-
 import type { ExerciseMuscleTarget } from "../model/exercise-catalog";
+import { AnatomyLoading } from "./anatomy-loading";
 
 const LazyAnatomyMap = lazy(() =>
   import("./anatomy-map").then(({ AnatomyMap }) => ({ default: AnatomyMap }))
@@ -10,7 +9,7 @@ const LazyAnatomyMap = lazy(() =>
 
 export function AnatomyPreview({ highlights }: { highlights: ExerciseMuscleTarget[] }) {
   return (
-    <Suspense fallback={<Skeleton className="aspect-square w-full rounded-2xl" />}>
+    <Suspense fallback={<AnatomyLoading layout="both" compact />}>
       <LazyAnatomyMap
         muscles={highlights.map((muscle) => ({ key: muscle.muscleKey, name: muscle.name }))}
         highlights={highlights}

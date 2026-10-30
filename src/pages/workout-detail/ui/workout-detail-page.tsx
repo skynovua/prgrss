@@ -1,8 +1,8 @@
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 
-import { WorkoutDetail } from "@/entities/workout";
+import { WorkoutDetail, WorkoutLoading } from "@/entities/workout";
 import { useWorkoutDetail } from "@/entities/workout";
-import { PageError, PageLoading, RefreshNotice } from "@/shared/ui";
+import { PageError, RefreshNotice } from "@/shared/ui";
 
 import { WorkoutMuscleDetails } from "./workout-muscle-details";
 
@@ -17,7 +17,7 @@ export default function WorkoutDetailPage() {
     return (
       <PageError title="Тренування не знайдено" description="Перевір посилання на тренування." />
     );
-  if (isPending) return <PageLoading key={id} title="Тренування" onRetry={() => void refetch()} />;
+  if (isPending) return <WorkoutLoading key={id} view="detail" onRetry={() => void refetch()} />;
   if (isError && !data)
     return <PageError title="Тренування не завантажилося" onRetry={() => void refetch()} />;
 

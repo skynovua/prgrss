@@ -11,7 +11,6 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-  Skeleton,
 } from "@/shared/ui";
 
 import type { Exercise, PreviousSetsMap } from "../model/types";
@@ -20,6 +19,7 @@ import { getWorkoutReview } from "../model/workout-logging";
 import { ExercisePicker } from "./exercise-picker";
 import { RestTimer } from "./rest-timer";
 import { WorkoutFinishDialog } from "./workout-finish-dialog";
+import { WorkoutExerciseListLoading } from "./workout-loading";
 
 const WorkoutExerciseList = lazy(() =>
   import("./workout-exercise-list").then(({ WorkoutExerciseList }) => ({
@@ -122,7 +122,7 @@ export function WorkoutLogger({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 pb-[calc(11rem+env(safe-area-inset-bottom))] sm:px-5 md:px-8">
-      <header className="border-border/30 bg-background/50 sticky top-0 z-30 -mx-4 flex items-center justify-between gap-3 border-b px-4 pt-4 pb-3 backdrop-blur-md sm:-mx-5 sm:px-5 md:-mx-8 md:px-8">
+      <header className="border-border/30 bg-background/50 before:bg-background sticky top-[env(safe-area-inset-top,0px)] z-30 -mx-4 flex items-center justify-between gap-3 border-b px-4 pt-4 pb-3 backdrop-blur-md before:pointer-events-none before:absolute before:inset-x-0 before:-top-[env(safe-area-inset-top,0px)] before:h-[env(safe-area-inset-top,0px)] before:content-[''] sm:-mx-5 sm:px-5 md:-mx-8 md:px-8">
         <Button
           variant="secondary"
           size="icon-lg"
@@ -202,7 +202,14 @@ export function WorkoutLogger({
               об’єму
             </span>
           </div>
-          <Suspense fallback={<Skeleton className="h-20 w-full rounded-2xl" />}>
+          <Suspense
+            fallback={
+              <WorkoutExerciseListLoading
+                exercises={workoutExercises}
+                collapsedCards={collapsedCards}
+              />
+            }
+          >
             <WorkoutExerciseList
               exercises={workoutExercises}
               previousSets={previousSets}

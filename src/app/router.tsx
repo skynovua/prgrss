@@ -12,6 +12,7 @@ import { AppLayout } from "@/app/ui/app-layout";
 import { exerciseCatalogOptions } from "@/entities/exercise";
 import { profileQueryOptions } from "@/entities/profile";
 import { previousSetsQueryOptions } from "@/entities/workout";
+import { AchievementsLoading } from "@/pages/achievements/index.loading";
 import AuthCallbackPage from "@/pages/auth-callback";
 import CalendarPage from "@/pages/calendar";
 import { validateCalendarSearch } from "@/pages/calendar";
@@ -20,12 +21,14 @@ import ExercisesPage from "@/pages/exercises";
 import InstallPage from "@/pages/install";
 import LoginPage from "@/pages/login";
 import ProgramsPage from "@/pages/programs";
+import { ProgressLoading } from "@/pages/progress/index.loading";
+import { ExerciseProgressLoading } from "@/pages/progress-exercise/index.loading";
 import SettingsPage from "@/pages/settings";
 import WorkoutDetailPage from "@/pages/workout-detail";
 import WorkoutEditPage from "@/pages/workout-edit";
 import WorkoutNewPage from "@/pages/workout-new";
 import type { AuthContextType } from "@/shared/auth";
-import { PageError, PageLoading, Toaster } from "@/shared/ui";
+import { PageError, Toaster } from "@/shared/ui";
 
 interface RouterContext {
   auth: AuthContextType;
@@ -151,7 +154,7 @@ const progressRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/progress",
   component: lazyRouteComponent(() => import("@/pages/progress")),
-  pendingComponent: () => <PageLoading title="Статистика" layout="stats" />,
+  pendingComponent: ProgressLoading,
 });
 
 const exerciseProgressRoute = createRoute({
@@ -161,7 +164,7 @@ const exerciseProgressRoute = createRoute({
     from: typeof search.from === "string" ? search.from : undefined,
   }),
   component: lazyRouteComponent(() => import("@/pages/progress-exercise")),
-  pendingComponent: () => <PageLoading title="Статистика вправи" layout="stats" />,
+  pendingComponent: ExerciseProgressLoading,
 });
 
 const settingsRoute = createRoute({
@@ -183,7 +186,7 @@ const achievementsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/achievements",
   component: lazyRouteComponent(() => import("@/pages/achievements")),
-  pendingComponent: () => <PageLoading title="Досягнення" layout="list" />,
+  pendingComponent: AchievementsLoading,
 });
 
 const installRoute = createRoute({

@@ -1,3 +1,5 @@
+import { Loader2 } from "lucide-react";
+
 import { LoadingNotice, PageError } from "@/shared/ui";
 
 export function AppStartup({ error, onRetry }: { error?: string | null; onRetry?: () => void }) {
@@ -9,7 +11,13 @@ export function AppStartup({ error, onRetry }: { error?: string | null; onRetry?
       {error ? (
         <PageError title="Не вдалося відкрити PRGRSS" description={error} onRetry={onRetry} />
       ) : (
-        <LoadingNotice onRetry={onRetry} />
+        <>
+          <div className="text-muted-foreground flex items-center gap-2 text-sm" aria-hidden="true">
+            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+            Завантажуємо дані…
+          </div>
+          <LoadingNotice onRetry={onRetry} />
+        </>
       )}
     </main>
   );

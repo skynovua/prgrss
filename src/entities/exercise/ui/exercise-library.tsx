@@ -40,6 +40,7 @@ import {
   useCreateExercise,
 } from "../hooks/use-exercises";
 import type { ExerciseCatalogItem } from "../model/exercise-catalog";
+import { AnatomyLoading } from "./anatomy-loading";
 import { ExerciseDetailsDialog } from "./exercise-details-dialog";
 
 const LazyAnatomyMap = lazy(() =>
@@ -272,13 +273,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
             {selectedMuscle ? `М’яз: ${selectedMuscle.name}` : "Обрати на мапі м’язів"}
           </AccordionTrigger>
           <AccordionContent>
-            <Suspense
-              fallback={
-                <p className="text-muted-foreground py-4 text-sm" aria-busy="true">
-                  Завантаження мапи…
-                </p>
-              }
-            >
+            <Suspense fallback={<AnatomyLoading />}>
               <LazyAnatomyMap
                 muscles={anatomicalMuscles}
                 selectedMuscleKey={selectedMuscleKey}

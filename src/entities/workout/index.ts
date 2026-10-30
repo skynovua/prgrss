@@ -18,3 +18,4 @@ export * from "./ui/weight-display";
 export * from "./ui/workout-detail";
 export * from "./ui/workout-editor";
 export * from "./ui/workout-logger";
+export * from "./ui/workout-loading";

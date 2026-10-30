@@ -4,7 +4,7 @@ import { lazy, Suspense, useReducer, useState } from "react";
 import { toast } from "sonner";
 
 import { useProfile } from "@/entities/profile";
-import { Button, Skeleton } from "@/shared/ui";
+import { Button } from "@/shared/ui";
 
 import { useUpdateWorkout } from "../hooks/use-workouts";
 import { getExerciseLogPreferences } from "../model/exercise-log-preferences";
@@ -22,6 +22,7 @@ import { getExerciseTrackingType, getWorkoutReview } from "../model/workout-logg
 import { ExercisePicker } from "./exercise-picker";
 import { RestTimer } from "./rest-timer";
 import { WorkoutFinishDialog } from "./workout-finish-dialog";
+import { WorkoutExerciseListLoading } from "./workout-loading";
 
 const WorkoutExerciseList = lazy(() =>
   import("./workout-exercise-list").then(({ WorkoutExerciseList }) => ({
@@ -120,7 +121,7 @@ export function WorkoutEditor({
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 pb-[calc(17rem+env(safe-area-inset-bottom))]">
-      <header className="border-border/30 bg-background/50 sticky top-0 z-30 -mx-4 -mt-4 flex items-center gap-2 border-b px-4 pt-4 pb-4 backdrop-blur-md">
+      <header className="border-border/30 bg-background/50 before:bg-background sticky top-[env(safe-area-inset-top,0px)] z-30 -mx-4 -mt-4 flex items-center gap-2 border-b px-4 pt-4 pb-4 backdrop-blur-md before:pointer-events-none before:absolute before:inset-x-0 before:-top-[env(safe-area-inset-top,0px)] before:h-[env(safe-area-inset-top,0px)] before:content-['']">
         <Button
           variant="ghost"
           size="icon"
@@ -149,7 +150,14 @@ export function WorkoutEditor({
           <Timer />
         </Button>
       </header>
-      <Suspense fallback={<Skeleton className="h-20 w-full rounded-2xl" />}>
+      <Suspense
+        fallback={
+          <WorkoutExerciseListLoading
+            exercises={workoutExercises}
+            collapsedCards={collapsedCards}
+          />
+        }
+      >
         <WorkoutExerciseList
           exercises={workoutExercises}
           previousSets={previousSets}

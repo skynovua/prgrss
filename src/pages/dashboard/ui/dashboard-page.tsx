@@ -252,17 +252,29 @@ function DashboardDataLoading({ onRetry }: { onRetry: () => void }) {
         <CardHeader className="px-5">
           <CardTitle>Мій тиждень</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-7 gap-2 px-5" aria-hidden="true">
-          {Array.from({ length: 7 }, (_, index) => (
-            <Skeleton key={index} className="h-20 rounded-xl" />
-          ))}
+        <CardContent className="px-3 sm:px-5" aria-hidden="true">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-2">
+            {Array.from({ length: 7 }, (_, index) => (
+              <div key={index} className="flex min-w-0 flex-col items-center gap-2">
+                <Skeleton className="h-4 w-6" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+                <span className="size-1" />
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
-      <section className="flex flex-col gap-4" aria-busy="true" aria-label="Останні тренування">
+      <section className="flex flex-col gap-3" aria-busy="true" aria-label="Останні тренування">
         <h2 className="text-base font-semibold">Останні тренування</h2>
-        <div className="flex flex-col gap-3" aria-hidden="true">
+        <div className="divide-border divide-y" aria-hidden="true">
           {[0, 1, 2].map((index) => (
-            <Skeleton key={index} className="h-16 rounded-xl" />
+            <div key={index} className="flex items-center gap-3 py-4">
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+              <Skeleton className="size-4 rounded" />
+            </div>
           ))}
         </div>
       </section>
