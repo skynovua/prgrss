@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
+import { backfillExerciseAnatomy } from "./exercise-anatomy-backfill.mjs";
 import { anatomicalMuscles, systemExercises } from "./exercise-catalog-config.mjs";
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
@@ -231,6 +232,7 @@ async function syncExercises() {
 validateConfig();
 await syncMuscles();
 await syncExercises();
+await backfillExerciseAnatomy(supabase, { apply: true });
 
 console.log(
   `Synced ${anatomicalMuscles.length} anatomical muscles and ${systemExercises.length} system exercises.`

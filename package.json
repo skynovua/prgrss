@@ -16,7 +16,9 @@
     "format:check": "prettier --check .",
     "db:types": "tmp=$(mktemp) && SUPABASE_TELEMETRY_DISABLED=1 supabase gen types --lang=typescript --project-id dggyqxvnyynusykobmiq > \"$tmp\" && mv \"$tmp\" src/shared/db/generated/types.ts",
     "db:sync-achievements": "node scripts/sync-achievement-config.mjs",
-    "db:sync-exercises": "node --env-file-if-exists=.env.local scripts/sync-exercise-catalog.mjs"
+    "db:sync-exercises": "node --env-file-if-exists=.env.local src/scripts/sync-exercise-catalog.mjs",
+    "db:backfill-exercise-anatomy": "node --env-file-if-exists=.env.local src/scripts/backfill-exercise-anatomy.mjs",
+    "test:exercise-catalog": "node --test src/scripts/exercise-anatomy-backfill.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
