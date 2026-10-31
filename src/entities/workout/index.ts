@@ -2,6 +2,7 @@ export * from "./api/workout-rpc";
 export * from "./api/workouts";
 export * from "./hooks/use-workouts";
 export * from "./model/metrics";
+export * from "./model/exercise-log-preferences";
 export * from "./model/persistence";
 export * from "./model/reducer";
 export * from "./model/types";

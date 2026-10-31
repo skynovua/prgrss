@@ -2,6 +2,14 @@ import type { ExerciseTrackingType } from "./types";
 
 const STORAGE_KEY = "prgrss.exerciseLogPreferences";
 
+export function clearExerciseLogPreferences() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Локальне сховище може бути недоступним.
+  }
+}
+
 export interface ExerciseLogPreferences {
   trackingType?: ExerciseTrackingType;
   restSeconds?: number;

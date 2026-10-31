@@ -7,6 +7,7 @@
     "typecheck": "tsc --noEmit",
     "test:workout": "node --experimental-strip-types --test src/entities/workout/model/*.test.mjs",
     "test:progress": "node --experimental-strip-types --test src/entities/progress/api/*.test.mjs",
+    "test:account": "node --experimental-strip-types --test supabase/functions/delete-account/*.test.mjs",
     "test:calendar": "TZ=Europe/Kyiv node --experimental-strip-types --test src/pages/calendar/model/*.test.mjs",
     "test:loading": "node --experimental-strip-types --test src/shared/auth/*.test.mjs src/shared/api/*.test.mjs src/app/model/*.test.mjs",
     "build": "tsc --noEmit && vite build",

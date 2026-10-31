@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Download, Palette, ShieldCheck } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Download,
+  Palette,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react";
 
 import { LogoutButton } from "@/entities/auth";
 import { ProfileSettings } from "@/entities/profile";
@@ -26,6 +33,7 @@ import {
 } from "@/shared/ui";
 import { PageError, RefreshNotice } from "@/shared/ui";
 
+import { DeleteAccountButton } from "./delete-account-button";
 import { ProfileLoading } from "./profile-loading";
 
 const THEMES = [
@@ -132,6 +140,26 @@ export default function SettingsPage() {
         <CardContent className="p-4 pt-0">
           <LogoutButton variant="outline" />
         </CardContent>
+      </Card>
+
+      <Card className="p-0">
+        <details className="group/danger">
+          <summary className="focus-visible:ring-ring flex min-h-14 cursor-pointer list-none items-center gap-2 rounded-xl px-4 text-base font-semibold outline-none focus-visible:ring-2 focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
+            <ShieldAlert className="text-destructive size-4 shrink-0" aria-hidden="true" />
+            Небезпечна зона
+            <ChevronDown
+              className="text-muted-foreground ml-auto size-4 shrink-0 group-open/danger:rotate-180"
+              aria-hidden="true"
+            />
+          </summary>
+          <div className="flex flex-col gap-4 px-4 pb-4">
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Видалення акаунта назавжди прибере твої тренування, статистику та інші дані. Відновити
+              їх буде неможливо.
+            </p>
+            <DeleteAccountButton />
+          </div>
+        </details>
       </Card>
     </div>
   );
