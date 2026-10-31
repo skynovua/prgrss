@@ -86,7 +86,7 @@ function SelectContent({
           {...props}
         >
           <SelectScrollUpButton />
-          <SelectPrimitive.List className="min-h-0 scroll-py-6 overflow-y-auto overscroll-contain py-6">
+          <SelectPrimitive.List className="min-h-0 scroll-py-1.5 overflow-y-auto overscroll-contain">
             {children}
           </SelectPrimitive.List>
           <SelectScrollDownButton />
