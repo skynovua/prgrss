@@ -29,9 +29,19 @@ interface ExercisePickerProps {
   exercises: Exercise[];
   onSelect: (exercises: Exercise[]) => void;
   trigger?: React.ReactNode;
+  isLoading?: boolean;
+  isUnavailable?: boolean;
+  onRetry?: () => void;
 }
 
-export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerProps) {
+export function ExercisePicker({
+  exercises,
+  onSelect,
+  trigger,
+  isLoading = false,
+  isUnavailable = false,
+  onRetry,
+}: ExercisePickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
@@ -223,7 +233,27 @@ export function ExercisePicker({ exercises, onSelect, trigger }: ExercisePickerP
                   </button>
                 );
               })}
-              {filtered.length === 0 && (
+              {isLoading && (
+                <p role="status" className="text-muted-foreground py-8 text-center text-sm">
+                  Завантажуємо вправи…
+                </p>
+              )}
+              {isUnavailable && (
+                <div role="status" className="flex flex-col items-center gap-3 py-8">
+                  <p className="text-muted-foreground text-center text-sm">
+                    Не вдалося завантажити вправи.
+                  </p>
+                  <Button variant="outline" onClick={onRetry}>
+                    Спробувати ще
+                  </Button>
+                </div>
+              )}
+              {!isLoading && !isUnavailable && exercises.length === 0 && (
+                <p className="text-muted-foreground py-8 text-center text-sm">
+                  У бібліотеці ще немає вправ.
+                </p>
+              )}
+              {!isLoading && !isUnavailable && exercises.length > 0 && filtered.length === 0 && (
                 <p className="text-muted-foreground py-8 text-center text-sm">Нічого не знайдено</p>
               )}
             </div>

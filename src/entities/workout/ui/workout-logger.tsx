@@ -1,6 +1,6 @@
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Dumbbell, Flag, Plus, Timer } from "lucide-react";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useProfile } from "@/entities/profile";
 import {
@@ -18,14 +18,8 @@ import { useWorkout } from "../model/use-workout";
 import { getWorkoutReview } from "../model/workout-logging";
 import { ExercisePicker } from "./exercise-picker";
 import { RestTimer } from "./rest-timer";
+import { WorkoutExerciseList } from "./workout-exercise-list";
 import { WorkoutFinishDialog } from "./workout-finish-dialog";
-import { WorkoutExerciseListLoading } from "./workout-loading";
-
-const WorkoutExerciseList = lazy(() =>
-  import("./workout-exercise-list").then(({ WorkoutExerciseList }) => ({
-    default: WorkoutExerciseList,
-  }))
-);
 
 function WorkoutDurationTimer({ startedAt }: { startedAt: string }) {
   const [now, setNow] = useState(() => Date.now());
@@ -63,17 +57,19 @@ function WorkoutDurationTimer({ startedAt }: { startedAt: string }) {
 }
 
 interface WorkoutLoggerProps {
-  exercises: Exercise[];
+  exercises?: Exercise[];
+  exercisesPending: boolean;
+  onRetryExercises: () => void;
   previousSets?: PreviousSetsMap;
   historyUnavailable?: boolean;
-  historyPending?: boolean;
 }
 
 export function WorkoutLogger({
   exercises,
+  exercisesPending,
+  onRetryExercises,
   previousSets,
   historyUnavailable = false,
-  historyPending = false,
 }: WorkoutLoggerProps) {
   const { data: profile } = useProfile();
   const {
@@ -102,6 +98,23 @@ export function WorkoutLogger({
     }
     exercises.forEach(addExercise);
   };
+  const exercisePicker = (
+    <ExercisePicker
+      exercises={exercises ?? []}
+      isLoading={exercisesPending}
+      isUnavailable={!exercises && !exercisesPending}
+      onRetry={onRetryExercises}
+      onSelect={handleAddExercises}
+      trigger={
+        hasExercises ? undefined : (
+          <Button variant="primary" size="lg">
+            <Plus data-icon="inline-start" />
+            Почати тренування
+          </Button>
+        )
+      }
+    />
+  );
   const returnToWorkout = () => {
     setReviewOpen(false);
     const issues = getWorkoutReview(workoutExercises).invalidSets;
@@ -153,11 +166,6 @@ export function WorkoutLogger({
           <Flag />
         </Button>
       </header>
-      {historyPending && (
-        <p role="status" className="text-muted-foreground text-sm">
-          Підвантажуємо минулі підходи. Уже можна додавати вправи й записувати значення вручну.
-        </p>
-      )}
       {historyUnavailable && (
         <p role="status" className="text-muted-foreground text-sm">
           Історію підходів не вдалося завантажити. Можна записати тренування вручну.
@@ -170,23 +178,9 @@ export function WorkoutLogger({
               <Dumbbell />
             </EmptyMedia>
             <EmptyTitle>Твоє наступне тренування</EmptyTitle>
-            <EmptyDescription>
-              Обери першу вправу — тоді почнеться відлік часу. Якщо історія вже завантажена,
-              підставимо минулі підходи під час додавання вправи.
-            </EmptyDescription>
+            <EmptyDescription>Обери першу вправу — тоді почнеться відлік часу.</EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>
-            <ExercisePicker
-              exercises={exercises}
-              onSelect={handleAddExercises}
-              trigger={
-                <Button variant="primary" size="lg">
-                  <Plus data-icon="inline-start" />
-                  Почати тренування
-                </Button>
-              }
-            />
-          </EmptyContent>
+          <EmptyContent>{exercisePicker}</EmptyContent>
         </Empty>
       ) : (
         <>
@@ -202,29 +196,20 @@ export function WorkoutLogger({
               об’єму
             </span>
           </div>
-          <Suspense
-            fallback={
-              <WorkoutExerciseListLoading
-                exercises={workoutExercises}
-                collapsedCards={collapsedCards}
-              />
+          <WorkoutExerciseList
+            exercises={workoutExercises}
+            previousSets={previousSets}
+            autoRestTimer={profile?.autoRestTimer ?? true}
+            collapsedCards={collapsedCards}
+            onToggleCollapse={toggleCollapse}
+            onCollapseAll={() =>
+              setCollapsedCards(
+                Object.fromEntries(workoutExercises.map((we) => [we.instanceId, true]))
+              )
             }
-          >
-            <WorkoutExerciseList
-              exercises={workoutExercises}
-              previousSets={previousSets}
-              autoRestTimer={profile?.autoRestTimer ?? true}
-              collapsedCards={collapsedCards}
-              onToggleCollapse={toggleCollapse}
-              onCollapseAll={() =>
-                setCollapsedCards(
-                  Object.fromEntries(workoutExercises.map((we) => [we.instanceId, true]))
-                )
-              }
-              dispatch={dispatch}
-            />
-          </Suspense>
-          <ExercisePicker exercises={exercises} onSelect={handleAddExercises} />
+            dispatch={dispatch}
+          />
+          {exercisePicker}
           <p className="text-muted-foreground px-1 text-center text-xs leading-relaxed">
             Чернетка зберігається на цьому пристрої
           </p>

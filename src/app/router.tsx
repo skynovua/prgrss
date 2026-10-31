@@ -9,7 +9,11 @@ import {
 } from "@tanstack/react-router";
 
 import { AppLayout } from "@/app/ui/app-layout";
-import { exerciseCatalogOptions } from "@/entities/exercise";
+import {
+  anatomicalMusclesQueryOptions,
+  exerciseCatalogOptions,
+  popularExerciseIdsQueryOptions,
+} from "@/entities/exercise";
 import { profileQueryOptions } from "@/entities/profile";
 import { previousSetsQueryOptions } from "@/entities/workout";
 import { AchievementsLoading } from "@/pages/achievements/index.loading";
@@ -17,6 +21,7 @@ import AuthCallbackPage from "@/pages/auth-callback";
 import CalendarPage from "@/pages/calendar";
 import { validateCalendarSearch } from "@/pages/calendar";
 import DashboardPage, { dashboardQueryOptions } from "@/pages/dashboard";
+import ExerciseNewPage from "@/pages/exercise-new";
 import ExercisesPage from "@/pages/exercises";
 import InstallPage from "@/pages/install";
 import LoginPage from "@/pages/login";
@@ -81,6 +86,9 @@ const appRoute = createRoute({
     }
 
     if (context.auth.user) {
+      void context.queryClient.prefetchQuery(exerciseCatalogOptions(context.auth.user.id));
+      void context.queryClient.prefetchQuery(popularExerciseIdsQueryOptions(context.auth.user.id));
+      void context.queryClient.prefetchQuery(previousSetsQueryOptions);
       return;
     }
 
@@ -111,8 +119,19 @@ const exercisesRoute = createRoute({
   path: "/exercises",
   component: ExercisesPage,
   loader: ({ context }) => {
-    if (context.auth.user)
+    if (context.auth.user) {
       void context.queryClient.prefetchQuery(exerciseCatalogOptions(context.auth.user.id));
+      void context.queryClient.prefetchQuery(anatomicalMusclesQueryOptions);
+    }
+  },
+});
+
+const exerciseNewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/exercises/new",
+  component: ExerciseNewPage,
+  loader: ({ context }) => {
+    if (context.auth.user) void context.queryClient.prefetchQuery(anatomicalMusclesQueryOptions);
   },
 });
 
@@ -205,6 +224,7 @@ const routeTree = rootRoute.addChildren([
     dashboardRoute,
     calendarRoute,
     exercisesRoute,
+    exerciseNewRoute,
     workoutNewRoute,
     workoutDetailRoute,
     workoutEditRoute,

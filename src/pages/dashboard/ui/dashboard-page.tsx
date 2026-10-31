@@ -8,6 +8,7 @@ import {
   Moon,
   Plus,
   Sun,
+  User,
   Zap,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -74,7 +75,7 @@ function StatDiff({ current, previous }: { current: number; previous: number }) 
 }
 
 export default function DashboardPage() {
-  const { data, isPending, isError, refetch } = useDashboard();
+  const { data, isPending, isError, fetchStatus, refetch } = useDashboard();
   const { data: achievements } = useAchievements();
   const { resolvedTheme, setTheme } = useTheme();
 
@@ -133,8 +134,10 @@ export default function DashboardPage() {
               <span className="bg-secondary text-secondary-foreground flex size-9 items-center justify-center rounded-full text-sm font-medium">
                 {profile.displayName.charAt(0).toUpperCase()}
               </span>
-            ) : (
+            ) : isPending && fetchStatus !== "paused" ? (
               <Skeleton className="size-9 rounded-full" aria-hidden="true" />
+            ) : (
+              <User className="text-muted-foreground size-5" aria-hidden="true" />
             )}
           </Link>
         </div>
@@ -142,7 +145,7 @@ export default function DashboardPage() {
 
       <section className="flex flex-col gap-2">
         <p className="text-muted-foreground text-sm first-letter:uppercase">{date}</p>
-        {isPending && !profile ? (
+        {isPending && fetchStatus !== "paused" && !profile ? (
           <Skeleton className="h-9 w-64 max-w-full" aria-hidden="true" />
         ) : (
           <h1 className="font-heading text-3xl leading-tight font-medium tracking-tight">
@@ -173,7 +176,12 @@ export default function DashboardPage() {
         </CardFooter>
       </Card>
 
-      {isPending ? (
+      {isPending && fetchStatus === "paused" ? (
+        <PageError
+          title="Немає з’єднання"
+          description="Дані головної завантажаться, коли з’єднання відновиться."
+        />
+      ) : isPending ? (
         <DashboardDataLoading onRetry={() => void refetch()} />
       ) : data ? (
         <DashboardData data={data} />

@@ -39,14 +39,18 @@ export function useExercises({ enabled = true }: ExerciseQueryOptions = {}) {
   return useQuery({ ...exerciseCatalogOptions(user?.id ?? ""), enabled: enabled && Boolean(user) });
 }
 
+export const anatomicalMusclesQueryOptions = queryOptions({
+  queryKey: exerciseQueryKeys.anatomicalMuscles,
+  queryFn: fetchAnatomicalMuscles,
+  staleTime: 30 * 60 * 1000,
+});
+
 export function useAnatomicalMuscles() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: exerciseQueryKeys.anatomicalMuscles,
-    queryFn: fetchAnatomicalMuscles,
+    ...anatomicalMusclesQueryOptions,
     enabled: Boolean(user),
-    staleTime: 30 * 60 * 1000,
   });
 }
 
@@ -131,13 +135,19 @@ export function useToggleFavoriteExercise() {
   });
 }
 
+export const popularExerciseIdsQueryOptions = (userId: string) =>
+  queryOptions({
+    queryKey: exerciseQueryKeys.popular(userId),
+    queryFn: () => withQueryTimeout(fetchPopularExerciseIds),
+    staleTime: 5 * 60 * 1000, // 5 хвилин
+    retryOnMount: false,
+  });
+
 export function usePopularExerciseIds({ enabled = true }: ExerciseQueryOptions = {}) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: exerciseQueryKeys.popular(user?.id),
-    queryFn: fetchPopularExerciseIds,
+    ...popularExerciseIdsQueryOptions(user?.id ?? ""),
     enabled: enabled && Boolean(user),
-    staleTime: 5 * 60 * 1000, // 5 хвилин
   });
 }

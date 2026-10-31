@@ -1,4 +1,11 @@
-export { useExercises, exerciseCatalogOptions } from "./hooks/use-exercises";
+export {
+  useExercises,
+  exerciseCatalogOptions,
+  anatomicalMusclesQueryOptions,
+  popularExerciseIdsQueryOptions,
+  useAnatomicalMuscles,
+  useCreateExercise,
+} from "./hooks/use-exercises";
 export { ExerciseLibrary } from "./ui/exercise-library";
 export { AnatomyPreview } from "./ui/anatomy-preview";
 export type { ExerciseMuscleTarget } from "./model/exercise-catalog";
