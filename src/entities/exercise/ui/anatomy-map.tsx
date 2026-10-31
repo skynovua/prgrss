@@ -179,7 +179,7 @@ function AnatomyFigure({
       inert={interactive ? undefined : true}
       data-interactive={interactive ? "true" : "false"}
       className={cn(
-        "anatomy-map__figure mx-auto w-full touch-manipulation select-none [&>div>svg>path:first-child]:opacity-95",
+        "anatomy-map__figure mx-auto aspect-[637/1242] w-full touch-manipulation select-none [&>div>svg]:h-full [&>div>svg>path:first-child]:opacity-95",
         compact ? "max-w-44" : "max-w-72"
       )}
       onClick={interactive ? handleClick : undefined}
@@ -213,7 +213,7 @@ function AnatomyFigure({
         </defs>
       </svg>
 
-      <div className="w-full" dangerouslySetInnerHTML={{ __html: source }} />
+      <div className="h-full w-full" dangerouslySetInnerHTML={{ __html: source }} />
     </div>
   );
 }
