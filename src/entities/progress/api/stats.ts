@@ -143,7 +143,7 @@ export async function fetchPeriodSummary(since: string | null): Promise<PeriodPr
 
 // --- Прогрес конкретної вправи ---
 
-export async function fetchExerciseProgress(since: string | null): Promise<ExerciseProgressData[]> {
+async function fetchAllExerciseProgress(since: string | null): Promise<ExerciseProgressData[]> {
   const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const { data, error } = await supabase.rpc("get_progress_exercise_progress", {
     client_timezone: clientTimezone,
@@ -157,11 +157,17 @@ export async function fetchExerciseProgress(since: string | null): Promise<Exerc
   return (data ?? []).map(mapExerciseProgressEntry);
 }
 
+export async function fetchExerciseProgress(since: string | null): Promise<ExerciseProgressData[]> {
+  const progress = await fetchAllExerciseProgress(since);
+
+  return progress.filter((entry) => entry.data.length >= 2).slice(0, 10);
+}
+
 export async function fetchExerciseProgressById(
   exerciseId: string,
   since: string | null
 ): Promise<ExerciseProgressData | null> {
-  const allExerciseProgress = await fetchExerciseProgress(since);
+  const allExerciseProgress = await fetchAllExerciseProgress(since);
 
   return allExerciseProgress.find((entry) => entry.exerciseId === exerciseId) ?? null;
 }

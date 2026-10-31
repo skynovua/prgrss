@@ -144,10 +144,9 @@ export default function ExerciseProgressPage() {
             <EmptyMedia variant="icon">
               <Dumbbell />
             </EmptyMedia>
-            <EmptyTitle>Поки замало записів</EmptyTitle>
+            <EmptyTitle>Немає записів за цей період</EmptyTitle>
             <EmptyDescription>
-              Статистика з’явиться після записів ваги й повторень цієї вправи щонайменше за два
-              різні тренувальні дні.
+              Статистика з’явиться, коли запишеш вагу та повторення цієї вправи.
             </EmptyDescription>
           </EmptyHeader>
           {period !== "all" && (
@@ -182,7 +181,13 @@ export default function ExerciseProgressPage() {
             </dl>
           </section>
 
-          <ExerciseProgressChart data={[exerciseProgress]} showExercisePicker={false} />
+          {points.length >= 2 ? (
+            <ExerciseProgressChart data={[exerciseProgress]} showExercisePicker={false} />
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              Динаміка з’явиться після записів ще одного тренувального дня.
+            </p>
+          )}
 
           {latestPoint && (
             <Card className="gap-4 py-5">
