@@ -2,11 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { cn } from "@/shared/lib";
-import { buttonVariants, Card, CardContent, LoadingNotice, Skeleton } from "@/shared/ui";
+import {
+  buttonVariants,
+  Card,
+  CardContent,
+  LoadingNotice,
+  PageHeader,
+  Skeleton,
+} from "@/shared/ui";
 
 export function AchievementsHeader() {
   return (
-    <header className="flex items-start gap-3">
+    <PageHeader className="gap-3">
       <Link
         to="/dashboard"
         aria-label="На головну"
@@ -14,17 +21,14 @@ export function AchievementsHeader() {
       >
         <ArrowLeft />
       </Link>
-      <div className="flex min-w-0 flex-col gap-2">
-        <h1 className="text-3xl font-medium tracking-tight">Досягнення</h1>
-        <p className="text-muted-foreground text-sm leading-6">Твої зусилля стають нагородами.</p>
-      </div>
-    </header>
+      <h1 className="min-w-0 text-xl font-medium tracking-tight">Досягнення</h1>
+    </PageHeader>
   );
 }
 
 export function AchievementsLoading({ onRetry }: { onRetry?: () => void }) {
   return (
-    <section className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8" aria-label="Досягнення">
+    <section className="flex flex-1 flex-col gap-6 px-5 pb-6 md:px-8" aria-label="Досягнення">
       <AchievementsHeader />
       <LoadingNotice onRetry={onRetry} />
       <div className="flex flex-col gap-6" aria-busy="true">

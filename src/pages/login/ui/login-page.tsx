@@ -7,7 +7,7 @@ import { createClient } from "@/shared/api";
 import { useAuth } from "@/shared/auth";
 import { isStandalone } from "@/shared/lib";
 import { useTheme } from "@/shared/theme";
-import { Button } from "@/shared/ui";
+import { Button, PageHeader } from "@/shared/ui";
 
 function GoogleIcon(props: ComponentProps<"svg">) {
   return (
@@ -78,8 +78,8 @@ export default function LoginPage() {
 
   return (
     <div className="bg-background text-foreground relative flex min-h-dvh">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-12 px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
-        <header className="flex items-center justify-between gap-4">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-12 px-6 pt-[env(safe-area-inset-top)] pb-[calc(2rem+env(safe-area-inset-bottom))]">
+        <PageHeader className="-mx-6 flex items-center justify-between gap-4 px-6 md:-mx-6 md:px-6">
           <p className="font-logo text-xl tracking-normal">
             PR<span className="text-primary">G</span>RSS
           </p>
@@ -93,7 +93,7 @@ export default function LoginPage() {
           >
             {resolvedTheme === "light" ? <Moon /> : <Sun />}
           </Button>
-        </header>
+        </PageHeader>
 
         <div className="flex flex-1 flex-col justify-center gap-8 pb-12">
           <div className="flex flex-col gap-5">

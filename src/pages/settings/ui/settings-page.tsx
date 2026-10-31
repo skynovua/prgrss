@@ -16,6 +16,7 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
+  PageHeader,
   Select,
   SelectContent,
   SelectGroup,
@@ -38,12 +39,11 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
+    <div className="flex flex-1 flex-col gap-6 px-5 pb-6 md:px-8">
+      <PageHeader>
+        <h1 className="text-xl font-medium tracking-tight">Налаштування</h1>
+      </PageHeader>
       {isError && profile && <RefreshNotice onRetry={() => void refetch()} />}
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-medium tracking-tight">Налаштування</h1>
-        <p className="text-muted-foreground text-sm">Твій профіль і комфортний ритм тренувань.</p>
-      </header>
 
       <Card className="gap-4 p-0">
         <CardHeader className="px-5 pt-5">

@@ -400,7 +400,7 @@ export default function AchievementsPage() {
         if (!open) closeDetails();
       }}
     >
-      <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
+      <div className="flex flex-1 flex-col gap-6 px-5 pb-6 md:px-8">
         <AchievementsHeader />
         {isError && achievements.length > 0 && <RefreshNotice onRetry={() => void refetch()} />}
         {isError && achievements.length === 0 ? (

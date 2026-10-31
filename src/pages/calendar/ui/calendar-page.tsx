@@ -12,6 +12,7 @@ import {
   EmptyTitle,
   LoadingBlocks,
   LoadingNotice,
+  PageHeader,
   RefreshNotice,
   Tabs,
   TabsContent,
@@ -204,9 +205,8 @@ export default function CalendarPage() {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 pt-6 pb-6 sm:px-6 md:px-8">
-      {isError && workouts && <RefreshNotice onRetry={() => void refetch()} />}
-      <header className="flex items-center gap-2">
+    <div className="flex flex-1 flex-col gap-5 px-4 pb-6 sm:px-6 md:px-8">
+      <PageHeader className="-mx-4 flex items-center gap-2 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
         <Button
           variant="ghost"
           size="icon"
@@ -216,14 +216,15 @@ export default function CalendarPage() {
         >
           <ChevronLeft />
         </Button>
-        <h1 className="min-w-0 flex-1 text-2xl font-medium tracking-tight">Календар</h1>
+        <h1 className="min-w-0 flex-1 text-xl font-medium tracking-tight">Календар</h1>
         <Button
           variant="outline"
           onClick={() => updateSearch({ date: todayKey, view: search.view })}
         >
           Сьогодні
         </Button>
-      </header>
+      </PageHeader>
+      {isError && workouts && <RefreshNotice onRetry={() => void refetch()} />}
       <Tabs
         value={view}
         onValueChange={(value) =>

@@ -1,18 +1,17 @@
-import { LoadingBlocks, LoadingNotice, Skeleton } from "@/shared/ui";
+import { LoadingBlocks, LoadingNotice, PageHeader, Skeleton } from "@/shared/ui";
 
 export function ExerciseProgressLoading() {
   return (
     <section
-      className="flex min-w-0 flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8"
+      className="flex min-w-0 flex-1 flex-col gap-6 px-5 pb-6 md:px-8"
       aria-label="Статистика вправи"
     >
-      <header className="flex items-start gap-3">
+      <PageHeader className="gap-3">
         <Skeleton className="size-11 shrink-0 rounded-lg" aria-hidden="true" />
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="text-muted-foreground text-sm">Статистика вправи</p>
-          <Skeleton className="h-9 w-full max-w-80" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <Skeleton className="h-6 w-full max-w-80" aria-hidden="true" />
         </div>
-      </header>
+      </PageHeader>
       <LoadingNotice />
       <div className="flex flex-col gap-2" aria-hidden="true">
         <div className="flex gap-2 overflow-hidden">

@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 
 import { detectPlatform, isStandalone, type Platform } from "@/shared/lib";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { Button } from "@/shared/ui";
+import { Button, PageHeader } from "@/shared/ui";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -46,7 +46,10 @@ export default function InstallPage() {
 
   if (installed) {
     return (
-      <div className="flex min-h-screen flex-col justify-center gap-6 p-4">
+      <div className="flex min-h-screen flex-col gap-6 px-4 pt-[env(safe-area-inset-top)] pb-4">
+        <PageHeader className="-mx-4 px-4 md:-mx-4 md:px-4">
+          <h1 className="text-xl font-medium tracking-tight">Встановлення</h1>
+        </PageHeader>
         <Card className="overflow-hidden p-0">
           <CardContent className="relative px-4 py-5 text-center">
             <div className="from-muted absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
@@ -55,7 +58,7 @@ export default function InstallPage() {
                 <Download className="h-6 w-6" />
               </div>
               <div className="space-y-1.5">
-                <h1 className="text-2xl font-bold tracking-tight">PRGRSS already installed</h1>
+                <h2 className="text-2xl font-bold tracking-tight">PRGRSS already installed</h2>
                 <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed">
                   Застосунок уже працює на цьому пристрої як окремий app experience.
                 </p>
@@ -68,7 +71,10 @@ export default function InstallPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4">
+    <div className="flex flex-1 flex-col gap-6 px-4 pt-[env(safe-area-inset-top)] pb-4">
+      <PageHeader className="-mx-4 px-4 md:-mx-4 md:px-4">
+        <h1 className="text-xl font-medium tracking-tight">Встановлення</h1>
+      </PageHeader>
       <Card className="overflow-hidden p-0">
         <CardContent className="relative px-4 py-5 text-center">
           <div className="from-muted absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
@@ -82,7 +88,7 @@ export default function InstallPage() {
                   App Install
                 </span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">Встанови PRGRSS</h1>
+              <h2 className="text-2xl font-bold tracking-tight">Встанови PRGRSS</h2>
               <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed">
                 Додай застосунок на головний екран, щоб запускати його миттєво і користуватись ним
                 як окремим тренувальним app.

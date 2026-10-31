@@ -1,12 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { CalendarRange, ChevronRight, Dumbbell, Layers3 } from "lucide-react";
 
-import { Button } from "@/shared/ui";
+import { Button, PageHeader } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui";
 
 export default function ProgramsPage() {
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4">
+    <div className="flex flex-1 flex-col gap-6 px-4 pb-4">
+      <PageHeader className="-mx-4 px-4 md:-mx-4 md:px-4">
+        <h1 className="text-xl font-medium tracking-tight">Програми</h1>
+      </PageHeader>
       <Card className="overflow-hidden p-0">
         <CardContent className="relative px-4 py-4">
           <div className="from-muted absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
@@ -16,7 +19,6 @@ export default function ProgramsPage() {
                 <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
                   Soon
                 </span>
-                <h1 className="mt-2 text-2xl font-bold tracking-tight">Програми</h1>
                 <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
                   Тут з&apos;являться шаблони тренувальних циклів: готові спліти, блоки на кілька
                   тижнів і швидкий старт нового тренування по структурованому плану.

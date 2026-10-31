@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { cn } from "@/shared/lib";
-import { LoadingNotice, Skeleton } from "@/shared/ui";
+import { LoadingNotice, PageHeader, Skeleton } from "@/shared/ui";
 
 import { restoreActiveWorkoutDraft } from "../model/persistence";
 
@@ -79,9 +79,9 @@ export function WorkoutLoading({
       )}
       aria-label={view === "edit" ? "Редагування тренування" : "Тренування"}
     >
-      <header
+      <PageHeader
         className={cn(
-          "border-border/30 -mx-4 flex min-h-20 items-center justify-between gap-3 border-b px-4 pt-4 pb-3",
+          "-mx-4 flex min-h-20 items-center justify-between gap-3 px-4 md:-mx-4 md:px-4",
           view === "new" && "sm:-mx-5 sm:px-5 md:-mx-8 md:px-8"
         )}
         aria-hidden="true"
@@ -107,7 +107,7 @@ export function WorkoutLoading({
           ) : null}
         </div>
         <Skeleton className="size-11 shrink-0 rounded-full" />
-      </header>
+      </PageHeader>
       <LoadingNotice onRetry={onRetry} />
       <div className="flex flex-col gap-5" aria-busy="true">
         {emptyWorkout ? (

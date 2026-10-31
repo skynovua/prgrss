@@ -14,6 +14,7 @@ import {
   EmptyTitle,
   LoadingBlocks,
   LoadingNotice,
+  PageHeader,
   RefreshNotice,
   ToggleGroup,
   ToggleGroupItem,
@@ -34,12 +35,9 @@ export default function ProgressPage() {
   const totalVolume = data?.muscleTonnage.reduce((total, entry) => total + entry.volume, 0) ?? 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-medium tracking-tight">Статистика</h1>
-          <p className="text-muted-foreground text-sm">Твій ритм, навантаження та сила.</p>
-        </div>
+    <div className="flex flex-1 flex-col gap-6 px-5 pb-6 md:px-8">
+      <PageHeader className="justify-between gap-3">
+        <h1 className="text-xl font-medium tracking-tight">Статистика</h1>
         <Link
           to="/achievements"
           className={buttonVariants({ variant: "ghost", size: "icon" })}
@@ -47,7 +45,7 @@ export default function ProgressPage() {
         >
           <Award />
         </Link>
-      </header>
+      </PageHeader>
 
       <div className="flex flex-col gap-2">
         <div className="scrollbar-none overflow-x-auto">

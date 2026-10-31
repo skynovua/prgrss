@@ -31,6 +31,7 @@ import {
   LoadingBlocks,
   LoadingNotice,
   PageError,
+  PageHeader,
   RefreshNotice,
   Skeleton,
   ToggleGroup,
@@ -76,8 +77,8 @@ export default function ExerciseProgressPage() {
   const previousPoint = points.at(-2);
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-6 px-5 pt-7 pb-6 md:px-8">
-      <header className="flex items-start gap-3">
+    <div className="flex min-w-0 flex-1 flex-col gap-6 px-5 pb-6 md:px-8">
+      <PageHeader className="gap-3">
         <Button
           variant="ghost"
           size="icon"
@@ -87,16 +88,15 @@ export default function ExerciseProgressPage() {
         >
           <ChevronLeft />
         </Button>
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="text-muted-foreground text-sm">Статистика вправи</p>
+        <div className="min-w-0 flex-1">
           <h1
-            className="text-3xl leading-tight font-medium tracking-tight wrap-break-word"
+            className="text-xl leading-tight font-medium tracking-tight wrap-break-word"
             aria-label={!exerciseName && isPending ? "Статистика вправи" : undefined}
           >
-            {exerciseName ?? (isPending ? <Skeleton className="h-9 w-full max-w-80" /> : "Вправа")}
+            {exerciseName ?? (isPending ? <Skeleton className="h-6 w-full max-w-80" /> : "Вправа")}
           </h1>
         </div>
-      </header>
+      </PageHeader>
 
       <div className="flex flex-col gap-2">
         <div className="scrollbar-none overflow-x-auto">

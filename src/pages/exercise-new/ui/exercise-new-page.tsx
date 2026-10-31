@@ -11,6 +11,7 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  PageHeader,
   Select,
   SelectContent,
   SelectGroup,
@@ -79,8 +80,8 @@ export default function ExerciseNewPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 px-5 pt-6 pb-8 md:px-8 md:pt-8">
-      <header className="flex items-center gap-3">
+    <div className="flex flex-1 flex-col gap-6 px-5 pb-8 md:px-8">
+      <PageHeader className="flex items-center gap-3">
         <Button
           variant="secondary"
           size="icon"
@@ -92,10 +93,9 @@ export default function ExerciseNewPage() {
           <ArrowLeft />
         </Button>
         <div className="min-w-0">
-          <h1 className="text-2xl font-medium tracking-tight">Нова вправа</h1>
-          <p className="text-muted-foreground text-sm">Додай власну вправу до бібліотеки</p>
+          <h1 className="text-xl font-medium tracking-tight">Нова вправа</h1>
         </div>
-      </header>
+      </PageHeader>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-7">
         <FieldGroup className="gap-4">

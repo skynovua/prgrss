@@ -12,6 +12,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/shared/config";
+import { cn } from "@/shared/lib";
 import {
   Badge,
   Button,
@@ -26,6 +27,7 @@ import {
   FieldLabel,
   Input,
   MuscleGroupIcon,
+  PageHeader,
   Select,
   SelectContent,
   SelectGroup,
@@ -163,59 +165,66 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   }));
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-5 pt-7 pb-6 md:px-8">
+    <div className="flex flex-1 flex-col gap-5 px-5 pb-6 md:px-8">
       {!searchOpen && (
-        <header key="header">
-          {browsingResults ? (
-            <div className="grid grid-cols-[3rem_minmax(0,1fr)_3rem] items-center gap-2">
-              <Button
-                variant="secondary"
-                size="icon-lg"
-                className="rounded-full"
-                onClick={resetFilters}
-                aria-label="Повернутися до огляду вправ"
-              >
-                <ArrowLeft />
-              </Button>
-              <h1 className="text-center text-lg leading-snug font-semibold">
-                {activeGroup !== "all"
-                  ? MUSCLE_GROUP_LABELS[activeGroup]
-                  : activeEquipment !== "all"
-                    ? EQUIPMENT_LABELS[activeEquipment]
-                    : "Усі вправи"}
-              </h1>
-              <Button
-                variant="secondary"
-                size="icon-lg"
-                className="rounded-full"
-                onClick={openSearch}
-                aria-label="Пошук вправ"
-              >
-                <Search />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 flex-col gap-2">
-                <h1 className="text-3xl font-medium tracking-tight">Вправи</h1>
-                <p className="text-muted-foreground text-sm">Знайди свій наступний рух.</p>
+        <PageHeader key="header">
+          <div className="w-full">
+            {browsingResults ? (
+              <div className="grid grid-cols-[3rem_minmax(0,1fr)_3rem] items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="icon-lg"
+                  className="rounded-full"
+                  onClick={resetFilters}
+                  aria-label="Повернутися до огляду вправ"
+                >
+                  <ArrowLeft />
+                </Button>
+                <h1 className="text-center text-lg leading-snug font-semibold">
+                  {activeGroup !== "all"
+                    ? MUSCLE_GROUP_LABELS[activeGroup]
+                    : activeEquipment !== "all"
+                      ? EQUIPMENT_LABELS[activeEquipment]
+                      : "Усі вправи"}
+                </h1>
+                <Button
+                  variant="secondary"
+                  size="icon-lg"
+                  className="rounded-full"
+                  onClick={openSearch}
+                  aria-label="Пошук вправ"
+                >
+                  <Search />
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                render={<Link to="/exercises/new" />}
-                nativeButton={false}
-                aria-label="Додати вправу"
-              >
-                <Plus />
-              </Button>
-            </div>
-          )}
-        </header>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <h1 className="min-w-0 text-xl font-medium tracking-tight">Вправи</h1>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  render={<Link to="/exercises/new" />}
+                  nativeButton={false}
+                  aria-label="Додати вправу"
+                >
+                  <Plus />
+                </Button>
+              </div>
+            )}
+          </div>
+        </PageHeader>
       )}
 
       {(!browsingResults || searchOpen) && (
-        <div key="search" className="flex items-center gap-2">
+        <PageHeader
+          key="search"
+          className={cn(
+            "gap-2",
+            !searchOpen &&
+              "relative top-auto z-auto min-h-0 border-0 bg-transparent pt-0 pb-0 backdrop-blur-none before:hidden"
+          )}
+        >
+          {searchOpen && <h1 className="sr-only">Пошук вправ</h1>}
           <Field className="min-w-0 flex-1">
             <FieldLabel htmlFor="exercise-search" className="sr-only">
               Пошук вправ
@@ -251,7 +260,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
               <X />
             </Button>
           )}
-        </div>
+        </PageHeader>
       )}
 
       {!browsingResults ? (
@@ -303,7 +312,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
                     className="bg-secondary hover:bg-accent focus-visible:ring-ring relative flex min-h-28 min-w-0 flex-col items-start justify-end overflow-hidden rounded-2xl p-4 text-left outline-none focus-visible:ring-2"
                   >
                     <div
-                      className="text-muted-foreground pointer-events-none absolute top-1 right-1 opacity-50 [&_svg]:size-14 [&>div]:size-20 [&>div]:bg-transparent"
+                      className="text-muted-foreground pointer-events-none absolute top-1 right-1 opacity-50 [&_svg]:size-14 [&_svg]:stroke-[18] [&>div]:size-20 [&>div]:bg-transparent"
                       aria-hidden="true"
                     >
                       <MuscleGroupIcon group={group} />

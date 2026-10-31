@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
   LoadingNotice,
   PageError,
+  PageHeader,
   RefreshNotice,
   Skeleton,
 } from "@/shared/ui";
@@ -94,9 +95,8 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="flex flex-1 flex-col gap-7 px-5 pt-6 pb-6 md:px-8 md:pt-8">
-      {isError && data && <RefreshNotice onRetry={() => void refetch()} />}
-      <header className="flex items-center justify-between gap-4">
+    <div className="flex flex-1 flex-col gap-7 px-5 pb-6 md:px-8">
+      <PageHeader className="flex items-center justify-between gap-4">
         <span className="font-logo text-xl tracking-normal" aria-label="PRGRSS">
           PR<span className="text-primary">G</span>RSS
         </span>
@@ -141,7 +141,8 @@ export default function DashboardPage() {
             )}
           </Link>
         </div>
-      </header>
+      </PageHeader>
+      {isError && data && <RefreshNotice onRetry={() => void refetch()} />}
 
       <section className="flex flex-col gap-2">
         <p className="text-muted-foreground text-sm first-letter:uppercase">{date}</p>

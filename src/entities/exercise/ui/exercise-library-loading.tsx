@@ -1,15 +1,12 @@
-import { LoadingNotice, Skeleton } from "@/shared/ui";
+import { LoadingNotice, PageHeader, Skeleton } from "@/shared/ui";
 
 export function ExerciseLibraryLoading({ onRetry }: { onRetry?: () => void }) {
   return (
-    <section className="flex flex-1 flex-col gap-5 px-5 pt-7 pb-6 md:px-8" aria-label="Вправи">
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-2">
-          <h1 className="text-3xl font-medium tracking-tight">Вправи</h1>
-          <p className="text-muted-foreground text-sm">Знайди свій наступний рух.</p>
-        </div>
+    <section className="flex flex-1 flex-col gap-5 px-5 pb-6 md:px-8" aria-label="Вправи">
+      <PageHeader className="justify-between gap-3">
+        <h1 className="min-w-0 text-xl font-medium tracking-tight">Вправи</h1>
         <Skeleton className="size-11 shrink-0 rounded-xl" aria-hidden="true" />
-      </header>
+      </PageHeader>
       <LoadingNotice onRetry={onRetry} />
       <div className="flex flex-col gap-5" aria-busy="true" aria-hidden="true">
         <Skeleton className="h-12 w-full rounded-full" />

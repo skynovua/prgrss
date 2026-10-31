@@ -24,3 +24,5 @@ export * from "./components/switch";
 export * from "./components/tabs";
 export * from "./components/toggle-group";
 export * from "./components/textarea";
+
+export * from "./components/page-header";
