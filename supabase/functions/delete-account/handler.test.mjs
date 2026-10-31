@@ -9,6 +9,40 @@ const request = (method = "POST", token = "Bearer user-token") =>
     headers: token ? { Authorization: token } : {},
   });
 
+test("CORS preflight дозволяє заголовки клієнта без авторизації та видалення", async () => {
+  const handler = createDeleteAccountHandler({
+    getUserId: async () => {
+      throw new Error("Unexpected authentication");
+    },
+    ensureReady: async () => {
+      throw new Error("Unexpected database access");
+    },
+    deleteAvatars: async () => {
+      throw new Error("Unexpected deletion");
+    },
+    deleteUser: async () => {
+      throw new Error("Unexpected deletion");
+    },
+  });
+  const response = await handler(
+    new Request("https://example.test/delete-account", {
+      method: "OPTIONS",
+      headers: {
+        Origin: "https://prgrss.app",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "authorization, apikey, content-type, x-client-info",
+      },
+    })
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("access-control-allow-origin"), "*");
+  assert.ok(response.headers.get("access-control-allow-methods")?.includes("POST"));
+  const allowedHeaders = response.headers.get("access-control-allow-headers")?.split(/,\s*/);
+  for (const header of ["authorization", "apikey", "content-type", "x-client-info"]) {
+    assert.ok(allowedHeaders?.includes(header), `${header} має бути дозволений`);
+  }
+});
+
 test("видаляє файли й акаунт лише перевіреного користувача", async () => {
   const calls = [];
   const handler = createDeleteAccountHandler({
