@@ -44,13 +44,15 @@ function validateExerciseMuscles(muscles: ExerciseMuscleInput[]) {
   }
 }
 
-export async function fetchExercises(): Promise<ExerciseCatalogItem[]> {
-  const { data, error } = await supabase
+export async function fetchExercises(exerciseId?: string): Promise<ExerciseCatalogItem[]> {
+  const query = supabase
     .from("exercises")
     .select(
       "*, exercise_muscles(activation_score, anatomical_muscles(key, name, muscle_group, sort_order))"
-    )
-    .eq("is_active", true)
+    );
+  const { data, error } = await (
+    exerciseId ? query.eq("id", exerciseId) : query.eq("is_active", true)
+  )
     .order("muscle_group")
     .order("name");
 
@@ -91,49 +93,38 @@ export async function fetchAnatomicalMuscles() {
 }
 
 export async function createExercise(formData: CreateExerciseInput) {
-  const userId = await getCurrentUserId();
-
   const name = formData.name.trim();
   if (!name) throw new Error("Вкажіть назву вправи");
   validateExerciseMuscles(formData.muscles);
 
-  const { data: exercise, error } = await supabase
-    .from("exercises")
-    .insert({
-      user_id: userId,
+  const { error } = await supabase.rpc("create_custom_exercise", {
+    payload: {
       name,
       equipment: formData.equipment,
-      is_custom: true,
-    })
-    .select("id")
-    .single();
+      muscles: formData.muscles.map(({ muscleKey, activationScore }) => ({
+        muscle_key: muscleKey,
+        activation_score: activationScore,
+      })),
+    },
+  });
 
   if (error) throw new Error(error.message);
-
-  const { error: musclesError } = await supabase.from("exercise_muscles").insert(
-    formData.muscles.map((muscle) => ({
-      exercise_id: exercise.id,
-      muscle_key: muscle.muscleKey,
-      activation_score: muscle.activationScore,
-    }))
-  );
-
-  if (musclesError) {
-    await supabase.from("exercises").delete().eq("id", exercise.id);
-    throw new Error(musclesError.message);
-  }
 }
 
 export async function archiveExercise(exerciseId: string) {
   const userId = await getCurrentUserId();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("exercises")
     .update({ is_active: false })
     .eq("id", exerciseId)
     .eq("user_id", userId)
-    .eq("is_custom", true);
+    .eq("is_custom", true)
+    .eq("is_active", true)
+    .select("id")
+    .maybeSingle();
   if (error) throw new Error(error.message);
+  if (!data) throw new Error("Вправу не знайдено або її неможливо видалити");
 }
 
 // --- Вподобані вправи ---

@@ -289,6 +289,7 @@ test("payload містить лише виконане, перенумерову
     finishedAt: "finish",
   });
   assert.equal(payload.workout_id, "stable-id");
+  assert.equal("enforce_edit_window" in payload, false);
   assert.equal(payload.name, "Жим, Планка");
   assert.equal(payload.sets.length, 2);
   assert.equal(payload.sets[0].set_number, 1);

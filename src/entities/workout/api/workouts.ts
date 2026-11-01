@@ -4,8 +4,6 @@ import { supabase } from "@/shared/api";
 
 import { orderWorkoutSets } from "../model/workout-order";
 
-const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 години
-
 type ExerciseSummary = ExerciseData;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -33,41 +31,29 @@ function readStartedAt(value: unknown): string | null {
   return typeof value.started_at === "string" ? value.started_at : null;
 }
 
-export function isWorkoutEditable(startedAt: string | null): boolean {
-  if (!startedAt) return false;
-  return Date.now() - new Date(startedAt).getTime() < EDIT_WINDOW_MS;
-}
-
 export async function updateWorkout(
   workoutId: string,
   workoutExercises: WorkoutExercise[],
   notes?: string | null,
   name?: string
 ) {
-  // Перевіряємо 24-год вікно на клієнті (на сервері — RLS-політика)
-  const { data: workout } = await supabase
+  const { data: workout, error: workoutError } = await supabase
     .from("workouts")
     .select("started_at, finished_at, program_id")
     .eq("id", workoutId)
     .single();
 
-  if (!workout || !isWorkoutEditable(workout.started_at)) {
-    throw new Error("Час редагування вичерпано (24 години)");
-  }
-
-  if (!workout.started_at) {
-    throw new Error("У тренування відсутній час початку");
-  }
+  if (workoutError) throw toWorkoutOperationError(workoutError, "update");
+  if (!workout) throw new Error("Тренування не знайдено");
 
   const payload = buildSaveWorkoutPayload({
     workoutId,
     workoutExercises,
     startedAt: workout.started_at,
-    finishedAt: workout.finished_at ?? workout.started_at,
+    finishedAt: workout.finished_at,
     notes,
     name,
     programId: workout.program_id,
-    enforceEditWindow: true,
   });
 
   const { error } = await supabase.rpc("save_workout_with_sets", { payload }).single();

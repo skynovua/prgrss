@@ -39,6 +39,17 @@ export function useExercises({ enabled = true }: ExerciseQueryOptions = {}) {
   return useQuery({ ...exerciseCatalogOptions(user?.id ?? ""), enabled: enabled && Boolean(user) });
 }
 
+export function useArchivedExercise(exerciseId: string, enabled: boolean) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["exercise", "details", user?.id, exerciseId],
+    queryFn: async () => (await withQueryTimeout(() => fetchExercises(exerciseId)))[0] ?? null,
+    enabled: enabled && Boolean(user),
+    staleTime: 30 * 60 * 1000,
+  });
+}
+
 export const anatomicalMusclesQueryOptions = queryOptions({
   queryKey: exerciseQueryKeys.anatomicalMuscles,
   queryFn: fetchAnatomicalMuscles,
@@ -78,10 +89,10 @@ export function useArchiveExercise() {
     mutationFn: archiveExercise,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EXERCISE_CATALOG_QUERY_KEY });
-      toast.success("Вправу приховано");
+      toast.success("Вправу видалено");
     },
     onError: (err) => {
-      toast.error("Не вдалося приховати вправу", {
+      toast.error("Не вдалося видалити вправу", {
         description: err instanceof Error ? err.message : "Спробуйте ще раз",
       });
     },

@@ -6,12 +6,11 @@ import { getWorkoutReview } from "../model/workout-logging";
 interface SaveWorkoutPayloadOptions {
   workoutId?: string;
   workoutExercises: WorkoutExercise[];
-  startedAt: string;
-  finishedAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
   name?: string;
   notes?: string | null;
   programId?: string | null;
-  enforceEditWindow?: boolean;
 }
 
 export function buildWorkoutName(workoutExercises: WorkoutExercise[]) {
@@ -50,7 +49,6 @@ export function buildSaveWorkoutPayload({
   name,
   notes = null,
   programId = null,
-  enforceEditWindow = false,
 }: SaveWorkoutPayloadOptions): Json {
   return {
     workout_id: workoutId ?? null,
@@ -59,7 +57,6 @@ export function buildSaveWorkoutPayload({
     name: name?.trim() || buildWorkoutName(workoutExercises),
     notes,
     program_id: programId,
-    enforce_edit_window: enforceEditWindow,
     exercise_order: [
       ...new Set(
         workoutExercises

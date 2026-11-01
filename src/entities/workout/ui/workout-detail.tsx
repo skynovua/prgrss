@@ -5,7 +5,6 @@ import { type ReactNode, useId, useState } from "react";
 import { ExerciseCardActions } from "@/entities/workout";
 import { type ExerciseData, type SetData, type WorkoutWithSets } from "@/entities/workout";
 import { useDeleteWorkout } from "@/entities/workout";
-import { isWorkoutEditable } from "@/entities/workout";
 import { getSetVolume, usesDoubleWeight } from "@/entities/workout";
 import { calc1RM, cn } from "@/shared/lib";
 import { Button } from "@/shared/ui";
@@ -38,7 +37,6 @@ export function WorkoutDetail({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [expandedExercises, setExpandedExercises] = useState<Set<string>>(() => new Set());
   const panelIdPrefix = useId();
-  const canEdit = isWorkoutEditable(workout.started_at);
 
   // Групуємо сети по вправах
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
@@ -82,30 +80,28 @@ export function WorkoutDetail({
           <ChevronLeft />
         </Button>
         <span className="text-center text-lg font-medium">Тренування</span>
-        {canEdit && (
-          <div className="flex items-center justify-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              render={
-                <Link to="/workout/$id/edit" params={{ id: workout.id }} search={returnSearch} />
-              }
-              nativeButton={false}
-              aria-label="Редагувати тренування"
-            >
-              <Pencil className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive"
-              aria-label="Видалити тренування"
-              onClick={() => setDeleteDialogOpen(true)}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            render={
+              <Link to="/workout/$id/edit" params={{ id: workout.id }} search={returnSearch} />
+            }
+            nativeButton={false}
+            aria-label="Редагувати тренування"
+          >
+            <Pencil className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive"
+            aria-label="Видалити тренування"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
       </header>
 
       {/* Назва та дата */}

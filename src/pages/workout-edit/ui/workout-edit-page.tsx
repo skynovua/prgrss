@@ -1,10 +1,9 @@
-import { Navigate, useParams, useSearch } from "@tanstack/react-router";
+import { useParams, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { ExerciseDetailsById, useExercises } from "@/entities/exercise";
 import { type ExerciseData, WorkoutEditor, WorkoutLoading } from "@/entities/workout";
 import { usePreviousSets, useWorkoutDetail } from "@/entities/workout";
-import { isWorkoutEditable } from "@/entities/workout";
 import { PageError, RefreshNotice } from "@/shared/ui";
 
 export default function WorkoutEditPage() {
@@ -42,11 +41,6 @@ export default function WorkoutEditPage() {
         description="Його видалено або воно недоступне для цього акаунта."
       />
     );
-  }
-
-  // Перевірка: редагування доступне тільки протягом 24 годин
-  if (!isWorkoutEditable(data.workout.started_at)) {
-    return <Navigate to="/workout/$id" params={{ id }} search={{ from }} replace />;
   }
 
   if (isExercisesPending) {

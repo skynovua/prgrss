@@ -14,7 +14,7 @@ import {
   Skeleton,
 } from "@/shared/ui";
 
-import { useExercises } from "../hooks/use-exercises";
+import { useArchivedExercise, useExercises } from "../hooks/use-exercises";
 import type { ExerciseCatalogItem, ExerciseMuscleTarget } from "../model/exercise-catalog";
 import { AnatomyLoading } from "./anatomy-loading";
 
@@ -154,12 +154,14 @@ export function ExerciseDetailsById({
   onClose: () => void;
 }) {
   const { data, isPending, isError } = useExercises();
-  const details = data?.find((item) => item.id === exercise.id) ?? { ...exercise, muscles: [] };
+  const catalogDetails = data?.find((item) => item.id === exercise.id);
+  const archived = useArchivedExercise(exercise.id, Boolean(data) && !catalogDetails);
+  const details = catalogDetails ?? archived.data ?? { ...exercise, muscles: [] };
   return (
     <ExerciseDetailsDialog
       exercise={details}
-      loading={isPending}
-      loadError={isError && !data}
+      loading={isPending || (Boolean(data) && !catalogDetails && archived.isPending)}
+      loadError={(isError && !data) || (archived.isError && !catalogDetails)}
       open
       onOpenChange={(open) => {
         if (!open) onClose();

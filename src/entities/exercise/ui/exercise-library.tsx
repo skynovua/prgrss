@@ -4,13 +4,14 @@ import {
   ArrowRight,
   ChevronRight,
   Dumbbell,
-  EyeOff,
   Plus,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
+import { useAuth } from "@/shared/auth";
 import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS, type MuscleGroup } from "@/shared/config";
 import { cn } from "@/shared/lib";
 import {
@@ -49,6 +50,7 @@ interface ExerciseLibraryProps {
 
 export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
   const archiveMutation = useArchiveExercise();
+  const { user } = useAuth();
   const { data: popularExerciseIds = [] } = usePopularExerciseIds();
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -145,15 +147,15 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
           </span>
           <ChevronRight className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
         </button>
-        {exercise.is_custom && (
+        {exercise.is_custom && exercise.user_id === user?.id && (
           <Button
             variant="ghost"
             size="icon"
             className="text-muted-foreground hover:text-destructive shrink-0"
             onClick={() => setArchiveTarget(exercise)}
-            aria-label={`Приховати вправу ${exercise.name}`}
+            aria-label={`Видалити вправу ${exercise.name}`}
           >
-            <EyeOff />
+            <Trash2 />
           </Button>
         )}
       </div>
@@ -443,11 +445,11 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
         </div>
       )}
 
-      {/* Діалог приховування */}
+      {/* Діалог видалення */}
       <Dialog open={!!archiveTarget} onOpenChange={() => setArchiveTarget(null)}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
-            <DialogTitle>Приховати вправу?</DialogTitle>
+            <DialogTitle>Видалити вправу?</DialogTitle>
             <DialogDescription>
               Вправа &quot;{archiveTarget?.name}&quot; зникне з бібліотеки, але залишиться в історії
               тренувань.
@@ -463,7 +465,7 @@ export function ExerciseLibrary({ exercises }: ExerciseLibraryProps) {
               onClick={handleArchive}
               disabled={archiveMutation.isPending}
             >
-              {archiveMutation.isPending ? "Приховую..." : "Приховати"}
+              {archiveMutation.isPending ? "Видаляю..." : "Видалити"}
             </Button>
           </div>
         </DialogContent>
