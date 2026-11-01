@@ -74,6 +74,7 @@ interface WorkoutEditorProps {
   allExercises: Exercise[];
   previousSets?: PreviousSetsMap;
   returnSearch?: { from?: string };
+  onOpenExerciseDetails: (exercise: ExerciseData) => void;
 }
 
 export function WorkoutEditor({
@@ -82,6 +83,7 @@ export function WorkoutEditor({
   allExercises,
   previousSets,
   returnSearch,
+  onOpenExerciseDetails,
 }: WorkoutEditorProps) {
   const navigate = useNavigate();
   const updateMutation = useUpdateWorkout();
@@ -166,6 +168,7 @@ export function WorkoutEditor({
           onToggleCollapse={(id) =>
             setCollapsedCards((current) => ({ ...current, [id]: !current[id] }))
           }
+          onOpenExerciseDetails={onOpenExerciseDetails}
           onCollapseAll={() =>
             setCollapsedCards(
               Object.fromEntries(workoutExercises.map((we) => [we.instanceId, true]))

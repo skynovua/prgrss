@@ -1,12 +1,14 @@
 import { Navigate, useParams, useSearch } from "@tanstack/react-router";
+import { useState } from "react";
 
-import { useExercises } from "@/entities/exercise";
-import { WorkoutEditor, WorkoutLoading } from "@/entities/workout";
+import { ExerciseDetailsById, useExercises } from "@/entities/exercise";
+import { type ExerciseData, WorkoutEditor, WorkoutLoading } from "@/entities/workout";
 import { usePreviousSets, useWorkoutDetail } from "@/entities/workout";
 import { isWorkoutEditable } from "@/entities/workout";
 import { PageError, RefreshNotice } from "@/shared/ui";
 
 export default function WorkoutEditPage() {
+  const [detailsTarget, setDetailsTarget] = useState<ExerciseData | null>(null);
   const { id } = useParams({ strict: false });
   const { from } = useSearch({ from: "/app/workout/$id/edit" });
 
@@ -71,7 +73,11 @@ export default function WorkoutEditPage() {
         allExercises={allExercises}
         previousSets={previousSets ?? {}}
         returnSearch={{ from }}
+        onOpenExerciseDetails={setDetailsTarget}
       />
+      {detailsTarget && (
+        <ExerciseDetailsById exercise={detailsTarget} onClose={() => setDetailsTarget(null)} />
+      )}
     </>
   );
 }

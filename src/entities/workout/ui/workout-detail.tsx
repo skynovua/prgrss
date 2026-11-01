@@ -2,7 +2,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Check, ChevronLeft, Pencil, Trash2 } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
 
-import { ExerciseDetailsById } from "@/entities/exercise/@x/workout";
 import { ExerciseCardActions } from "@/entities/workout";
 import { type ExerciseData, type SetData, type WorkoutWithSets } from "@/entities/workout";
 import { useDeleteWorkout } from "@/entities/workout";
@@ -20,6 +19,7 @@ import { SET_ROW_GRID, TIMED_SET_ROW_GRID } from "./set-row";
 interface WorkoutDetailProps {
   workout: WorkoutWithSets;
   exercises: ExerciseData[];
+  onOpenExerciseDetails: (exercise: ExerciseData) => void;
   onBack?: () => void;
   returnSearch?: { from?: string };
   children?: ReactNode;
@@ -28,6 +28,7 @@ interface WorkoutDetailProps {
 export function WorkoutDetail({
   workout,
   exercises,
+  onOpenExerciseDetails,
   onBack,
   returnSearch,
   children,
@@ -35,7 +36,6 @@ export function WorkoutDetail({
   const navigate = useNavigate();
   const deleteWorkoutMutation = useDeleteWorkout();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [detailsTarget, setDetailsTarget] = useState<ExerciseData | null>(null);
   const [expandedExercises, setExpandedExercises] = useState<Set<string>>(() => new Set());
   const panelIdPrefix = useId();
   const canEdit = isWorkoutEditable(workout.started_at);
@@ -107,10 +107,6 @@ export function WorkoutDetail({
           </div>
         )}
       </header>
-
-      {detailsTarget && (
-        <ExerciseDetailsById exercise={detailsTarget} onClose={() => setDetailsTarget(null)} />
-      )}
 
       {/* Назва та дата */}
       <div className="space-y-1">
@@ -186,7 +182,7 @@ export function WorkoutDetail({
                 panelId={panelId}
                 sets={sets.map(() => true)}
                 onOpenDetails={() =>
-                  setDetailsTarget(
+                  onOpenExerciseDetails(
                     exercise ?? {
                       id: exerciseId,
                       name: exerciseName,

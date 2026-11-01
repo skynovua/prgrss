@@ -14,7 +14,7 @@ import { flushSync } from "react-dom";
 import { cn } from "@/shared/lib";
 
 import type { WorkoutAction } from "../model/reducer";
-import type { PreviousSetsMap, WorkoutExercise } from "../model/types";
+import type { ExerciseData, PreviousSetsMap, WorkoutExercise } from "../model/types";
 import { WorkoutExerciseCard } from "./workout-exercise-card";
 
 const accessibility = Accessibility.configure({
@@ -55,6 +55,7 @@ interface ExerciseListProps {
   autoRestTimer: boolean;
   collapsedCards: Record<string, boolean>;
   onToggleCollapse: (id: string) => void;
+  onOpenExerciseDetails: (exercise: ExerciseData) => void;
   onCollapseAll: () => void;
   dispatch: React.ActionDispatch<[action: WorkoutAction]>;
 }
@@ -69,6 +70,7 @@ function SortableExercise({
   autoRestTimer,
   collapsedCards,
   onToggleCollapse,
+  onOpenExerciseDetails,
   dispatch,
 }: Omit<ExerciseListProps, "exercises" | "onCollapseAll"> & {
   we: WorkoutExercise;
@@ -111,6 +113,7 @@ function SortableExercise({
         isCollapsed={isReordering || (collapsedCards[we.instanceId] ?? false)}
         collapseImmediately={isReordering}
         onToggleCollapse={onToggleCollapse}
+        onOpenExerciseDetails={onOpenExerciseDetails}
         dispatch={dispatch}
         onMoveUp={
           index > 0
@@ -143,6 +146,7 @@ export function WorkoutExerciseList({
   autoRestTimer,
   collapsedCards,
   onToggleCollapse,
+  onOpenExerciseDetails,
   onCollapseAll,
   dispatch,
 }: ExerciseListProps) {
@@ -164,6 +168,7 @@ export function WorkoutExerciseList({
         autoRestTimer={autoRestTimer}
         isCollapsed={collapsedCards[we.instanceId] ?? false}
         onToggleCollapse={onToggleCollapse}
+        onOpenExerciseDetails={onOpenExerciseDetails}
         dispatch={dispatch}
       />
     );
@@ -202,6 +207,7 @@ export function WorkoutExerciseList({
             autoRestTimer={autoRestTimer}
             collapsedCards={collapsedCards}
             onToggleCollapse={onToggleCollapse}
+            onOpenExerciseDetails={onOpenExerciseDetails}
             dispatch={dispatch}
           />
         ))}

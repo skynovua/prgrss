@@ -13,7 +13,7 @@ import {
   EmptyTitle,
 } from "@/shared/ui";
 
-import type { Exercise, PreviousSetsMap } from "../model/types";
+import type { Exercise, ExerciseData, PreviousSetsMap } from "../model/types";
 import { useWorkout } from "../model/use-workout";
 import { getWorkoutReview } from "../model/workout-logging";
 import { ExercisePicker } from "./exercise-picker";
@@ -62,6 +62,7 @@ interface WorkoutLoggerProps {
   onRetryExercises: () => void;
   previousSets?: PreviousSetsMap;
   historyUnavailable?: boolean;
+  onOpenExerciseDetails: (exercise: ExerciseData) => void;
 }
 
 export function WorkoutLogger({
@@ -70,6 +71,7 @@ export function WorkoutLogger({
   onRetryExercises,
   previousSets,
   historyUnavailable = false,
+  onOpenExerciseDetails,
 }: WorkoutLoggerProps) {
   const { data: profile } = useProfile();
   const {
@@ -202,6 +204,7 @@ export function WorkoutLogger({
             autoRestTimer={profile?.autoRestTimer ?? true}
             collapsedCards={collapsedCards}
             onToggleCollapse={toggleCollapse}
+            onOpenExerciseDetails={onOpenExerciseDetails}
             onCollapseAll={() =>
               setCollapsedCards(
                 Object.fromEntries(workoutExercises.map((we) => [we.instanceId, true]))

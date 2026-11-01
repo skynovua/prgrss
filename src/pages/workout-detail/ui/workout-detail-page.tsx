@@ -1,12 +1,15 @@
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
+import { useState } from "react";
 
-import { WorkoutDetail, WorkoutLoading } from "@/entities/workout";
+import { combineTricepsTargets, ExerciseDetailsById } from "@/entities/exercise";
+import { type ExerciseData, WorkoutDetail, WorkoutLoading } from "@/entities/workout";
 import { useWorkoutDetail } from "@/entities/workout";
 import { PageError, RefreshNotice } from "@/shared/ui";
 
 import { WorkoutMuscleDetails } from "./workout-muscle-details";
 
 export default function WorkoutDetailPage() {
+  const [detailsTarget, setDetailsTarget] = useState<ExerciseData | null>(null);
   const { id } = useParams({ strict: false });
   const navigate = useNavigate();
   const { from } = useSearch({ from: "/app/workout/$id" });
@@ -38,6 +41,7 @@ export default function WorkoutDetailPage() {
         key={id}
         workout={data.workout}
         exercises={data.exercises}
+        onOpenExerciseDetails={setDetailsTarget}
         returnSearch={{ from }}
         onBack={
           calendarParams
@@ -55,10 +59,13 @@ export default function WorkoutDetailPage() {
         }
       >
         <WorkoutMuscleDetails
-          muscles={data.muscles}
+          muscles={combineTricepsTargets(data.muscles)}
           hasUnmappedExercises={data.hasUnmappedExercises}
         />
       </WorkoutDetail>
+      {detailsTarget && (
+        <ExerciseDetailsById exercise={detailsTarget} onClose={() => setDetailsTarget(null)} />
+      )}
     </>
   );
 }

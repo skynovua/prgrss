@@ -2,7 +2,6 @@ import { Clock3, Plus, Settings2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 
-import { ExerciseDetailsById } from "@/entities/exercise/@x/workout";
 import { cn } from "@/shared/lib";
 import {
   Button,
@@ -30,7 +29,12 @@ import { saveExerciseLogPreferences } from "../model/exercise-log-preferences";
 import { usesDoubleWeight } from "../model/metrics";
 import type { WorkoutAction } from "../model/reducer";
 import { formatRestTime } from "../model/rest-clock";
-import type { ExerciseTrackingType, PreviousSetData, WorkoutExercise } from "../model/types";
+import type {
+  ExerciseData,
+  ExerciseTrackingType,
+  PreviousSetData,
+  WorkoutExercise,
+} from "../model/types";
 import { TRACKING_TYPES } from "../model/workout-logging";
 import { ExerciseCardActions } from "./exercise-card-actions";
 import { ExerciseCardHeading } from "./exercise-card-heading";
@@ -135,6 +139,7 @@ interface WorkoutExerciseCardProps {
   isCollapsed: boolean;
   collapseImmediately?: boolean;
   onToggleCollapse: (id: string) => void;
+  onOpenExerciseDetails: (exercise: ExerciseData) => void;
   dispatch: React.ActionDispatch<[action: WorkoutAction]>;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
@@ -148,13 +153,13 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   isCollapsed,
   collapseImmediately = false,
   onToggleCollapse,
+  onOpenExerciseDetails,
   dispatch,
   onMoveUp,
   onMoveDown,
 }: WorkoutExerciseCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const timed = we.trackingType === "duration";
   const panelId = `exercise-panel-${we.instanceId}`;
   const weightLabel =
@@ -172,7 +177,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         expanded={!isCollapsed}
         panelId={panelId}
         sets={we.sets.map((set) => set.completed)}
-        onOpenDetails={() => setDetailsOpen(true)}
+        onOpenDetails={() => onOpenExerciseDetails(we.exercise)}
         onToggle={() => onToggleCollapse(we.instanceId)}
         actions={
           <ExerciseCardActions
@@ -283,9 +288,6 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
           </CardContent>
         </div>
       </div>
-      {detailsOpen && (
-        <ExerciseDetailsById exercise={we.exercise} onClose={() => setDetailsOpen(false)} />
-      )}
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

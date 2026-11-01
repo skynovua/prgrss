@@ -1,4 +1,3 @@
-import { combineTricepsTargets } from "@/entities/exercise/@x/workout";
 import type { ExerciseData, PreviousSetsMap, WorkoutExercise } from "@/entities/workout";
 import { buildSaveWorkoutPayload, toWorkoutOperationError } from "@/entities/workout";
 import { supabase } from "@/shared/api";
@@ -117,21 +116,19 @@ export async function fetchWorkoutDetail(id: string) {
   const exerciseTargets = new Map(
     workout.sets.map((set) => [set.exercise_id, set.exercises?.exercise_muscles ?? []])
   );
-  const muscles = combineTricepsTargets(
-    Array.from(exerciseTargets.values()).flatMap((targets) =>
-      targets.flatMap(({ activation_score, anatomical_muscles: muscle }) =>
-        muscle
-          ? [
-              {
-                muscleKey: muscle.key,
-                name: muscle.name,
-                muscleGroup: muscle.muscle_group,
-                sortOrder: muscle.sort_order,
-                activationScore: activation_score,
-              },
-            ]
-          : []
-      )
+  const muscles = Array.from(exerciseTargets.values()).flatMap((targets) =>
+    targets.flatMap(({ activation_score, anatomical_muscles: muscle }) =>
+      muscle
+        ? [
+            {
+              muscleKey: muscle.key,
+              name: muscle.name,
+              muscleGroup: muscle.muscle_group,
+              sortOrder: muscle.sort_order,
+              activationScore: activation_score,
+            },
+          ]
+        : []
     )
   );
 
