@@ -4,6 +4,7 @@ import { lazy, Suspense, useReducer, useState } from "react";
 import { toast } from "sonner";
 
 import { useProfile } from "@/entities/profile";
+import { useAuth } from "@/shared/auth";
 import { Button } from "@/shared/ui";
 
 import { useUpdateWorkout } from "../hooks/use-workouts";
@@ -32,7 +33,8 @@ const WorkoutExerciseList = lazy(() =>
 
 function workoutToEditorState(
   workout: WorkoutWithSets,
-  exercises: ExerciseData[]
+  exercises: ExerciseData[],
+  userId: string | undefined
 ): WorkoutExercise[] {
   const exerciseMap = new Map(exercises.map((exercise) => [exercise.id, exercise]));
   const grouped = new Map<string, SetData[]>();
@@ -63,7 +65,7 @@ function workoutToEditorState(
       sets: localSets,
       // В історії показуємо фактично записані метрики, незалежно від типових полів каталогу.
       trackingType: getExerciseTrackingType({ ...exercise, catalog_key: null }, localSets),
-      restSeconds: getExerciseLogPreferences(exerciseId).restSeconds ?? 90,
+      restSeconds: getExerciseLogPreferences(userId, exerciseId).restSeconds ?? 90,
     };
   });
 }
@@ -85,13 +87,14 @@ export function WorkoutEditor({
   returnSearch,
   onOpenExerciseDetails,
 }: WorkoutEditorProps) {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const updateMutation = useUpdateWorkout();
   const { data: profile } = useProfile();
   const [state, dispatch] = useReducer(workoutReducer, undefined, () => ({
     ...createInitialState(),
     workoutId: workout.id,
-    exercises: workoutToEditorState(workout, exercises),
+    exercises: workoutToEditorState(workout, exercises, user?.id),
     startedAt: workout.started_at ?? new Date().toISOString(),
     name: workout.name ?? "",
     notes: workout.notes ?? "",
@@ -185,7 +188,7 @@ export function WorkoutEditor({
               type: "ADD_EXERCISE",
               exercise,
               previousSets: previousSets?.[exercise.id],
-              preferences: getExerciseLogPreferences(exercise.id),
+              preferences: getExerciseLogPreferences(user?.id, exercise.id),
             })
           )
         }

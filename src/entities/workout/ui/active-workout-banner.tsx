@@ -3,11 +3,13 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Dumbbell } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "@/shared/auth";
+
 import {
   ACTIVE_WORKOUT_DRAFT_EVENT,
   type ActiveWorkoutDraft,
   restoreActiveWorkoutDraft,
-} from "../model/persistence";
+} from "../model/workout-draft";
 
 function getElapsedSeconds(startedAt: string, now: number) {
   const started = new Date(startedAt).getTime();
@@ -89,7 +91,11 @@ export function ActiveWorkoutBanner({
   onVisibilityChange?: (visible: boolean) => void;
 }) {
   const { pathname } = useLocation();
-  const [draft, setDraft] = useState<ActiveWorkoutDraft | null>(() => restoreActiveWorkoutDraft());
+  const { user } = useAuth();
+  const userId = user?.id;
+  const [draft, setDraft] = useState<ActiveWorkoutDraft | null>(() =>
+    restoreActiveWorkoutDraft(userId)
+  );
   const [now, setNow] = useState(() => Date.now());
   const hiddenOnCurrentRoute = pathname === "/workout/new";
   const hasActiveDraft = Boolean(draft?.exercises.length);
@@ -97,7 +103,7 @@ export function ActiveWorkoutBanner({
 
   useEffect(() => {
     const syncDraft = () => {
-      setDraft(restoreActiveWorkoutDraft());
+      setDraft(restoreActiveWorkoutDraft(userId));
       setNow(Date.now());
     };
 
@@ -110,7 +116,7 @@ export function ActiveWorkoutBanner({
       window.removeEventListener("storage", syncDraft);
       window.removeEventListener("focus", syncDraft);
     };
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!hasActiveDraft) return;

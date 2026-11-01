@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { clearActiveWorkoutDraft, clearExerciseLogPreferences } from "@/entities/workout";
 import { supabase } from "@/shared/api";
+import { useAuth } from "@/shared/auth";
 import {
   Button,
   Dialog,
@@ -19,6 +20,7 @@ import {
 const CONFIRMATION = "ВИДАЛИТИ";
 
 export function DeleteAccountButton() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -55,8 +57,8 @@ export function DeleteAccountButton() {
       }
     }
 
-    clearActiveWorkoutDraft();
-    clearExerciseLogPreferences();
+    clearActiveWorkoutDraft(user?.id);
+    clearExerciseLogPreferences(user?.id);
     queryClient.clear();
     try {
       const registration = await navigator.serviceWorker?.getRegistration();

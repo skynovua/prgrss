@@ -5,24 +5,27 @@ import { toast } from "sonner";
 
 import type { Exercise, PreviousSetsMap } from "@/entities/workout";
 import { toWorkoutOperationError } from "@/entities/workout";
+import { useAuth } from "@/shared/auth";
 
 import { getExerciseLogPreferences } from "./exercise-log-preferences";
 import { getWorkoutVolume } from "./metrics";
+import { finishWorkout } from "./persistence";
+import { createInitialState, workoutReducer } from "./reducer";
 import {
   clearActiveWorkoutDraft,
-  finishWorkout,
   restoreActiveWorkoutDraft,
   saveActiveWorkoutDraft,
-} from "./persistence";
-import { createInitialState, workoutReducer } from "./reducer";
+} from "./workout-draft";
 import { getWorkoutReview, isSetValid } from "./workout-logging";
 
 export function useWorkout(previousSets?: PreviousSetsMap) {
+  const { user } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [state, dispatch] = useReducer(workoutReducer, undefined, () => {
     const initialState = createInitialState();
-    const draft = restoreActiveWorkoutDraft();
+    const draft = restoreActiveWorkoutDraft(userId);
 
     if (!draft?.exercises.length) {
       return initialState;
@@ -51,11 +54,12 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
 
   useEffect(() => {
     if (workoutExercises.length === 0) {
-      clearActiveWorkoutDraft();
+      clearActiveWorkoutDraft(userId);
       return;
     }
 
     saveActiveWorkoutDraft({
+      userId,
       exercises: workoutExercises,
       startedAt,
       workoutId,
@@ -63,7 +67,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       name,
       notes,
     });
-  }, [startedAt, workoutExercises, workoutId, restClock, name, notes]);
+  }, [userId, startedAt, workoutExercises, workoutId, restClock, name, notes]);
 
   const addExercise = useCallback(
     (exercise: Exercise) => {
@@ -71,10 +75,10 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
         type: "ADD_EXERCISE",
         exercise,
         previousSets: previousSets?.[exercise.id],
-        preferences: getExerciseLogPreferences(exercise.id),
+        preferences: getExerciseLogPreferences(userId, exercise.id),
       });
     },
-    [previousSets]
+    [previousSets, userId]
   );
 
   const handleFinish = async (details?: { name?: string; notes?: string }) => {
@@ -84,7 +88,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
     dispatch({ type: "SET_SAVING", saving: true });
 
     try {
-      const result = await finishWorkout(workoutExercises, startedAt, workoutId, details);
+      const result = await finishWorkout(userId, workoutExercises, startedAt, workoutId, details);
 
       if (!result.success) {
         navigate({ to: result.redirectTo });

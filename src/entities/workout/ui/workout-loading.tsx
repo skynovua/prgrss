@@ -1,9 +1,10 @@
 import { useState } from "react";
 
+import { useAuth } from "@/shared/auth";
 import { cn } from "@/shared/lib";
 import { LoadingNotice, PageHeader, Skeleton } from "@/shared/ui";
 
-import { restoreActiveWorkoutDraft } from "../model/persistence";
+import { restoreActiveWorkoutDraft } from "../model/workout-draft";
 
 export function WorkoutExerciseListLoading({
   exercises,
@@ -69,7 +70,8 @@ export function WorkoutLoading({
   onRetry?: () => void;
 }) {
   const detail = view === "detail";
-  const [draft] = useState(() => (view === "new" ? restoreActiveWorkoutDraft() : null));
+  const { user } = useAuth();
+  const [draft] = useState(() => (view === "new" ? restoreActiveWorkoutDraft(user?.id) : null));
   const emptyWorkout = view === "new" && !draft?.exercises.length;
   return (
     <section

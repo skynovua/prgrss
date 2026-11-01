@@ -2,6 +2,7 @@ import { Clock3, Plus, Settings2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 
+import { useAuth } from "@/shared/auth";
 import { cn } from "@/shared/lib";
 import {
   Button,
@@ -158,6 +159,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   onMoveUp,
   onMoveDown,
 }: WorkoutExerciseCardProps) {
+  const { user } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const timed = we.trackingType === "duration";
@@ -310,7 +312,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
             <ExerciseOptions
               we={we}
               onSave={(trackingType, restSeconds) => {
-                saveExerciseLogPreferences(we.exercise.id, { trackingType, restSeconds });
+                saveExerciseLogPreferences(user?.id, we.exercise.id, { trackingType, restSeconds });
                 dispatch({
                   type: "SET_EXERCISE_OPTIONS",
                   exerciseIndex,
