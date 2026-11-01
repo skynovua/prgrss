@@ -14,7 +14,6 @@ import {
 import type { ReactNode } from "react";
 
 import { useAchievements } from "@/entities/achievement";
-import { RecentWorkouts } from "@/entities/workout";
 import { useDashboard } from "@/pages/dashboard/model/use-dashboard";
 import { cn, getWeekDays, getWeekStartsOn, toDateKey, toLocalDateKey } from "@/shared/lib";
 import { useTheme } from "@/shared/theme";
@@ -40,6 +39,8 @@ import {
   RefreshNotice,
   Skeleton,
 } from "@/shared/ui";
+
+import { DashboardPrograms } from "./dashboard-programs";
 
 const LOCALE = "uk-UA";
 const WEEK_LABELS = {
@@ -189,12 +190,13 @@ export default function DashboardPage() {
       ) : (
         <PageError title="Не вдалося завантажити дані" onRetry={() => void refetch()} />
       )}
+      <DashboardPrograms />
     </div>
   );
 }
 
 function DashboardData({ data }: { data: NonNullable<ReturnType<typeof useDashboard>["data"]> }) {
-  const { recentWorkouts, weekStats, prevWeekStats, calendarWorkouts, streak } = data;
+  const { weekStats, prevWeekStats, calendarWorkouts, streak } = data;
   const volume =
     weekStats.volume >= 1000
       ? `${(weekStats.volume / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 1 })} т`
@@ -229,7 +231,6 @@ function DashboardData({ data }: { data: NonNullable<ReturnType<typeof useDashbo
       </section>
 
       <WeekCalendar workouts={calendarWorkouts} streak={streak} />
-      <RecentWorkouts workouts={recentWorkouts.slice(0, 3)} />
     </>
   );
 }
@@ -273,20 +274,6 @@ function DashboardDataLoading({ onRetry }: { onRetry: () => void }) {
           </div>
         </CardContent>
       </Card>
-      <section className="flex flex-col gap-3" aria-busy="true" aria-label="Останні тренування">
-        <h2 className="text-base font-semibold">Останні тренування</h2>
-        <div className="divide-border divide-y" aria-hidden="true">
-          {[0, 1, 2].map((index) => (
-            <div key={index} className="flex items-center gap-3 py-4">
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <Skeleton className="h-4 w-2/3" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-              <Skeleton className="size-4 rounded" />
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

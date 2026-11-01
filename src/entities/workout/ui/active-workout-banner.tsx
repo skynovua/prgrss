@@ -141,7 +141,7 @@ export function ActiveWorkoutBanner({
       <div className="mx-auto max-w-lg">
         <Link
           to="/workout/new"
-          className="border-border/80 bg-card/94 supports-backdrop-filter:bg-card/86 flex h-16 items-center gap-3 rounded-full border px-4 shadow-sm backdrop-blur-xl transition-transform active:scale-[0.99]"
+          className="border-border/80 bg-card/94 supports-backdrop-filter:bg-card/86 flex h-16 items-center gap-3 rounded-full border pr-4 pl-2 shadow-sm backdrop-blur-xl transition-transform active:scale-[0.99]"
           aria-label="Повернутися до активного тренування"
         >
           <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">

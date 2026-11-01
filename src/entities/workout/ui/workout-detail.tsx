@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Check, ChevronLeft, Pencil, Trash2 } from "lucide-react";
+import { Check, ChevronLeft, Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
 
 import { ExerciseCardActions } from "@/entities/workout";
@@ -9,7 +9,15 @@ import { getSetVolume, usesDoubleWeight } from "@/entities/workout";
 import { calc1RM, cn } from "@/shared/lib";
 import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui";
-import { ConfirmDialog } from "@/shared/ui";
+import {
+  ConfirmDialog,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui";
 
 import { getExerciseTrackingType } from "../model/workout-logging";
 import { ExerciseCardHeading } from "./exercise-card-heading";
@@ -20,6 +28,7 @@ interface WorkoutDetailProps {
   exercises: ExerciseData[];
   onOpenExerciseDetails: (exercise: ExerciseData) => void;
   onBack?: () => void;
+  onCreateProgram: () => void;
   returnSearch?: { from?: string };
   children?: ReactNode;
 }
@@ -29,6 +38,7 @@ export function WorkoutDetail({
   exercises,
   onOpenExerciseDetails,
   onBack,
+  onCreateProgram,
   returnSearch,
   children,
 }: WorkoutDetailProps) {
@@ -80,27 +90,36 @@ export function WorkoutDetail({
           <ChevronLeft />
         </Button>
         <span className="text-center text-lg font-medium">Тренування</span>
-        <div className="flex items-center justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            render={
-              <Link to="/workout/$id/edit" params={{ id: workout.id }} search={returnSearch} />
-            }
-            nativeButton={false}
-            aria-label="Редагувати тренування"
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-destructive"
-            aria-label="Видалити тренування"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
+        <div className="flex justify-end">
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="icon" aria-label="Дії з тренуванням" />}
+            >
+              <Ellipsis />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  render={
+                    <Link
+                      to="/workout/$id/edit"
+                      params={{ id: workout.id }}
+                      search={returnSearch}
+                    />
+                  }
+                >
+                  <Pencil /> Редагувати
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onCreateProgram}>
+                  <Plus /> Створити програму
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+                  <Trash2 /> Видалити
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 

@@ -25,7 +25,6 @@ import ExerciseNewPage from "@/pages/exercise-new";
 import ExercisesPage from "@/pages/exercises";
 import InstallPage from "@/pages/install";
 import LoginPage from "@/pages/login";
-import ProgramsPage from "@/pages/programs";
 import { ProgressLoading } from "@/pages/progress/index.loading";
 import { ExerciseProgressLoading } from "@/pages/progress-exercise/index.loading";
 import SettingsPage from "@/pages/settings";
@@ -198,7 +197,13 @@ const settingsRoute = createRoute({
 const programsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/programs",
-  component: ProgramsPage,
+  validateSearch: (
+    search: Record<string, unknown>
+  ): { fromWorkout?: string; create?: boolean } => ({
+    fromWorkout: typeof search.fromWorkout === "string" ? search.fromWorkout : undefined,
+    create: search.create === true || search.create === "true" ? true : undefined,
+  }),
+  component: lazyRouteComponent(() => import("@/pages/programs")),
 });
 
 const achievementsRoute = createRoute({

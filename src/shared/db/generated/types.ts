@@ -323,6 +323,7 @@ export type Database = {
           is_template: boolean | null
           name: string
           user_id: string
+          workout_template: Json
         }
         Insert: {
           created_at?: string | null
@@ -331,6 +332,7 @@ export type Database = {
           is_template?: boolean | null
           name: string
           user_id: string
+          workout_template?: Json
         }
         Update: {
           created_at?: string | null
@@ -339,6 +341,7 @@ export type Database = {
           is_template?: boolean | null
           name?: string
           user_id?: string
+          workout_template?: Json
         }
         Relationships: [
           {

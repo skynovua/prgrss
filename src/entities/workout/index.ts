@@ -13,7 +13,6 @@ export * from "./ui/active-workout-banner";
 export * from "./ui/delete-workout-button";
 export * from "./ui/exercise-card-actions";
 export * from "./ui/exercise-picker";
-export * from "./ui/recent-workouts";
 export * from "./ui/rest-timer";
 export * from "./ui/set-row";
 export * from "./ui/weight-display";

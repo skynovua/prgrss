@@ -1,110 +1,224 @@
-import { Link } from "@tanstack/react-router";
-import { CalendarRange, ChevronRight, Dumbbell, Layers3 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { Ellipsis, Layers3, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { Button, PageHeader } from "@/shared/ui";
-import { Card, CardContent } from "@/shared/ui";
+import { useWorkoutDetail, type WorkoutExercise } from "@/entities/workout";
+import {
+  deleteProgram,
+  type Program,
+  programFromWorkout,
+  saveProgram,
+  StartProgramButton,
+  usePrograms,
+} from "@/features/program";
+import { useAuth } from "@/shared/auth";
+import {
+  Button,
+  Card,
+  CardContent,
+  ConfirmDialog,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  PageError,
+  PageHeader,
+  RefreshNotice,
+  Skeleton,
+} from "@/shared/ui";
+
+import { ProgramEditor } from "./program-editor";
 
 export default function ProgramsPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { fromWorkout, create } = useSearch({ from: "/app/programs" });
+  const queryClient = useQueryClient();
+  const [editor, setEditor] = useState<Program | "new" | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Program | null>(null);
+  const source = useWorkoutDetail(fromWorkout);
+  const programs = usePrograms();
+  const save = useMutation({
+    mutationFn: ({
+      name,
+      exercises,
+      id,
+    }: {
+      name: string;
+      exercises: WorkoutExercise[];
+      id?: string;
+    }) => saveProgram(user!.id, name, exercises, id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["programs"] });
+      setEditor(null);
+      if (fromWorkout || create) await navigate({ to: "/programs", search: {} });
+      toast.success("Програму збережено");
+    },
+    onError: (error) => toast.error("Не вдалося зберегти програму", { description: error.message }),
+  });
+  const remove = useMutation({
+    mutationFn: (program: Program) => deleteProgram(user!.id, program.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["programs"] });
+      setDeleteTarget(null);
+      toast.success("Програму видалено");
+    },
+    onError: (error) => toast.error("Не вдалося видалити програму", { description: error.message }),
+  });
+  const closeEditor = () => {
+    setEditor(null);
+    if (fromWorkout || create) void navigate({ to: "/programs", search: {} });
+  };
+
+  if (fromWorkout) {
+    if (source.isPending)
+      return (
+        <div className="flex flex-col gap-4 p-5" aria-label="Завантажуємо тренування" role="status">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      );
+    if (!source.data)
+      return (
+        <PageError
+          title="Тренування не знайдено"
+          description="Його видалено або воно недоступне."
+          onRetry={() => void source.refetch()}
+        />
+      );
+    return (
+      <ProgramEditor
+        key={fromWorkout}
+        initialName={source.data.workout.name ?? ""}
+        initialExercises={programFromWorkout(source.data.workout, source.data.exercises)}
+        saving={save.isPending}
+        onSave={(name, exercises) => save.mutate({ name, exercises })}
+        onBack={closeEditor}
+      />
+    );
+  }
+  const currentEditor = editor ?? (create ? "new" : null);
+  if (currentEditor)
+    return (
+      <ProgramEditor
+        key={currentEditor === "new" ? "new" : currentEditor.id}
+        initialName={currentEditor === "new" ? "" : currentEditor.name}
+        initialExercises={currentEditor === "new" ? [] : currentEditor.exercises}
+        saving={save.isPending}
+        onSave={(name, exercises) =>
+          save.mutate({
+            name,
+            exercises,
+            id: currentEditor === "new" ? undefined : currentEditor.id,
+          })
+        }
+        onBack={closeEditor}
+      />
+    );
+
   return (
-    <div className="flex flex-1 flex-col gap-6 px-4 pb-4">
-      <PageHeader className="-mx-4 px-4 md:-mx-4 md:px-4">
+    <div className="flex flex-1 flex-col gap-6 px-5 pb-8 md:px-8">
+      <PageHeader className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-medium tracking-tight">Програми</h1>
+        <Button
+          size="icon"
+          variant="secondary"
+          aria-label="Створити програму"
+          onClick={() => setEditor("new")}
+        >
+          <Plus />
+        </Button>
       </PageHeader>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="relative px-4 py-4">
-          <div className="from-muted absolute inset-x-0 top-0 h-24 bg-linear-to-b to-transparent" />
-          <div className="relative flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] uppercase">
-                  Soon
-                </span>
-                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  Тут з&apos;являться шаблони тренувальних циклів: готові спліти, блоки на кілька
-                  тижнів і швидкий старт нового тренування по структурованому плану.
-                </p>
-              </div>
-
-              <div className="bg-muted text-muted-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
-                <Layers3 className="h-5 w-5" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <InfoTile
-                icon={<CalendarRange className="h-4 w-4" />}
-                label="Цикли"
-                value="4-12 тижнів"
-              />
-              <InfoTile
-                icon={<Layers3 className="h-4 w-4" />}
-                label="Шаблони"
-                value="Upper/Lower, Full Body"
-              />
-              <InfoTile
-                icon={<Dumbbell className="h-4 w-4" />}
-                label="Мета"
-                value="Швидкий повтор тренувань"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="p-0">
-        <CardContent className="flex flex-col gap-4 p-4">
-          <div>
-            <h2 className="text-sm font-medium">Що тут буде</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Коли секція буде готова, ти зможеш зберігати улюблені структури тренувань і запускати
-              нову сесію без ручного додавання вправ щоразу.
-            </p>
-          </div>
-
-          <div className="grid gap-2.5 text-sm">
-            <FeatureRow
-              title="Шаблони під ціль"
-              description="Сила, гіпертрофія, full body, upper/lower."
-            />
-            <FeatureRow
-              title="Швидкий старт"
-              description="Запуск нового тренування з готовим набором вправ."
-            />
-            <FeatureRow
-              title="Гнучке редагування"
-              description="Підлаштування вправ і сетів під конкретний день."
-            />
-          </div>
-
-          <Link to="/workout/new">
-            <Button variant="outline" className="w-full justify-between">
-              Почати тренування без програми
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function InfoTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="bg-background/70 rounded-2xl border px-3 py-3 backdrop-blur-sm">
-      <div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <p className="text-sm leading-snug font-medium">{value}</p>
-    </div>
-  );
-}
-
-function FeatureRow({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-2xl border px-3 py-3">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+      {programs.isError && programs.data && (
+        <RefreshNotice onRetry={() => void programs.refetch()} />
+      )}
+      {programs.isPending ? (
+        <div className="flex flex-col gap-3" role="status" aria-label="Завантажуємо програми">
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+        </div>
+      ) : !programs.data ? (
+        <PageError title="Програми не завантажилися" onRetry={() => void programs.refetch()} />
+      ) : programs.data.length === 0 ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Layers3 />
+            </EmptyMedia>
+            <EmptyTitle>Поки немає програм</EmptyTitle>
+            <EmptyDescription>Створи шаблон, щоб швидше починати тренування.</EmptyDescription>
+          </EmptyHeader>
+          <Button variant="primary" onClick={() => setEditor("new")}>
+            <Plus data-icon="inline-start" /> Створити програму
+          </Button>
+        </Empty>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {programs.data.map((program) => (
+            <Card key={program.id} size="sm">
+              <CardContent className="flex flex-col gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-base font-semibold">{program.name}</h2>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      {program.exercises.length
+                        ? program.exercises.map((entry) => entry.exercise.name).join(", ")
+                        : "Додай вправи до програми"}
+                    </p>
+                  </div>
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Дії для програми ${program.name}`}
+                        />
+                      }
+                    >
+                      <Ellipsis />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem onClick={() => setEditor(program)}>
+                          <Pencil /> Редагувати
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setDeleteTarget(program)}
+                        >
+                          <Trash2 /> Видалити
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <StartProgramButton program={program} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Видалити програму?"
+        description="Шаблон буде видалено. Виконані тренування залишаться в історії."
+        confirmText="Видалити"
+        isDestructive
+        isLoading={remove.isPending}
+        onConfirm={() => deleteTarget && remove.mutate(deleteTarget)}
+      />
     </div>
   );
 }

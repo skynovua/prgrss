@@ -21,16 +21,6 @@ export async function fetchDashboardData() {
       avatarUrl: profile?.avatar_url ?? user.user_metadata?.avatar_url ?? null,
       displayName: profile?.display_name ?? user.user_metadata?.name ?? "атлет",
     },
-    recentWorkouts:
-      dashboard?.recent_workouts?.map((workout) => ({
-        id: workout.id ?? "",
-        name: workout.name,
-        started_at: workout.started_at,
-        setsCount: workout.sets_count ?? 0,
-        volume: workout.volume ?? 0,
-        muscleGroups: workout.muscle_groups ?? [],
-        duration: workout.duration,
-      })) ?? [],
     weekStats: {
       workouts: dashboard?.week_stats?.workouts ?? 0,
       sets: dashboard?.week_stats?.sets ?? 0,

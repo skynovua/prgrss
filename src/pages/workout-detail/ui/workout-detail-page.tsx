@@ -43,6 +43,7 @@ export default function WorkoutDetailPage() {
         exercises={data.exercises}
         onOpenExerciseDetails={setDetailsTarget}
         returnSearch={{ from }}
+        onCreateProgram={() => void navigate({ to: "/programs", search: { fromWorkout: id } })}
         onBack={
           calendarParams
             ? () => {

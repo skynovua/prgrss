@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronRight,
   Download,
+  Layers3,
   Palette,
   ShieldAlert,
   ShieldCheck,
@@ -51,6 +52,15 @@ export default function SettingsPage() {
         <h1 className="text-xl font-medium tracking-tight">Налаштування</h1>
       </PageHeader>
       {isError && profile && <RefreshNotice onRetry={() => void refetch()} />}
+
+      <Link
+        to="/programs"
+        className="hover:bg-muted/70 flex items-center gap-3 rounded-xl border p-4 transition-colors"
+      >
+        <Layers3 className="text-muted-foreground size-5 shrink-0" />
+        <span className="min-w-0 flex-1 text-sm font-medium">Програми тренувань</span>
+        <ChevronRight className="text-muted-foreground size-4" />
+      </Link>
 
       <Card className="gap-4 p-0">
         <CardHeader className="px-5 pt-5">
