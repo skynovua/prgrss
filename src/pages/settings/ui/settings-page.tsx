@@ -10,7 +10,6 @@ import {
 
 import { LogoutButton } from "@/entities/auth";
 import { ProfileSettings } from "@/entities/profile";
-// import { PushNotificationsCard } from "@/entities/notification";
 import { useProfile } from "@/entities/profile";
 import { isStandalone } from "@/shared/lib";
 import { useTheme } from "@/shared/theme";
@@ -104,8 +103,6 @@ export default function SettingsPage() {
       ) : (
         <PageError title="Профіль не завантажився" onRetry={() => void refetch()} />
       )}
-
-      {/* <PushNotificationsCard /> */}
 
       {!isStandalone() && (
         <Card className="p-0">

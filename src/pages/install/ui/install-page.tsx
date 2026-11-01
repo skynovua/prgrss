@@ -1,5 +1,4 @@
 import {
-  Bell,
   Download,
   Monitor,
   MoreVertical,
@@ -97,7 +96,7 @@ export default function InstallPage() {
 
             <div className="grid w-full grid-cols-3 gap-3">
               <BenefitPill icon={<Zap className="h-4 w-4" />} label="Швидкий старт" />
-              <BenefitPill icon={<Bell className="h-4 w-4" />} label="Нагадування" />
+              <BenefitPill icon={<Smartphone className="h-4 w-4" />} label="Завжди поруч" />
               <BenefitPill icon={<Sparkles className="h-4 w-4" />} label="App mode" />
             </div>
           </div>

@@ -61,13 +61,6 @@ export function DeleteAccountButton() {
     clearExerciseLogPreferences(user?.id);
     queryClient.clear();
     try {
-      const registration = await navigator.serviceWorker?.getRegistration();
-      const subscription = await registration?.pushManager.getSubscription();
-      await subscription?.unsubscribe();
-    } catch {
-      // Серверну підписку вже видалено разом із акаунтом.
-    }
-    try {
       const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
       if (signOutError) throw signOutError;
     } catch {

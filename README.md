@@ -1,6 +1,6 @@
 # prgrss
 
-A workout tracker for the gym: set logging, exercise library, dashboard, progress analytics, completed workout editing, achievements, and push reminders.
+A workout tracker for the gym: set logging, exercise library, dashboard, progress analytics, completed workout editing, and achievements.
 
 ## Implemented Features
 
@@ -13,7 +13,6 @@ A workout tracker for the gym: set logging, exercise library, dashboard, progres
 - Exercise library with search, filters, and custom exercises
 - Progress screen with global stats, charts, and estimated 1RM
 - Achievements with a configurable catalog
-- Push reminders for scheduled workouts
 - PWA install support with custom icons and splash screens
 
 ## Stack
@@ -39,7 +38,6 @@ pnpm install
 ```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
-VITE_VAPID_PUBLIC_KEY=
 ```
 
 3. Start the dev server:
@@ -71,7 +69,7 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 src/
 	app/             app shell, providers, router, global styles
 	pages/           route-level FSD page slices
-	entities/        workout, exercise, progress, profile, notification domains
+	entities/        workout, exercise, progress, profile domains
 	shared/          UI kit, Supabase client, generated DB types, common libs
 	features/        reusable user actions when they are extracted
 	widgets/         reusable page blocks when they are extracted
@@ -88,13 +86,13 @@ docs/
 ## Mobile App Guide
 
 The implementation plan for the separate Expo React Native client, including
-standalone project setup, Supabase auth, native push notifications, i18n,
+standalone project setup, Supabase auth, i18n,
 mobile-specific backend changes, testing, and release requirements, is
 documented in [docs/react-native-expo-guide.md](docs/react-native-expo-guide.md).
 
 ## Feature Status
 
-- **Done**: auth, workout logger, dashboard, progress, achievements, workout detail/edit, exercise library, profile settings, rest timer, push reminders, PWA install assets
+- **Done**: auth, workout logger, dashboard, progress, achievements, workout detail/edit, exercise library, profile settings, rest timer, PWA install assets
 - **Partial / skeleton**: programs/templates
 - **Not implemented yet**: body measurements, Apple sign-in, photo progress, export
 

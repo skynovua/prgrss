@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: "PRGRSS — Трекер тренувань",
         short_name: "PRGRSS",
-        description: "Трекер тренувань, прогресу та нагадувань",
+        description: "Трекер тренувань і прогресу",
         start_url: "/",
         scope: "/",
         lang: "uk",

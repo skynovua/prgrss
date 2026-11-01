@@ -7,19 +7,18 @@
 
 ## Стек
 
-| Шар             | Технологія                                                     |
-| --------------- | -------------------------------------------------------------- |
-| Frontend        | Vite + React (SPA)                                             |
-| UI Components   | shadcn/ui (Radix UI + Tailwind)                                |
-| Styling         | Tailwind CSS                                                   |
-| Language        | TypeScript (strict mode)                                       |
-| Backend         | Supabase (Auth, PostgreSQL, Edge Functions, Realtime, Storage) |
-| PWA             | vite-plugin-pwa + manifest/icons/splash assets                 |
-| Charts          | Recharts                                                       |
-| Push            | Web Push API (VAPID) через Supabase Edge Functions             |
-| Deployment      | Vercel (Vite SPA), Supabase Edge Functions                     |
-| Linting         | ESLint + Prettier (автоформатування)                           |
-| Language        | Українська (інтерфейс та коментарі)                            |
+| Шар           | Технологія                                                     |
+| ------------- | -------------------------------------------------------------- |
+| Frontend      | Vite + React (SPA)                                             |
+| UI Components | shadcn/ui (Radix UI + Tailwind)                                |
+| Styling       | Tailwind CSS                                                   |
+| Language      | TypeScript (strict mode)                                       |
+| Backend       | Supabase (Auth, PostgreSQL, Edge Functions, Realtime, Storage) |
+| PWA           | vite-plugin-pwa + manifest/icons/splash assets                 |
+| Charts        | Recharts                                                       |
+| Deployment    | Vercel (Vite SPA), Supabase Edge Functions                     |
+| Linting       | ESLint + Prettier (автоформатування)                           |
+| Language      | Українська (інтерфейс та коментарі)                            |
 
 ---
 
@@ -60,7 +59,6 @@ const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
     /exercise       — exercise API/hooks/library UI
     /progress       — stats API/hooks/charts
     /profile        — profile API/hooks/settings UI
-    /notification   — push reminder API/hooks/UI
     /achievement    — achievements API/hooks
     /auth           — auth-related reusable UI
 
@@ -76,7 +74,7 @@ const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
   /widgets          — reusable page blocks, only when extracted
 
 /supabase
-  /functions        — Edge Functions (reminder-push, cron)
+  /functions        — Edge Functions
   /migrations       — SQL міграції
 
 /public
@@ -177,49 +175,6 @@ arms        numeric(5,1)
 legs        numeric(5,1)
 ```
 
-### `push_subscriptions`
-
-Web Push підписки для нагадувань.
-
-```sql
-id          uuid PRIMARY KEY DEFAULT gen_random_uuid()
-user_id     uuid REFERENCES users NOT NULL
-endpoint    text NOT NULL
-p256dh      text NOT NULL
-auth        text NOT NULL
-created_at  timestamptz DEFAULT now()
-```
-
-### `reminders`
-
-Налаштування нагадувань користувача.
-
-```sql
-id          uuid PRIMARY KEY DEFAULT gen_random_uuid()
-user_id     uuid REFERENCES users NOT NULL
-days        int[]   -- [1,3,5] = пн, ср, пт (ISO weekday)
-time        time    -- '09:00'
-enabled     boolean DEFAULT true
-message     text
-```
-
----
-
-## Push-нагадування
-
-1. Клієнт підписується на Web Push (VAPID) і зберігає підписку в таблиці `push_subscriptions`
-2. Supabase Edge Function `reminder-push` запускається через cron/ручний виклик для тестового нагадування
-3. Функція знаходить нагадування на поточний час і відправляє push через Web Push Protocol
-
-```ts
-// supabase/functions/reminder-push/index.ts
-// Запускається cron-ом: '0 * * * *'
-```
-
-VAPID ключі зберігаються в Supabase Secrets (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`).
-
----
-
 ## 1RM та прогресія
 
 Обрахунок 1RM (Epley formula):
@@ -276,14 +231,11 @@ export const calc1RM = (weight: number, reps: number) =>
 ```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
-VITE_VAPID_PUBLIC_KEY=
 
 # Тільки на сервері
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
 ```
 
 ---
@@ -297,7 +249,6 @@ VAPID_PRIVATE_KEY=
 - [x] Workout logger — створення тренування через Supabase RPC
 - [x] Exercise library — 60+ вправ (UA), пошук, фільтри, кастомні вправи
 - [x] Базова статистика (обсяг, підходи) — dashboard з тижневою статистикою
-- [x] Push-нагадування — UI, Web Push subscription, Edge Function, test reminder
 - [x] PWA install — manifest, custom icons, splash screens
 
 ### Phase 2
