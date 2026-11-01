@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Ellipsis, Layers3, Pencil, Plus, Trash2 } from "lucide-react";
+import { Ellipsis, Layers3, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -143,8 +143,8 @@ export default function ProgramsPage() {
       )}
       {programs.isPending ? (
         <div className="flex flex-col gap-3" role="status" aria-label="Завантажуємо програми">
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-[4.5rem] w-full" />
+          <Skeleton className="h-[4.5rem] w-full" />
         </div>
       ) : !programs.data ? (
         <PageError title="Програми не завантажилися" onRetry={() => void programs.refetch()} />
@@ -162,48 +162,48 @@ export default function ProgramsPage() {
           </Button>
         </Empty>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {programs.data.map((program) => (
-            <Card key={program.id} size="sm">
-              <CardContent className="flex flex-col gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-base font-semibold">{program.name}</h2>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      {program.exercises.length
-                        ? program.exercises.map((entry) => entry.exercise.name).join(", ")
-                        : "Додай вправи до програми"}
-                    </p>
-                  </div>
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Дії для програми ${program.name}`}
-                        />
-                      }
-                    >
-                      <Ellipsis />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem onClick={() => setEditor(program)}>
-                          <Pencil /> Редагувати
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => setDeleteTarget(program)}
-                        >
-                          <Trash2 /> Видалити
-                        </DropdownMenuItem>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            <Card key={program.id} size="sm" className="py-3">
+              <CardContent className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm leading-snug font-semibold">{program.name}</h2>
+                  <p className="text-muted-foreground mt-1 line-clamp-2 text-xs leading-relaxed">
+                    {program.exercises.length
+                      ? program.exercises.map((entry) => entry.exercise.name).join(", ")
+                      : "Додай вправи до програми"}
+                  </p>
                 </div>
-                <StartProgramButton program={program} />
+                <StartProgramButton program={program} variant="secondary" className="w-11 px-0">
+                  <Play />
+                </StartProgramButton>
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`Дії для програми ${program.name}`}
+                      />
+                    }
+                  >
+                    <Ellipsis />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem onClick={() => setEditor(program)}>
+                        <Pencil /> Редагувати
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setDeleteTarget(program)}
+                      >
+                        <Trash2 /> Видалити
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </CardContent>
             </Card>
           ))}
