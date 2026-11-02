@@ -16,10 +16,11 @@ import {
 
 import { useArchivedExercise, useExercises } from "../hooks/use-exercises";
 import type { ExerciseCatalogItem, ExerciseMuscleTarget } from "../model/exercise-catalog";
+import { preloadAnatomyMap } from "./anatomy-loader";
 import { AnatomyLoading } from "./anatomy-loading";
 
 const LazyAnatomyMap = lazy(() =>
-  import("./anatomy-map").then(({ AnatomyMap }) => ({ default: AnatomyMap }))
+  preloadAnatomyMap().then(({ AnatomyMap }) => ({ default: AnatomyMap }))
 );
 
 type ExerciseDetails = Pick<ExerciseCatalogItem, "name" | "equipment" | "muscles">;

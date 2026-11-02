@@ -1,4 +1,4 @@
-import type { Database } from "@/shared/db";
+import type { Database, Json } from "@/shared/db";
 export { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from "@/shared/config";
 export type { MuscleGroup } from "@/shared/config";
 
@@ -29,6 +29,18 @@ export interface WorkoutExercise {
   sets: LocalSet[];
   trackingType: ExerciseTrackingType;
   restSeconds: number;
+}
+
+export interface WorkoutProgramSource {
+  id: string;
+  name: string;
+  template: Json;
+}
+
+export interface SavedWorkoutContext {
+  workoutId: string;
+  exercises: WorkoutExercise[];
+  programSource: WorkoutProgramSource | null;
 }
 
 export type ExerciseTrackingType = "weight-reps" | "bodyweight" | "duration";

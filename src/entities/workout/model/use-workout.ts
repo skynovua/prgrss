@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useReducer } from "react";
 import { toast } from "sonner";
 
-import type { Exercise, PreviousSetsMap } from "@/entities/workout";
+import type { Exercise, PreviousSetsMap, SavedWorkoutContext } from "@/entities/workout";
 import { toWorkoutOperationError } from "@/entities/workout";
 import { useAuth } from "@/shared/auth";
 
@@ -18,7 +18,10 @@ import {
 } from "./workout-draft";
 import { getWorkoutReview, isSetValid } from "./workout-logging";
 
-export function useWorkout(previousSets?: PreviousSetsMap) {
+export function useWorkout(
+  previousSets?: PreviousSetsMap,
+  onWorkoutSaved?: (context: SavedWorkoutContext) => boolean
+) {
   const { user } = useAuth();
   const userId = user?.id;
   const navigate = useNavigate();
@@ -39,6 +42,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       restClock: draft.restClock,
       name: draft.name,
       notes: draft.notes,
+      programSource: draft.programSource,
     };
   });
   const {
@@ -50,6 +54,7 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
     saving,
     name,
     notes,
+    programSource,
   } = state;
 
   useEffect(() => {
@@ -66,8 +71,9 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       restClock,
       name,
       notes,
+      programSource,
     });
-  }, [userId, startedAt, workoutExercises, workoutId, restClock, name, notes]);
+  }, [userId, startedAt, workoutExercises, workoutId, restClock, name, notes, programSource]);
 
   const addExercise = useCallback(
     (exercise: Exercise) => {
@@ -88,7 +94,14 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
     dispatch({ type: "SET_SAVING", saving: true });
 
     try {
-      const result = await finishWorkout(userId, workoutExercises, startedAt, workoutId, details);
+      const result = await finishWorkout(
+        userId,
+        workoutExercises,
+        startedAt,
+        workoutId,
+        details,
+        programSource?.id
+      );
 
       if (!result.success) {
         navigate({ to: result.redirectTo });
@@ -96,6 +109,11 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       }
 
       toast.success("Тренування збережено");
+      if (programSource && !result.programLinked) {
+        toast.warning("Тренування збережено без зв’язку з шаблоном", {
+          description: "Шаблон видалено або він тимчасово недоступний.",
+        });
+      }
 
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["calendar"] });
@@ -103,7 +121,15 @@ export function useWorkout(previousSets?: PreviousSetsMap) {
       await queryClient.invalidateQueries({ queryKey: ["previousSets"] });
       await queryClient.invalidateQueries({ queryKey: ["progress"] });
 
-      navigate({ to: result.redirectTo });
+      if (
+        !onWorkoutSaved?.({
+          workoutId,
+          exercises: workoutExercises,
+          programSource: result.programLinked ? programSource : null,
+        })
+      ) {
+        navigate({ to: result.redirectTo });
+      }
     } catch (error) {
       const mappedError = toWorkoutOperationError(error, "save");
       toast.error("Не вдалося зберегти тренування", {

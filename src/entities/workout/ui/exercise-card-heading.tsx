@@ -13,6 +13,7 @@ export function ExerciseCardHeading({
   onOpenDetails,
   onToggle,
   actions,
+  planned = false,
 }: {
   name: string;
   timed: boolean;
@@ -22,6 +23,7 @@ export function ExerciseCardHeading({
   onOpenDetails: () => void;
   onToggle: () => void;
   actions: ReactNode;
+  planned?: boolean;
 }) {
   const completed = sets.filter(Boolean).length;
   return (
@@ -42,23 +44,27 @@ export function ExerciseCardHeading({
           onClick={onToggle}
           aria-expanded={expanded}
           aria-controls={panelId}
-          aria-label={`${expanded ? "Згорнути" : "Розгорнути"} вправу ${name}, виконано ${completed} з ${sets.length} підходів`}
+          aria-label={`${expanded ? "Згорнути" : "Розгорнути"} вправу ${name}, ${planned ? `заплановано підходів: ${sets.length}` : `виконано ${completed} з ${sets.length} підходів`}`}
         >
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="line-clamp-2 text-sm leading-4 font-semibold" title={name}>
               {name}
             </span>
-            <span className="flex min-w-0 items-center gap-1" aria-hidden="true">
-              {sets.map((complete, index) => (
-                <span
-                  key={index}
-                  className={cn(
-                    "h-1 max-w-5 min-w-0 flex-1 rounded-full",
-                    complete ? "bg-primary" : "bg-muted-foreground/25"
-                  )}
-                />
-              ))}
-            </span>
+            {planned ? (
+              <span className="text-muted-foreground text-xs">Підходів: {sets.length}</span>
+            ) : (
+              <span className="flex min-w-0 items-center gap-1" aria-hidden="true">
+                {sets.map((complete, index) => (
+                  <span
+                    key={index}
+                    className={cn(
+                      "h-1 max-w-5 min-w-0 flex-1 rounded-full",
+                      complete ? "bg-primary" : "bg-muted-foreground/25"
+                    )}
+                  />
+                ))}
+              </span>
+            )}
           </span>
           <ChevronDown
             className={cn(

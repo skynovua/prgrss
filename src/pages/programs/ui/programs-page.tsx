@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Ellipsis, Layers3, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { Ellipsis, Layers3, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -10,7 +10,6 @@ import {
   type Program,
   programFromWorkout,
   saveProgram,
-  StartProgramButton,
   usePrograms,
 } from "@/features/program";
 import { useAuth } from "@/shared/auth";
@@ -59,8 +58,6 @@ export default function ProgramsPage() {
     }) => saveProgram(user!.id, name, exercises, id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["programs"] });
-      setEditor(null);
-      if (fromWorkout || create) await navigate({ to: "/programs", search: {} });
       toast.success("Програму збережено");
     },
     onError: (error) => toast.error("Не вдалося зберегти програму", { description: error.message }),
@@ -101,7 +98,7 @@ export default function ProgramsPage() {
         initialName={source.data.workout.name ?? ""}
         initialExercises={programFromWorkout(source.data.workout, source.data.exercises)}
         saving={save.isPending}
-        onSave={(name, exercises) => save.mutate({ name, exercises })}
+        onSave={(name, exercises) => save.mutateAsync({ name, exercises })}
         onBack={closeEditor}
       />
     );
@@ -115,7 +112,7 @@ export default function ProgramsPage() {
         initialExercises={currentEditor === "new" ? [] : currentEditor.exercises}
         saving={save.isPending}
         onSave={(name, exercises) =>
-          save.mutate({
+          save.mutateAsync({
             name,
             exercises,
             id: currentEditor === "new" ? undefined : currentEditor.id,
@@ -166,17 +163,19 @@ export default function ProgramsPage() {
           {programs.data.map((program) => (
             <Card key={program.id} size="sm" className="py-3">
               <CardContent className="flex items-center gap-2">
-                <div className="min-w-0 flex-1">
+                <Link
+                  to="/programs/$id"
+                  params={{ id: program.id }}
+                  search={{}}
+                  className="focus-visible:ring-ring min-w-0 flex-1 rounded-md outline-none focus-visible:ring-2"
+                >
                   <h2 className="text-sm leading-snug font-semibold">{program.name}</h2>
                   <p className="text-muted-foreground mt-1 line-clamp-2 text-xs leading-relaxed">
                     {program.exercises.length
                       ? program.exercises.map((entry) => entry.exercise.name).join(", ")
                       : "Додай вправи до програми"}
                   </p>
-                </div>
-                <StartProgramButton program={program} variant="secondary" className="w-11 px-0">
-                  <Play />
-                </StartProgramButton>
+                </Link>
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger
                     render={

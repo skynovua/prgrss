@@ -618,6 +618,14 @@ export type Database = {
         Args: { achievement_ids: string[] }
         Returns: undefined
       }
+      update_program_template_if_unchanged: {
+        Args: {
+          original_template: Json
+          target_program_id: string
+          updated_template: Json
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

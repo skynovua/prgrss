@@ -131,3 +131,21 @@ test("за помилки запису старі дані зберігають�
     localStorage.setItem = setItem;
   }
 });
+
+test("джерело шаблону зберігається після перезавантаження та ізольоване між акаунтами", () => {
+  const source = { id: "program", name: "Сила", template: [{ exercise: { id: "squat" } }] };
+  saveActiveWorkoutDraft({ ...draft("a", "A"), programSource: source });
+  assert.deepEqual(restoreActiveWorkoutDraft("a").programSource, source);
+  assert.equal(restoreActiveWorkoutDraft("b"), null);
+  saveActiveWorkoutDraft(draft("b", "B"));
+  assert.equal(restoreActiveWorkoutDraft("b").programSource, null);
+});
+
+test("пошкоджене джерело шаблону не заважає відновити тренування", () => {
+  saveActiveWorkoutDraft({
+    ...draft("a", "A"),
+    programSource: { id: 4, name: "Сила", template: [] },
+  });
+  assert.equal(restoreActiveWorkoutDraft("a").programSource, null);
+  assert.equal(restoreActiveWorkoutDraft("a").name, "A");
+});

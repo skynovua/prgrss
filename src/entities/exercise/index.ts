@@ -7,6 +7,7 @@ export {
   useCreateExercise,
 } from "./hooks/use-exercises";
 export { ExerciseLibrary } from "./ui/exercise-library";
+export { preloadAnatomyMap } from "./ui/anatomy-loader";
 export { AnatomyPreview } from "./ui/anatomy-preview";
 export type { ExerciseMuscleTarget } from "./model/exercise-catalog";
 export { combineTricepsTargets } from "./model/anatomy-targets";

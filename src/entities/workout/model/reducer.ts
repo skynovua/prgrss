@@ -1,6 +1,12 @@
 import type { ExerciseLogPreferences } from "./exercise-log-preferences";
 import { extendRestClock, type RestClock, startRestClock, toggleRestClock } from "./rest-clock";
-import type { Exercise, LocalSet, PreviousSetData, WorkoutExercise } from "./types";
+import type {
+  Exercise,
+  LocalSet,
+  PreviousSetData,
+  WorkoutExercise,
+  WorkoutProgramSource,
+} from "./types";
 import { createWorkoutSet, getExerciseTrackingType, isSetValid } from "./workout-logging";
 
 // --- State ---
@@ -13,6 +19,7 @@ export interface WorkoutState {
   restClock: RestClock | null;
   name: string;
   notes: string;
+  programSource: WorkoutProgramSource | null;
   saving: boolean;
 }
 
@@ -62,6 +69,7 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
         ...state,
         startedAt: state.exercises.length === 0 ? new Date().toISOString() : state.startedAt,
         workoutId: state.exercises.length === 0 ? generateId() : state.workoutId,
+        programSource: state.exercises.length === 0 ? null : state.programSource,
         name: state.exercises.length === 0 ? "" : state.name,
         notes: state.exercises.length === 0 ? "" : state.notes,
         exercises: [
@@ -264,6 +272,7 @@ export function createInitialState(): WorkoutState {
     restClock: null,
     name: "",
     notes: "",
+    programSource: null,
     saving: false,
   };
 }

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, Dumbbell, Plus } from "lucide-react";
 
-import { StartProgramButton, usePrograms } from "@/features/program";
+import { usePrograms } from "@/features/program";
 import { cn } from "@/shared/lib";
 import { Button, buttonVariants, RefreshNotice, Skeleton } from "@/shared/ui";
 
@@ -62,10 +62,11 @@ export function DashboardPrograms() {
         >
           {data.map((program) => (
             <div key={program.id} className="w-40 shrink-0 snap-start sm:w-44">
-              <StartProgramButton
-                program={program}
-                variant="ghost"
-                className="h-full flex-col items-stretch justify-start gap-0 p-0 text-left whitespace-normal"
+              <Link
+                to="/programs/$id"
+                params={{ id: program.id }}
+                search={{ from: "dashboard" }}
+                className="focus-visible:ring-ring flex h-full flex-col items-stretch rounded-xl text-left outline-none focus-visible:ring-2"
               >
                 <span className="bg-muted text-muted-foreground flex h-28 items-center justify-center rounded-xl">
                   <Dumbbell aria-hidden="true" className="size-8" />
@@ -77,7 +78,7 @@ export function DashboardPrograms() {
                   {program.exercises.length}{" "}
                   {exerciseLabels[pluralRules.select(program.exercises.length)]}
                 </span>
-              </StartProgramButton>
+              </Link>
             </div>
           ))}
           <Link

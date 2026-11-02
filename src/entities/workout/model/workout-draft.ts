@@ -1,6 +1,6 @@
 import { generateId } from "./reducer";
 import type { RestClock } from "./rest-clock";
-import type { WorkoutExercise } from "./types";
+import type { WorkoutExercise, WorkoutProgramSource } from "./types";
 import { getExerciseTrackingType } from "./workout-logging";
 
 const ACTIVE_WORKOUT_STORAGE_KEY = "prgrss.activeWorkout";
@@ -44,6 +44,7 @@ export interface ActiveWorkoutDraft {
   restClock: RestClock | null;
   name: string;
   notes: string;
+  programSource: WorkoutProgramSource | null;
   updatedAt: string;
 }
 
@@ -55,6 +56,7 @@ export function saveActiveWorkoutDraft({
   restClock,
   name,
   notes,
+  programSource = null,
 }: {
   userId: string | undefined;
   workoutId: string;
@@ -63,6 +65,7 @@ export function saveActiveWorkoutDraft({
   restClock: RestClock | null;
   name: string;
   notes: string;
+  programSource?: WorkoutProgramSource | null;
 }) {
   if (!userId) return;
   try {
@@ -73,6 +76,7 @@ export function saveActiveWorkoutDraft({
       restClock,
       name,
       notes,
+      programSource,
       updatedAt: new Date().toISOString(),
     };
     localStorage.setItem(draftKey(userId), JSON.stringify(draft));
@@ -106,6 +110,13 @@ export function restoreActiveWorkoutDraft(userId: string | undefined): ActiveWor
       restClock: draft.restClock ?? null,
       name: typeof draft.name === "string" ? draft.name : "",
       notes: typeof draft.notes === "string" ? draft.notes : "",
+      programSource:
+        draft.programSource &&
+        typeof draft.programSource.id === "string" &&
+        typeof draft.programSource.name === "string" &&
+        Array.isArray(draft.programSource.template)
+          ? draft.programSource
+          : null,
       updatedAt: typeof draft.updatedAt === "string" ? draft.updatedAt : draft.startedAt,
     };
   } catch {

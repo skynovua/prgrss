@@ -105,3 +105,43 @@ test("пошкоджені шаблони не відкриваються як �
   );
   assert.equal(readProgramExercises(programFromWorkout(workout, exercises)).length, 2);
 });
+
+test("стан виконання і службові ідентифікатори самі по собі не змінюють шаблон", async () => {
+  const { hasProgramChanges } = await import("./program.ts");
+  const template = programFromWorkout(workout, exercises);
+  const session = programWorkoutDraft(template);
+  session[0].sets[0].completed = true;
+  session[0].sets[0].rpe = 9;
+  session[0].sets[0].notes = "Тільки для цього тренування";
+  assert.equal(hasProgramChanges(template, session), false);
+});
+
+test("виявляє зміни порядку, підходів, значень і часу відпочинку", async () => {
+  const { hasProgramChanges } = await import("./program.ts");
+  const template = programFromWorkout(workout, exercises);
+  const changedOrder = programWorkoutDraft(template).reverse();
+  const changedWeight = programWorkoutDraft(template);
+  changedWeight[0].sets[0].weight = 50;
+  const changedSets = programWorkoutDraft(template);
+  changedSets[0].sets.pop();
+  const changedRest = programWorkoutDraft(template);
+  changedRest[0].restSeconds = 120;
+  for (const session of [changedOrder, changedWeight, changedSets, changedRest]) {
+    assert.equal(hasProgramChanges(template, session), true);
+  }
+});
+
+test("оновлений шаблон зберігає незавершені підходи, але не результати сесії", async () => {
+  const { templateFromWorkout } = await import("./program.ts");
+  const session = programWorkoutDraft(programFromWorkout(workout, exercises));
+  session[0].sets[0].completed = true;
+  session[0].sets[0].rpe = 9;
+  session[0].sets[0].notes = "Важко";
+  const result = templateFromWorkout(session);
+  assert.equal(result[0].sets.length, 2);
+  assert.equal(result[0].sets[0].weight, 40);
+  assert.equal(result[0].sets[0].completed, false);
+  assert.equal(result[0].sets[0].rpe, null);
+  assert.equal(result[0].sets[0].notes, null);
+  assert.equal(session[0].sets[0].completed, true);
+});

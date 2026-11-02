@@ -16,6 +16,7 @@ import {
 } from "@/entities/exercise";
 import { profileQueryOptions } from "@/entities/profile";
 import { previousSetsQueryOptions } from "@/entities/workout";
+import { programsQueryOptions } from "@/features/program";
 import { AchievementsLoading } from "@/pages/achievements/index.loading";
 import AuthCallbackPage from "@/pages/auth-callback";
 import CalendarPage from "@/pages/calendar";
@@ -102,7 +103,10 @@ const dashboardRoute = createRoute({
   path: "/dashboard",
   component: DashboardPage,
   loader: ({ context }) => {
-    if (context.auth.user) void context.queryClient.prefetchQuery(dashboardQueryOptions);
+    if (context.auth.user) {
+      void context.queryClient.prefetchQuery(dashboardQueryOptions);
+      void context.queryClient.prefetchQuery(programsQueryOptions(context.auth.user.id));
+    }
   },
 });
 
@@ -206,6 +210,15 @@ const programsRoute = createRoute({
   component: lazyRouteComponent(() => import("@/pages/programs")),
 });
 
+const programDetailRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/programs/$id",
+  validateSearch: (search: Record<string, unknown>): { from?: "dashboard" } => ({
+    from: search.from === "dashboard" ? "dashboard" : undefined,
+  }),
+  component: lazyRouteComponent(() => import("@/pages/programs"), "ProgramDetailPage"),
+});
+
 const achievementsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/achievements",
@@ -237,6 +250,7 @@ const routeTree = rootRoute.addChildren([
     exerciseProgressRoute,
     settingsRoute,
     programsRoute,
+    programDetailRoute,
     achievementsRoute,
   ]),
 ]);

@@ -1,8 +1,9 @@
 import type { WorkoutExercise } from "@/entities/workout";
+import { parseWorkoutNumber } from "@/entities/workout";
 import { supabase } from "@/shared/api";
 import type { Json } from "@/shared/db";
 
-import { readProgramExercises } from "../model/program";
+import { readProgramExercises, templateFromWorkout } from "../model/program";
 
 export async function fetchPrograms() {
   const { data, error } = await supabase
@@ -48,4 +49,31 @@ export async function deleteProgram(userId: string, id: string) {
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Програму не знайдено або вона недоступна");
+}
+
+export async function updateProgramTemplate(
+  programId: string,
+  originalTemplate: Json,
+  exercises: WorkoutExercise[]
+) {
+  const hasInvalidInput = exercises.some((exercise) =>
+    exercise.sets.some((set) =>
+      Object.values(set.inputValues ?? {}).some(
+        (value) => value.trim() !== "" && parseWorkoutNumber(value) == null
+      )
+    )
+  );
+  if (hasInvalidInput)
+    throw new Error(
+      "У незавершених підходах є некоректні значення. Залиш шаблон без змін та відредагуй його окремо."
+    );
+  const template = JSON.parse(JSON.stringify(templateFromWorkout(exercises))) as Json;
+  const { data, error } = await supabase.rpc("update_program_template_if_unchanged", {
+    target_program_id: programId,
+    original_template: originalTemplate,
+    updated_template: template,
+  });
+  if (error) throw new Error(error.message);
+  if (!data)
+    throw new Error("Шаблон уже змінено або видалено. Відкрий його, щоб перевірити зміни.");
 }

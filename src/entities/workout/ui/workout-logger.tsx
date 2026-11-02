@@ -13,7 +13,7 @@ import {
   EmptyTitle,
 } from "@/shared/ui";
 
-import type { Exercise, ExerciseData, PreviousSetsMap } from "../model/types";
+import type { Exercise, ExerciseData, PreviousSetsMap, SavedWorkoutContext } from "../model/types";
 import { useWorkout } from "../model/use-workout";
 import { getWorkoutReview } from "../model/workout-logging";
 import { ExercisePicker } from "./exercise-picker";
@@ -63,6 +63,7 @@ interface WorkoutLoggerProps {
   previousSets?: PreviousSetsMap;
   historyUnavailable?: boolean;
   onOpenExerciseDetails: (exercise: ExerciseData) => void;
+  onWorkoutSaved?: (context: SavedWorkoutContext) => boolean;
 }
 
 export function WorkoutLogger({
@@ -72,6 +73,7 @@ export function WorkoutLogger({
   previousSets,
   historyUnavailable = false,
   onOpenExerciseDetails,
+  onWorkoutSaved,
 }: WorkoutLoggerProps) {
   const { data: profile } = useProfile();
   const {
@@ -86,7 +88,7 @@ export function WorkoutLogger({
     totalVolume,
     addExercise,
     handleFinish,
-  } = useWorkout(previousSets);
+  } = useWorkout(previousSets, onWorkoutSaved);
   const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const hasExercises = workoutExercises.length > 0;

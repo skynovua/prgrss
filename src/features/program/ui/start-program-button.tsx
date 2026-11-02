@@ -37,6 +37,7 @@ export function StartProgramButton({
       restClock: null,
       name: program.name,
       notes: "",
+      programSource: { id: program.id, name: program.name, template: program.workout_template },
     });
     if (restoreActiveWorkoutDraft(user.id)?.workoutId !== workoutId) {
       toast.error("Не вдалося почати тренування", {

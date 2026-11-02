@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -8,17 +9,24 @@ import {
   hasLegacyWorkoutDraft,
   restoreLegacyExerciseLogPreferences,
   restoreLegacyWorkoutDraft,
+  type SavedWorkoutContext,
   WorkoutLogger,
 } from "@/entities/workout";
 import { usePreviousSets } from "@/entities/workout";
+import { hasProgramChanges, ProgramUpdateDialog } from "@/features/program";
 import { useAuth } from "@/shared/auth";
 import { Button, Card, CardContent, RefreshNotice } from "@/shared/ui";
 
 export default function WorkoutNewPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const userId = user?.id;
   const [detailsTarget, setDetailsTarget] = useState<ExerciseData | null>(null);
   const [draftVersion, setDraftVersion] = useState(0);
+  const [savedWorkout, setSavedWorkout] = useState<
+    | (SavedWorkoutContext & { programSource: NonNullable<SavedWorkoutContext["programSource"]> })
+    | null
+  >(null);
   const [legacyAvailable, setLegacyAvailable] = useState(
     () => hasLegacyWorkoutDraft(userId) || hasLegacyExerciseLogPreferences(userId)
   );
@@ -57,15 +65,35 @@ export default function WorkoutNewPage() {
           </Card>
         </div>
       )}
-      <WorkoutLogger
-        key={draftVersion}
-        exercises={exercises}
-        exercisesPending={isPending}
-        onRetryExercises={() => void refetch()}
-        previousSets={previousSets ?? {}}
-        historyUnavailable={historyUnavailable}
-        onOpenExerciseDetails={setDetailsTarget}
-      />
+      {!savedWorkout && (
+        <WorkoutLogger
+          key={draftVersion}
+          exercises={exercises}
+          exercisesPending={isPending}
+          onRetryExercises={() => void refetch()}
+          previousSets={previousSets ?? {}}
+          historyUnavailable={historyUnavailable}
+          onOpenExerciseDetails={setDetailsTarget}
+          onWorkoutSaved={(context) => {
+            if (
+              !context.programSource ||
+              !hasProgramChanges(context.programSource.template, context.exercises)
+            )
+              return false;
+            setSavedWorkout({ ...context, programSource: context.programSource });
+            return true;
+          }}
+        />
+      )}
+      {savedWorkout && (
+        <ProgramUpdateDialog
+          programSource={savedWorkout.programSource}
+          exercises={savedWorkout.exercises}
+          onDone={() =>
+            void navigate({ to: "/workout/$id", params: { id: savedWorkout.workoutId } })
+          }
+        />
+      )}
       {detailsTarget && (
         <ExerciseDetailsById exercise={detailsTarget} onClose={() => setDetailsTarget(null)} />
       )}

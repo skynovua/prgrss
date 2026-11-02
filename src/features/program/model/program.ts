@@ -86,3 +86,41 @@ export function readProgramExercises(value: unknown): WorkoutExercise[] {
     throw new Error("Не вдалося прочитати програму");
   return value as WorkoutExercise[];
 }
+
+function programPlan(exercises: WorkoutExercise[]) {
+  return exercises.map(({ exercise, trackingType, restSeconds, sets }) => ({
+    exerciseId: exercise.id,
+    trackingType,
+    restSeconds,
+    sets: sets.map((set) => ({
+      weight: trackingType === "duration" ? null : (set.weight ?? null),
+      reps: trackingType === "duration" ? null : (set.reps ?? null),
+      durationS: trackingType === "duration" ? (set.durationS ?? null) : null,
+    })),
+  }));
+}
+
+export function hasProgramChanges(template: unknown, exercises: WorkoutExercise[]) {
+  try {
+    return (
+      JSON.stringify(programPlan(readProgramExercises(template))) !==
+      JSON.stringify(programPlan(exercises))
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function templateFromWorkout(exercises: WorkoutExercise[]) {
+  return exercises.map((entry) => ({
+    ...entry,
+    sets: entry.sets.map((set, index) => ({
+      ...set,
+      setNumber: index + 1,
+      completed: false,
+      rpe: null,
+      notes: null,
+      inputValues: undefined,
+    })),
+  }));
+}

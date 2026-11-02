@@ -1,10 +1,16 @@
 import { useIsFetching, useQuery } from "@tanstack/react-query";
 import { Outlet, useRouterState } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { isDashboardLoading } from "@/app/model/dashboard-loading";
 import { BottomNav } from "@/app/ui/bottom-nav";
-import { exerciseCatalogOptions, popularExerciseIdsQueryOptions } from "@/entities/exercise";
+import {
+  exerciseCatalogOptions,
+  popularExerciseIdsQueryOptions,
+  preloadAnatomyMap,
+} from "@/entities/exercise";
 import { ActiveWorkoutBanner } from "@/entities/workout";
+import { programsQueryOptions } from "@/features/program";
 import { dashboardQueryOptions } from "@/pages/dashboard";
 import { useAuth } from "@/shared/auth";
 import { useOnline } from "@/shared/lib";
@@ -18,6 +24,10 @@ export function AppLayout() {
   const isDashboard = pathname === "/dashboard";
   const isExercises = pathname === "/exercises";
   const dashboard = useQuery({ ...dashboardQueryOptions, enabled: isDashboard && !!auth.user });
+  const programs = useQuery({
+    ...programsQueryOptions(auth.user?.id),
+    enabled: isDashboard && !!auth.user,
+  });
   const catalog = useQuery({
     ...exerciseCatalogOptions(auth.user?.id ?? ""),
     enabled: isExercises && !!auth.user,
@@ -32,13 +42,43 @@ export function AppLayout() {
   const handleActiveWorkoutBannerVisibility = useCallback((visible: boolean) => {
     setHasActiveWorkoutBanner((current) => (current === visible ? current : visible));
   }, []);
+  const dashboardLoading = isDashboard && isDashboardLoading(dashboard, programs);
+  const contentReady =
+    !auth.loading &&
+    Boolean(auth.user) &&
+    !dashboardLoading &&
+    (!isExercises ||
+      ((!catalog.isPending || catalog.fetchStatus === "paused") &&
+        (!popular.isPending || popular.fetchStatus === "paused")));
+
+  useEffect(() => {
+    if (!contentReady || !online) return;
+    const preload = () => {
+      void preloadAnatomyMap().catch(() => {
+        // Передзавантаження не повинно заважати роботі застосунку.
+      });
+    };
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(preload, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(preload, 1000);
+    return () => clearTimeout(id);
+  }, [contentReady, online]);
 
   if (auth.loading || !auth.user) {
     return <AppStartup />;
   }
 
-  if (isDashboard && dashboard.isPending && dashboard.fetchStatus !== "paused") {
-    return <AppStartup onRetry={() => void dashboard.refetch()} />;
+  if (dashboardLoading) {
+    return (
+      <AppStartup
+        onRetry={() => {
+          void dashboard.refetch();
+          void programs.refetch();
+        }}
+      />
+    );
   }
 
   if (
