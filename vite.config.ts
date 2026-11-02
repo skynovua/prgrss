@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",
-      includeAssets: ["icons/*.png", "splash/*.png"],
+      includeAssets: ["icons/*.png"],
       manifest: {
         name: "PRGRSS — Трекер тренувань",
         short_name: "PRGRSS",
