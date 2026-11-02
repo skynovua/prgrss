@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { isDashboardLoading } from "@/app/model/dashboard-loading";
 import { BottomNav } from "@/app/ui/bottom-nav";
+import { PwaUpdateNotice } from "@/app/ui/pwa-update-notice";
 import {
   AnatomyWarmup,
   exerciseCatalogOptions,
@@ -125,6 +126,7 @@ export function AppLayout() {
             Немає з’єднання. Дані оновляться після відновлення мережі.
           </p>
         )}
+        <PwaUpdateNotice />
         <Outlet />
       </div>
       <ActiveWorkoutBanner onVisibilityChange={handleActiveWorkoutBannerVisibility} />

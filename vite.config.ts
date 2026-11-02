@@ -9,8 +9,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
-      injectRegister: "auto",
+      registerType: "prompt",
+      injectRegister: null,
+      workbox: { clientsClaim: true },
       includeAssets: ["icons/*.png"],
       manifest: {
         name: "PRGRSS — Трекер тренувань",

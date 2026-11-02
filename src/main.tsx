@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 
 import { router } from "@/app";
+import { startPwaUpdates } from "@/app/model/pwa-update-service";
 import { createSessionQueryClient } from "@/app/model/session-query-client";
 import { AppStartup } from "@/app/ui/app-startup";
 import { useMobileGestureGuard } from "@/app/use-mobile-gesture-guard";
@@ -41,6 +42,8 @@ function SessionRouter() {
     </QueryClientProvider>
   );
 }
+
+startPwaUpdates();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
