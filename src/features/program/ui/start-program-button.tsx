@@ -57,7 +57,7 @@ export function StartProgramButton({
         aria-label={`Почати тренування за шаблоном ${program.name}`}
         disabled={!program.exercises.length}
         onClick={() => {
-          if (restoreActiveWorkoutDraft(user?.id)?.exercises.length) setConfirmOpen(true);
+          if (restoreActiveWorkoutDraft(user?.id)) setConfirmOpen(true);
           else start();
         }}
       >

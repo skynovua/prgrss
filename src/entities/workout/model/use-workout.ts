@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import { toast } from "sonner";
 
 import type { Exercise, PreviousSetsMap, SavedWorkoutContext } from "@/entities/workout";
@@ -30,7 +30,7 @@ export function useWorkout(
     const initialState = createInitialState();
     const draft = restoreActiveWorkoutDraft(userId);
 
-    if (!draft?.exercises.length) {
+    if (!draft) {
       return initialState;
     }
 
@@ -45,6 +45,7 @@ export function useWorkout(
       programSource: draft.programSource,
     };
   });
+  const draftClosed = useRef(false);
   const {
     exercises: workoutExercises,
     startedAt,
@@ -58,11 +59,7 @@ export function useWorkout(
   } = state;
 
   useEffect(() => {
-    if (workoutExercises.length === 0) {
-      clearActiveWorkoutDraft(userId);
-      return;
-    }
-
+    if (draftClosed.current) return;
     saveActiveWorkoutDraft({
       userId,
       exercises: workoutExercises,
@@ -87,6 +84,18 @@ export function useWorkout(
     [previousSets, userId]
   );
 
+  const cancelWorkout = () => {
+    if (saving) return;
+    if (!clearActiveWorkoutDraft(userId, workoutId)) {
+      toast.error("Не вдалося скасувати тренування", {
+        description: "Перевір доступ до сховища або онови тренування на цьому пристрої.",
+      });
+      return;
+    }
+    draftClosed.current = true;
+    void navigate({ to: "/dashboard" });
+  };
+
   const handleFinish = async (details?: { name?: string; notes?: string }) => {
     const review = getWorkoutReview(workoutExercises);
     if (saving || review.completedSets === 0 || review.invalidSets.length > 0) return;
@@ -107,6 +116,8 @@ export function useWorkout(
         navigate({ to: result.redirectTo });
         return;
       }
+
+      draftClosed.current = true;
 
       toast.success("Тренування збережено");
       if (programSource && !result.programLinked) {
@@ -158,6 +169,7 @@ export function useWorkout(
     totalSets,
     totalVolume,
     addExercise,
+    cancelWorkout,
     handleFinish,
   };
 }

@@ -1,5 +1,5 @@
 export { deleteProgram, type Program, saveProgram } from "./api/programs";
-export { exerciseForProgram, programFromWorkout } from "./model/program";
+export { exerciseForProgram, programFromWorkout, programWorkoutDraft } from "./model/program";
 export { programsQueryOptions, usePrograms } from "./model/use-programs";
 export { StartProgramButton } from "./ui/start-program-button";
 export { hasProgramChanges } from "./model/program";

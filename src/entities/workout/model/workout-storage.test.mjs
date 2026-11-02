@@ -65,6 +65,45 @@ test("чернетки ізольовані між акаунтами й очи�
   assert.equal(restoreActiveWorkoutDraft("a").name, "A");
 });
 
+test("порожнє активне тренування зберігає час і відновлюється", () => {
+  const empty = { ...draft("a", ""), exercises: [], name: "" };
+  saveActiveWorkoutDraft(empty);
+  const restored = restoreActiveWorkoutDraft("a");
+  assert.equal(restored.startedAt, empty.startedAt);
+  assert.equal(restored.workoutId, empty.workoutId);
+  assert.deepEqual(restored.exercises, []);
+});
+
+test("скасування не видаляє іншу чернетку того самого користувача", () => {
+  saveActiveWorkoutDraft(draft("a", "new"));
+  assert.equal(clearActiveWorkoutDraft("a", "workout-old"), false);
+  assert.equal(restoreActiveWorkoutDraft("a").name, "new");
+  assert.equal(clearActiveWorkoutDraft("a", "workout-new"), true);
+  assert.equal(restoreActiveWorkoutDraft("a"), null);
+});
+
+test("скасування повідомляє про недоступне сховище і залишає чернетку", () => {
+  saveActiveWorkoutDraft(draft("a", "current"));
+  const removeItem = localStorage.removeItem;
+  localStorage.removeItem = () => {
+    throw new Error("storage unavailable");
+  };
+  try {
+    assert.equal(clearActiveWorkoutDraft("a", "workout-current"), false);
+    assert.equal(restoreActiveWorkoutDraft("a").name, "current");
+  } finally {
+    localStorage.removeItem = removeItem;
+  }
+});
+
+test("стару чернетку можна явно відновити поверх нового порожнього тренування", () => {
+  storage.set("prgrss.activeWorkout", JSON.stringify(draft(undefined, "legacy")));
+  saveActiveWorkoutDraft({ ...draft("a", ""), exercises: [], name: "" });
+  assert.equal(hasLegacyWorkoutDraft("a"), true);
+  assert.equal(restoreLegacyWorkoutDraft("a"), true);
+  assert.equal(restoreActiveWorkoutDraft("a").name, "legacy");
+});
+
 test("налаштування тієї самої вправи належать окремим акаунтам", () => {
   saveExerciseLogPreferences("a", "squat", { restSeconds: 60 });
   saveExerciseLogPreferences("b", "squat", { restSeconds: 180 });

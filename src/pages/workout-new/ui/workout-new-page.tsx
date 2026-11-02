@@ -17,6 +17,8 @@ import { hasProgramChanges, ProgramUpdateDialog } from "@/features/program";
 import { useAuth } from "@/shared/auth";
 import { Button, Card, CardContent, RefreshNotice } from "@/shared/ui";
 
+import { WorkoutTemplatePicker } from "./workout-template-picker";
+
 export default function WorkoutNewPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -74,6 +76,7 @@ export default function WorkoutNewPage() {
           previousSets={previousSets ?? {}}
           historyUnavailable={historyUnavailable}
           onOpenExerciseDetails={setDetailsTarget}
+          renderTemplatePicker={(props) => <WorkoutTemplatePicker {...props} />}
           onWorkoutSaved={(context) => {
             if (
               !context.programSource ||

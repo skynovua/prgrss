@@ -187,6 +187,43 @@ test("reducer не завершує порожній підхід і не зап
   assert.equal(next.restClock, null);
 });
 
+test("додавання й повторне додавання першої вправи не скидає час тренування", () => {
+  const initial = { ...createInitialState(), startedAt: "2026-01-01T10:00:00.000Z" };
+  const exercise = { id: "bench", name: "Жим", equipment: "barbell" };
+  const first = workoutReducer(initial, { type: "ADD_EXERCISE", exercise });
+  const empty = workoutReducer(first, { type: "REMOVE_EXERCISE", index: 0 });
+  const second = workoutReducer(empty, { type: "ADD_EXERCISE", exercise });
+  assert.equal(second.startedAt, initial.startedAt);
+  assert.equal(second.workoutId, initial.workoutId);
+});
+
+test("застосування шаблону зберігає час та ідентифікатор активного тренування", () => {
+  const initial = { ...createInitialState(), startedAt: "2026-01-01T10:00:00.000Z" };
+  const exercise = { id: "bench", name: "Жим", equipment: "barbell" };
+  const withExercise = workoutReducer(initial, { type: "ADD_EXERCISE", exercise });
+  const planned = workoutReducer(initial, {
+    type: "ADD_EXERCISE",
+    exercise: { id: "squat", name: "Присідання", equipment: "barbell" },
+  }).exercises;
+  const source = { id: "program", name: "Верх", template: [] };
+  const next = workoutReducer(
+    { ...withExercise, restClock: startRestClock(90, 1000) },
+    {
+      type: "APPLY_TEMPLATE",
+      exercises: planned,
+      name: source.name,
+      programSource: source,
+    }
+  );
+  assert.equal(next.startedAt, initial.startedAt);
+  assert.equal(next.workoutId, initial.workoutId);
+  assert.equal(next.name, "Верх");
+  assert.deepEqual(next.programSource, source);
+  assert.equal(next.exercises[0].exercise.id, "squat");
+  assert.equal(withExercise.exercises[0].exercise.id, "bench");
+  assert.equal(next.restClock, null);
+});
+
 test("історія для доданої пізніше вправи не змінює вже введені підходи", () => {
   const exercise = { id: "bench", name: "Жим", equipment: "barbell" };
   let state = workoutReducer(createInitialState(), { type: "ADD_EXERCISE", exercise });

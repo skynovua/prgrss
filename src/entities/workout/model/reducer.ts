@@ -33,6 +33,12 @@ export type WorkoutAction =
       preferences?: ExerciseLogPreferences;
     }
   | { type: "REMOVE_EXERCISE"; index: number }
+  | {
+      type: "APPLY_TEMPLATE";
+      exercises: WorkoutExercise[];
+      name: string;
+      programSource: WorkoutProgramSource;
+    }
   | { type: "REORDER_EXERCISE"; instanceId: string; toIndex: number }
   | { type: "ADD_SET"; exerciseIndex: number }
   | { type: "UPDATE_SET"; exerciseIndex: number; set: LocalSet }
@@ -67,11 +73,6 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
 
       return {
         ...state,
-        startedAt: state.exercises.length === 0 ? new Date().toISOString() : state.startedAt,
-        workoutId: state.exercises.length === 0 ? generateId() : state.workoutId,
-        programSource: state.exercises.length === 0 ? null : state.programSource,
-        name: state.exercises.length === 0 ? "" : state.name,
-        notes: state.exercises.length === 0 ? "" : state.notes,
         exercises: [
           ...state.exercises,
           {
@@ -84,6 +85,16 @@ export function workoutReducer(state: WorkoutState, action: WorkoutAction): Work
         ],
       };
     }
+
+    case "APPLY_TEMPLATE":
+      return {
+        ...state,
+        exercises: action.exercises,
+        name: action.name,
+        programSource: action.programSource,
+        restClock: null,
+        timerOpen: false,
+      };
 
     case "REORDER_EXERCISE": {
       const fromIndex = state.exercises.findIndex((item) => item.instanceId === action.instanceId);

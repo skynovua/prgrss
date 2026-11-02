@@ -98,7 +98,7 @@ export function ActiveWorkoutBanner({
   );
   const [now, setNow] = useState(() => Date.now());
   const hiddenOnCurrentRoute = pathname === "/workout/new";
-  const hasActiveDraft = Boolean(draft?.exercises.length);
+  const hasActiveDraft = Boolean(draft);
   const visible = hasActiveDraft && !hiddenOnCurrentRoute;
 
   useEffect(() => {

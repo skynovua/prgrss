@@ -10,12 +10,27 @@ function draftKey(userId: string) {
   return `${ACTIVE_WORKOUT_STORAGE_KEY}:${userId}`;
 }
 
+function canRestoreLegacyDraft(userId: string) {
+  const current = localStorage.getItem(draftKey(userId));
+  if (!current) return true;
+  try {
+    const draft = JSON.parse(current);
+    return (
+      Array.isArray(draft.exercises) &&
+      draft.exercises.length === 0 &&
+      !draft.name &&
+      !draft.notes &&
+      !draft.programSource
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function hasLegacyWorkoutDraft(userId: string | undefined) {
   if (!userId) return false;
   try {
-    return (
-      !localStorage.getItem(draftKey(userId)) && !!localStorage.getItem(ACTIVE_WORKOUT_STORAGE_KEY)
-    );
+    return canRestoreLegacyDraft(userId) && !!localStorage.getItem(ACTIVE_WORKOUT_STORAGE_KEY);
   } catch {
     return false;
   }
@@ -25,7 +40,7 @@ export function restoreLegacyWorkoutDraft(userId: string | undefined) {
   if (!userId) return false;
   try {
     const legacy = localStorage.getItem(ACTIVE_WORKOUT_STORAGE_KEY);
-    if (!legacy || localStorage.getItem(draftKey(userId))) return false;
+    if (!legacy || !canRestoreLegacyDraft(userId)) return false;
     const parsed = JSON.parse(legacy);
     if (!Array.isArray(parsed?.exercises) || typeof parsed.startedAt !== "string") return false;
     localStorage.setItem(draftKey(userId), legacy);
@@ -124,13 +139,18 @@ export function restoreActiveWorkoutDraft(userId: string | undefined): ActiveWor
   }
 }
 
-export function clearActiveWorkoutDraft(userId: string | undefined) {
-  if (!userId) return;
+export function clearActiveWorkoutDraft(userId: string | undefined, expectedWorkoutId?: string) {
+  if (!userId) return false;
   try {
+    if (expectedWorkoutId) {
+      const rawDraft = localStorage.getItem(draftKey(userId));
+      if (rawDraft && JSON.parse(rawDraft).workoutId !== expectedWorkoutId) return false;
+    }
     localStorage.removeItem(draftKey(userId));
     window.dispatchEvent(new Event(ACTIVE_WORKOUT_DRAFT_EVENT));
+    return true;
   } catch {
-    // Немає що чистити, якщо browser storage недоступний.
+    return false;
   }
 }
 

@@ -1,19 +1,39 @@
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
-import { Dumbbell, Flag, Plus, Timer } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Dumbbell, Ellipsis, Flag, Layers3, Plus, Settings2, Timer, X } from "lucide-react";
+import { type ReactNode, useEffect, useState } from "react";
 
-import { useProfile } from "@/entities/profile";
+import { useProfile, useUpdateProfile } from "@/entities/profile";
 import {
   Button,
+  ConfirmDialog,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
+  Switch,
 } from "@/shared/ui";
 
-import type { Exercise, ExerciseData, PreviousSetsMap, SavedWorkoutContext } from "../model/types";
+import type {
+  Exercise,
+  ExerciseData,
+  PreviousSetsMap,
+  SavedWorkoutContext,
+  WorkoutExercise,
+  WorkoutProgramSource,
+} from "../model/types";
 import { useWorkout } from "../model/use-workout";
 import { getWorkoutReview } from "../model/workout-logging";
 import { ExercisePicker } from "./exercise-picker";
@@ -64,6 +84,18 @@ interface WorkoutLoggerProps {
   historyUnavailable?: boolean;
   onOpenExerciseDetails: (exercise: ExerciseData) => void;
   onWorkoutSaved?: (context: SavedWorkoutContext) => boolean;
+  renderTemplatePicker?: (props: WorkoutTemplatePickerProps) => ReactNode;
+}
+
+export interface WorkoutTemplatePickerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  hasExercises: boolean;
+  onSelect: (template: {
+    name: string;
+    exercises: WorkoutExercise[];
+    programSource: WorkoutProgramSource;
+  }) => void;
 }
 
 export function WorkoutLogger({
@@ -74,8 +106,10 @@ export function WorkoutLogger({
   historyUnavailable = false,
   onOpenExerciseDetails,
   onWorkoutSaved,
+  renderTemplatePicker,
 }: WorkoutLoggerProps) {
-  const { data: profile } = useProfile();
+  const { data: profile, isPending: profileLoading, fetchStatus, refetch } = useProfile();
+  const updateProfile = useUpdateProfile();
   const {
     state,
     dispatch,
@@ -87,10 +121,14 @@ export function WorkoutLogger({
     totalSets,
     totalVolume,
     addExercise,
+    cancelWorkout,
     handleFinish,
   } = useWorkout(previousSets, onWorkoutSaved);
   const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>({});
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const hasExercises = workoutExercises.length > 0;
 
   const toggleCollapse = (id: string) =>
@@ -113,7 +151,7 @@ export function WorkoutLogger({
         hasExercises ? undefined : (
           <Button variant="primary" size="lg">
             <Plus data-icon="inline-start" />
-            Почати тренування
+            Додати вправу
           </Button>
         )
       }
@@ -140,23 +178,44 @@ export function WorkoutLogger({
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 pb-[calc(11rem+env(safe-area-inset-bottom))] sm:px-5 md:px-8">
       <header className="border-border/30 bg-background/50 before:bg-background sticky top-[env(safe-area-inset-top,0px)] z-30 -mx-4 flex items-center justify-between gap-3 border-b px-4 pt-4 pb-3 backdrop-blur-md before:pointer-events-none before:absolute before:inset-x-0 before:-top-[env(safe-area-inset-top,0px)] before:h-[env(safe-area-inset-top,0px)] before:content-[''] sm:-mx-5 sm:px-5 md:-mx-8 md:px-8">
-        <Button
-          variant="secondary"
-          size="icon-lg"
-          className="rounded-full"
-          onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}
-          aria-label="Відкрити таймер відпочинку"
-        >
-          <Timer />
-        </Button>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="secondary"
+                size="icon-lg"
+                className="rounded-full"
+                aria-label="Меню тренування"
+                disabled={saving}
+              />
+            }
+          >
+            <Ellipsis />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuGroup>
+              {renderTemplatePicker && (
+                <DropdownMenuItem onClick={() => setTemplatePickerOpen(true)}>
+                  <Layers3 /> Обрати шаблон
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => dispatch({ type: "SET_TIMER_OPEN", open: true })}>
+                <Timer /> Таймер відпочинку
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+                <Settings2 /> Налаштування
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onClick={() => setCancelOpen(true)}>
+                <X /> Скасувати тренування
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
           <h1 className="text-muted-foreground text-xs font-medium">Тренування</h1>
           <div className="h-8 overflow-hidden text-2xl leading-8 tracking-tight">
-            {hasExercises ? (
-              <WorkoutDurationTimer startedAt={startedAt} />
-            ) : (
-              <span className="font-medium tabular-nums">00:00</span>
-            )}
+            <WorkoutDurationTimer startedAt={startedAt} />
           </div>
         </div>
         <Button
@@ -182,9 +241,16 @@ export function WorkoutLogger({
               <Dumbbell />
             </EmptyMedia>
             <EmptyTitle>Твоє наступне тренування</EmptyTitle>
-            <EmptyDescription>Обери першу вправу — тоді почнеться відлік часу.</EmptyDescription>
+            <EmptyDescription>Додай вправи або обери готовий шаблон.</EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>{exercisePicker}</EmptyContent>
+          <EmptyContent>
+            {exercisePicker}
+            {renderTemplatePicker && (
+              <Button variant="outline" onClick={() => setTemplatePickerOpen(true)}>
+                <Layers3 data-icon="inline-start" /> Обрати шаблон
+              </Button>
+            )}
+          </EmptyContent>
         </Empty>
       ) : (
         <>
@@ -221,6 +287,62 @@ export function WorkoutLogger({
         </>
       )}
       <RestTimer open={timerOpen} clock={restClock} dispatch={dispatch} />
+      {templatePickerOpen &&
+        renderTemplatePicker?.({
+          open: templatePickerOpen,
+          onOpenChange: setTemplatePickerOpen,
+          hasExercises,
+          onSelect: (template) => {
+            dispatch({ type: "APPLY_TEMPLATE", ...template });
+            setCollapsedCards({});
+            setTemplatePickerOpen(false);
+          },
+        })}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Налаштування тренувань</DialogTitle>
+            <DialogDescription>
+              Це налаштування зберігається у профілі для наступних тренувань.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-between gap-4">
+            <label htmlFor="workout-auto-rest" className="text-sm font-medium">
+              Автоматичний таймер відпочинку
+            </label>
+            <Switch
+              id="workout-auto-rest"
+              checked={profile?.autoRestTimer ?? false}
+              disabled={!profile || updateProfile.isPending}
+              onCheckedChange={(checked) => updateProfile.mutate({ auto_rest_timer: checked })}
+            />
+          </div>
+          {!profile && (
+            <div className="flex flex-col items-start gap-3">
+              <p className="text-muted-foreground text-sm">
+                {profileLoading && fetchStatus !== "paused"
+                  ? "Завантажуємо налаштування..."
+                  : "Не вдалося завантажити налаштування."}
+              </p>
+              {(!profileLoading || fetchStatus === "paused") && (
+                <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                  Спробувати ще
+                </Button>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      <ConfirmDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        title="Скасувати тренування?"
+        description="Чернетку й записані підходи буде видалено без збереження."
+        confirmText="Скасувати"
+        cancelText="Продовжити"
+        isDestructive
+        onConfirm={cancelWorkout}
+      />
       <WorkoutFinishDialog
         key={state.workoutId}
         open={reviewOpen}
