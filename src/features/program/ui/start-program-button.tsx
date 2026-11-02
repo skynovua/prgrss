@@ -54,7 +54,7 @@ export function StartProgramButton({
       <Button
         variant={variant}
         className={cn("w-full", className)}
-        aria-label={`Почати тренування за програмою ${program.name}`}
+        aria-label={`Почати тренування за шаблоном ${program.name}`}
         disabled={!program.exercises.length}
         onClick={() => {
           if (restoreActiveWorkoutDraft(user?.id)?.exercises.length) setConfirmOpen(true);
@@ -71,7 +71,7 @@ export function StartProgramButton({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Почати нове тренування?"
-        description="Поточну незавершену чернетку буде замінено вправами з програми."
+        description="Поточну незавершену чернетку буде замінено вправами з шаблону."
         confirmText="Почати"
         isDestructive
         onConfirm={start}

@@ -58,18 +58,18 @@ export default function ProgramsPage() {
     }) => saveProgram(user!.id, name, exercises, id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["programs"] });
-      toast.success("Програму збережено");
+      toast.success("Шаблон збережено");
     },
-    onError: (error) => toast.error("Не вдалося зберегти програму", { description: error.message }),
+    onError: (error) => toast.error("Не вдалося зберегти шаблон", { description: error.message }),
   });
   const remove = useMutation({
     mutationFn: (program: Program) => deleteProgram(user!.id, program.id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["programs"] });
       setDeleteTarget(null);
-      toast.success("Програму видалено");
+      toast.success("Шаблон видалено");
     },
-    onError: (error) => toast.error("Не вдалося видалити програму", { description: error.message }),
+    onError: (error) => toast.error("Не вдалося видалити шаблон", { description: error.message }),
   });
   const closeEditor = () => {
     setEditor(null);
@@ -108,6 +108,7 @@ export default function ProgramsPage() {
     return (
       <ProgramEditor
         key={currentEditor === "new" ? "new" : currentEditor.id}
+        editing={currentEditor !== "new"}
         initialName={currentEditor === "new" ? "" : currentEditor.name}
         initialExercises={currentEditor === "new" ? [] : currentEditor.exercises}
         saving={save.isPending}
@@ -125,11 +126,11 @@ export default function ProgramsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-5 pb-8 md:px-8">
       <PageHeader className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-medium tracking-tight">Програми</h1>
+        <h1 className="text-xl font-medium tracking-tight">Шаблони тренувань</h1>
         <Button
           size="icon"
           variant="secondary"
-          aria-label="Створити програму"
+          aria-label="Створити шаблон"
           onClick={() => setEditor("new")}
         >
           <Plus />
@@ -139,23 +140,23 @@ export default function ProgramsPage() {
         <RefreshNotice onRetry={() => void programs.refetch()} />
       )}
       {programs.isPending ? (
-        <div className="flex flex-col gap-3" role="status" aria-label="Завантажуємо програми">
+        <div className="flex flex-col gap-3" role="status" aria-label="Завантажуємо шаблони">
           <Skeleton className="h-[4.5rem] w-full" />
           <Skeleton className="h-[4.5rem] w-full" />
         </div>
       ) : !programs.data ? (
-        <PageError title="Програми не завантажилися" onRetry={() => void programs.refetch()} />
+        <PageError title="Шаблони не завантажилися" onRetry={() => void programs.refetch()} />
       ) : programs.data.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Layers3 />
             </EmptyMedia>
-            <EmptyTitle>Поки немає програм</EmptyTitle>
+            <EmptyTitle>Поки немає шаблонів</EmptyTitle>
             <EmptyDescription>Створи шаблон, щоб швидше починати тренування.</EmptyDescription>
           </EmptyHeader>
           <Button variant="primary" onClick={() => setEditor("new")}>
-            <Plus data-icon="inline-start" /> Створити програму
+            <Plus data-icon="inline-start" /> Створити шаблон
           </Button>
         </Empty>
       ) : (
@@ -173,7 +174,7 @@ export default function ProgramsPage() {
                   <p className="text-muted-foreground mt-1 line-clamp-2 text-xs leading-relaxed">
                     {program.exercises.length
                       ? program.exercises.map((entry) => entry.exercise.name).join(", ")
-                      : "Додай вправи до програми"}
+                      : "Додай вправи до шаблону"}
                   </p>
                 </Link>
                 <DropdownMenu modal={false}>
@@ -182,7 +183,7 @@ export default function ProgramsPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        aria-label={`Дії для програми ${program.name}`}
+                        aria-label={`Дії для шаблону ${program.name}`}
                       />
                     }
                   >
@@ -211,7 +212,7 @@ export default function ProgramsPage() {
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Видалити програму?"
+        title="Видалити шаблон?"
         description="Шаблон буде видалено. Виконані тренування залишаться в історії."
         confirmText="Видалити"
         isDestructive

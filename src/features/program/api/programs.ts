@@ -36,7 +36,7 @@ export async function saveProgram(
         .select("id")
         .single();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("Програму не знайдено або вона недоступна");
+  if (!data) throw new Error("Шаблон не знайдено або він недоступний");
 }
 
 export async function deleteProgram(userId: string, id: string) {
@@ -48,7 +48,7 @@ export async function deleteProgram(userId: string, id: string) {
     .select("id")
     .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("Програму не знайдено або вона недоступна");
+  if (!data) throw new Error("Шаблон не знайдено або він недоступний");
 }
 
 export async function updateProgramTemplate(

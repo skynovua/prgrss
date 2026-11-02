@@ -111,7 +111,7 @@ export function WorkoutDetail({
                   <Pencil /> Редагувати
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onCreateProgram}>
-                  <Plus /> Створити програму
+                  <Plus /> Створити шаблон
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>

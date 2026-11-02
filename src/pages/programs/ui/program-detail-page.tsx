@@ -56,6 +56,7 @@ export default function ProgramDetailPage() {
     return (
       <ProgramEditor
         key={program.id}
+        editing
         initialName={program.name}
         initialExercises={program.exercises}
         saving={save.isPending}

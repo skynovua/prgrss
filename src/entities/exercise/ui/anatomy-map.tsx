@@ -186,10 +186,25 @@ function AnatomyFigure({
       onDragStart={interactive ? (event) => event.preventDefault() : undefined}
       onKeyDown={interactive ? handleKeyDown : undefined}
     >
-      {highlightStyles && <style>{highlightStyles}</style>}
+      <style>{`
+        ${highlightStyles}
+        ${
+          interactive
+            ? ""
+            : `#${scopeId} > div > svg > path:first-child {
+                filter: url(#${scopeId}-outline);
+                opacity: 0.85;
+              }`
+        }
+      `}</style>
 
       <svg aria-hidden="true" className="absolute size-0" focusable="false">
         <defs>
+          {!interactive && (
+            <filter id={`${scopeId}-outline`}>
+              <feMorphology in="SourceGraphic" operator="erode" radius="0.5" />
+            </filter>
+          )}
           {Array.from({ length: 10 }, (_, index) => {
             const level = index + 1;
             return (

@@ -46,6 +46,7 @@ import { ProgramMuscles } from "./program-muscles";
 interface ProgramEditorProps {
   initialName?: string;
   initialExercises?: WorkoutExercise[];
+  editing?: boolean;
   saving: boolean;
   onSave: (name: string, exercises: WorkoutExercise[]) => Promise<void>;
   onBack: () => void;
@@ -54,6 +55,7 @@ interface ProgramEditorProps {
 export function ProgramEditor({
   initialName = "",
   initialExercises = [],
+  editing = false,
   saving,
   onSave,
   onBack,
@@ -130,12 +132,12 @@ export function ProgramEditor({
           className="rounded-full"
           onClick={() => (isDirty ? setCloseRequested(true) : onBack())}
           disabled={saving}
-          aria-label="Повернутися до програм"
+          aria-label="Повернутися"
         >
           <ArrowLeft />
         </Button>
         <h1 className="text-xl font-medium tracking-tight">
-          {initialName ? "Програма тренування" : "Нова програма"}
+          {editing ? "Редагування шаблону" : "Новий шаблон"}
         </h1>
       </PageHeader>
       <form
@@ -154,7 +156,7 @@ export function ProgramEditor({
         }}
       >
         <Field>
-          <FieldLabel htmlFor="program-name">Назва програми</FieldLabel>
+          <FieldLabel htmlFor="program-name">Назва шаблону</FieldLabel>
           <Input
             id="program-name"
             placeholder="Наприклад, Верх тіла"
@@ -323,10 +325,10 @@ export function ProgramEditor({
           variant="primary"
           disabled={saving || !name.trim() || exercises.length === 0}
         >
-          {saving ? "Зберігаю..." : "Зберегти програму"}
+          {saving ? "Зберігаю..." : "Зберегти шаблон"}
         </Button>
       </form>
-      {saving && <p role="status">Зберігаємо програму...</p>}
+      {saving && <p role="status">Зберігаємо шаблон...</p>}
       {optionsExercise && (
         <ProgramExerciseOptions
           key={optionsExercise.instanceId}

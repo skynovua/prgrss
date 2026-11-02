@@ -68,7 +68,7 @@ export function programWorkoutDraft(exercises: WorkoutExercise[]) {
 }
 
 export function readProgramExercises(value: unknown): WorkoutExercise[] {
-  if (!Array.isArray(value)) throw new Error("Не вдалося прочитати програму");
+  if (!Array.isArray(value)) throw new Error("Не вдалося прочитати шаблон");
   if (
     !value.every(
       (entry) =>
@@ -83,7 +83,7 @@ export function readProgramExercises(value: unknown): WorkoutExercise[] {
         entry.sets.every((set: unknown) => set && typeof set === "object")
     )
   )
-    throw new Error("Не вдалося прочитати програму");
+    throw new Error("Не вдалося прочитати шаблон");
   return value as WorkoutExercise[];
 }
 

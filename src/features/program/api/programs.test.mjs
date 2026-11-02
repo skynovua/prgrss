@@ -47,7 +47,7 @@ test("зберігає шаблон разом із користувачем т�
   });
 });
 
-test("не повідомляє про збереження або видалення недоступної програми", async () => {
+test("не повідомляє про збереження або видалення недоступного шаблону", async () => {
   const query = {
     update: () => query,
     delete: () => query,
@@ -56,8 +56,8 @@ test("не повідомляє про збереження або видале�
     maybeSingle: async () => ({ data: null, error: null }),
   };
   globalThis.__programFrom = () => query;
-  await assert.rejects(saveProgram("owner", "Сила", exercises, "unknown"), /недоступна/);
-  await assert.rejects(deleteProgram("owner", "unknown"), /недоступна/);
+  await assert.rejects(saveProgram("owner", "Сила", exercises, "unknown"), /недоступний/);
+  await assert.rejects(deleteProgram("owner", "unknown"), /недоступний/);
 });
 
 test("оновлює шаблон через транзакційну перевірку початкового стану", async () => {
