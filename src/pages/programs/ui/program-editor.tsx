@@ -164,7 +164,6 @@ export function ProgramEditor({
             onChange={(event) => setName(event.target.value)}
           />
         </Field>
-        <ProgramMuscles exercises={exercises} />
         <div className="flex flex-col gap-3">
           <div>
             <h2 className="text-base font-semibold">Вправи та підходи</h2>
@@ -318,6 +317,7 @@ export function ProgramEditor({
             }
           />
         </div>
+        <ProgramMuscles exercises={exercises} />
         <Button
           type="submit"
           variant="primary"
