@@ -1,17 +1,13 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 
 import type { ExerciseMuscleTarget } from "../model/exercise-catalog";
-import { preloadAnatomyMap } from "./anatomy-loader";
+import { DeferredAnatomyMap } from "./anatomy-deferred";
 import { AnatomyLoading } from "./anatomy-loading";
-
-const LazyAnatomyMap = lazy(() =>
-  preloadAnatomyMap().then(({ AnatomyMap }) => ({ default: AnatomyMap }))
-);
 
 export function AnatomyPreview({ highlights }: { highlights: ExerciseMuscleTarget[] }) {
   return (
     <Suspense fallback={<AnatomyLoading layout="both" compact />}>
-      <LazyAnatomyMap
+      <DeferredAnatomyMap
         muscles={highlights.map((muscle) => ({ key: muscle.muscleKey, name: muscle.name }))}
         highlights={highlights}
         layout="both"

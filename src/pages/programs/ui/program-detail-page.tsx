@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { ExerciseDetailsById } from "@/entities/exercise";
+import { ExerciseDetailsById, useExercises } from "@/entities/exercise";
 import type { ExerciseData, WorkoutExercise } from "@/entities/workout";
 import { saveProgram, StartProgramButton, usePrograms } from "@/features/program";
 import { useAuth } from "@/shared/auth";
@@ -12,7 +12,7 @@ import { Button, PageError, PageHeader, RefreshNotice, Skeleton } from "@/shared
 
 import { ProgramEditor } from "./program-editor";
 import { ProgramExerciseCard } from "./program-exercise-card";
-import { ProgramMuscles } from "./program-muscles";
+import { ProgramMuscles, ProgramMusclesLoading } from "./program-muscles";
 
 export default function ProgramDetailPage() {
   const { id } = useParams({ from: "/app/programs/$id" });
@@ -24,6 +24,10 @@ export default function ProgramDetailPage() {
   const [editing, setEditing] = useState(false);
   const [detailsTarget, setDetailsTarget] = useState<ExerciseData | null>(null);
   const program = programs.data?.find((item) => item.id === id);
+  const catalog = useExercises({ enabled: Boolean(program?.exercises.length) });
+  useLayoutEffect(() => {
+    if (from === "dashboard") window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [from, id]);
   const save = useMutation({
     mutationFn: ({ name, exercises }: { name: string; exercises: WorkoutExercise[] }) =>
       saveProgram(user!.id, name, exercises, id),
@@ -34,13 +38,7 @@ export default function ProgramDetailPage() {
     onError: (error) => toast.error("Не вдалося зберегти шаблон", { description: error.message }),
   });
 
-  if (programs.isPending)
-    return (
-      <div className="flex flex-col gap-4 p-5" role="status" aria-label="Завантажуємо шаблон">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    );
+  if (programs.isPending && programs.fetchStatus !== "paused") return <ProgramDetailLoading />;
   if (!programs.data)
     return <PageError title="Шаблон не завантажився" onRetry={() => void programs.refetch()} />;
   if (!program)
@@ -52,6 +50,8 @@ export default function ProgramDetailPage() {
         </Link>
       </div>
     );
+  if (catalog.isPending && catalog.fetchStatus !== "paused" && program.exercises.length > 0)
+    return <ProgramDetailLoading />;
   if (editing)
     return (
       <ProgramEditor
@@ -110,6 +110,30 @@ export default function ProgramDetailPage() {
       {detailsTarget && (
         <ExerciseDetailsById exercise={detailsTarget} onClose={() => setDetailsTarget(null)} />
       )}
+    </div>
+  );
+}
+
+function ProgramDetailLoading() {
+  return (
+    <div
+      className="flex flex-1 flex-col gap-6 px-5 pb-8 md:px-8"
+      role="status"
+      aria-label="Завантажуємо шаблон"
+      aria-busy="true"
+    >
+      <PageHeader className="flex items-center gap-3" aria-hidden="true">
+        <Skeleton className="size-11 shrink-0 rounded-full" />
+        <Skeleton className="h-6 w-40 max-w-full" />
+      </PageHeader>
+      <Skeleton className="h-5 w-36" aria-hidden="true" />
+      <Skeleton className="h-11 w-full" aria-hidden="true" />
+      <ProgramMusclesLoading />
+      <section className="flex flex-col gap-3" aria-hidden="true">
+        <h2 className="text-base font-semibold">Вправи та підходи</h2>
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
+      </section>
     </div>
   );
 }

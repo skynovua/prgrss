@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 
 import { EQUIPMENT_LABELS } from "@/shared/config";
 import {
@@ -16,12 +16,8 @@ import {
 
 import { useArchivedExercise, useExercises } from "../hooks/use-exercises";
 import type { ExerciseCatalogItem, ExerciseMuscleTarget } from "../model/exercise-catalog";
-import { preloadAnatomyMap } from "./anatomy-loader";
+import { DeferredAnatomyMap } from "./anatomy-deferred";
 import { AnatomyLoading } from "./anatomy-loading";
-
-const LazyAnatomyMap = lazy(() =>
-  preloadAnatomyMap().then(({ AnatomyMap }) => ({ default: AnatomyMap }))
-);
 
 type ExerciseDetails = Pick<ExerciseCatalogItem, "name" | "equipment" | "muscles">;
 
@@ -118,7 +114,7 @@ export function ExerciseDetailsDialog({
                       </div>
                     }
                   >
-                    <LazyAnatomyMap
+                    <DeferredAnatomyMap
                       muscles={mapMuscles}
                       highlights={muscles}
                       compact

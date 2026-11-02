@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { isDashboardLoading } from "@/app/model/dashboard-loading";
 import { BottomNav } from "@/app/ui/bottom-nav";
 import {
+  AnatomyWarmup,
   exerciseCatalogOptions,
   popularExerciseIdsQueryOptions,
   preloadAnatomyMap,
@@ -39,6 +40,7 @@ export function AppLayout() {
   const fetching = useIsFetching();
   const online = useOnline();
   const [hasActiveWorkoutBanner, setHasActiveWorkoutBanner] = useState(false);
+  const [anatomyReady, setAnatomyReady] = useState(false);
   const handleActiveWorkoutBannerVisibility = useCallback((visible: boolean) => {
     setHasActiveWorkoutBanner((current) => (current === visible ? current : visible));
   }, []);
@@ -53,17 +55,29 @@ export function AppLayout() {
 
   useEffect(() => {
     if (!contentReady || !online) return;
+    let active = true;
     const preload = () => {
-      void preloadAnatomyMap().catch(() => {
-        // Передзавантаження не повинно заважати роботі застосунку.
-      });
+      void preloadAnatomyMap().then(
+        () => {
+          if (active) setAnatomyReady(true);
+        },
+        () => {
+          // Передзавантаження не повинно заважати роботі застосунку.
+        }
+      );
     };
     if ("requestIdleCallback" in window) {
       const id = window.requestIdleCallback(preload, { timeout: 3000 });
-      return () => window.cancelIdleCallback(id);
+      return () => {
+        active = false;
+        window.cancelIdleCallback(id);
+      };
     }
     const id = setTimeout(preload, 1000);
-    return () => clearTimeout(id);
+    return () => {
+      active = false;
+      clearTimeout(id);
+    };
   }, [contentReady, online]);
 
   if (auth.loading || !auth.user) {
@@ -98,6 +112,7 @@ export function AppLayout() {
 
   return (
     <>
+      {anatomyReady && <AnatomyWarmup />}
       <div
         className={`bg-background mx-auto flex min-h-screen w-full max-w-3xl min-w-0 flex-col pt-[env(safe-area-inset-top)] ${
           hasActiveWorkoutBanner
