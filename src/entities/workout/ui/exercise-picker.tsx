@@ -1,5 +1,5 @@
 import { Check, Plus, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
   EQUIPMENT_LABELS,
@@ -42,6 +42,7 @@ export function ExercisePicker({
   isUnavailable = false,
   onRetry,
 }: ExercisePickerProps) {
+  const drawerContentRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<MuscleGroup | "all">("all");
@@ -107,6 +108,7 @@ export function ExercisePicker({
         </DrawerTrigger>
       )}
       <DrawerContent
+        ref={drawerContentRef}
         aria-describedby={undefined}
         className="mt-0 h-[calc(100dvh-env(safe-area-inset-top)-1rem)] max-h-none rounded-t-3xl border-0"
       >
@@ -151,7 +153,7 @@ export function ExercisePicker({
                 <SelectTrigger aria-label="Група м’язів" className="rounded-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent portalContainer={drawerContentRef}>
                   <SelectGroup>
                     {groups.map((group) => (
                       <SelectItem key={group.value} value={group.value}>
@@ -169,7 +171,7 @@ export function ExercisePicker({
                 <SelectTrigger aria-label="Обладнання" className="rounded-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent portalContainer={drawerContentRef}>
                   <SelectGroup>
                     {equipmentOptions.map((item) => (
                       <SelectItem key={item.value} value={item.value}>
