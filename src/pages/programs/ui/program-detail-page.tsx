@@ -94,7 +94,6 @@ export default function ProgramDetailPage() {
         Вправ: {program.exercises.length} · Підходів: {setsCount}
       </p>
       <StartProgramButton program={program} variant="primary" />
-      <ProgramMuscles exercises={program.exercises} />
       <section className="flex flex-col gap-3" aria-labelledby="program-exercises-title">
         <h2 id="program-exercises-title" className="text-base font-semibold">
           Вправи та підходи
@@ -107,6 +106,7 @@ export default function ProgramDetailPage() {
           />
         ))}
       </section>
+      <ProgramMuscles exercises={program.exercises} />
       {detailsTarget && (
         <ExerciseDetailsById exercise={detailsTarget} onClose={() => setDetailsTarget(null)} />
       )}
@@ -128,12 +128,12 @@ function ProgramDetailLoading() {
       </PageHeader>
       <Skeleton className="h-5 w-36" aria-hidden="true" />
       <Skeleton className="h-11 w-full" aria-hidden="true" />
-      <ProgramMusclesLoading />
       <section className="flex flex-col gap-3" aria-hidden="true">
         <h2 className="text-base font-semibold">Вправи та підходи</h2>
         <Skeleton className="h-20 w-full" />
         <Skeleton className="h-20 w-full" />
       </section>
+      <ProgramMusclesLoading />
     </div>
   );
 }
